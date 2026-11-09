@@ -1,0 +1,1018 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#4f5b2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="כוח אדם">
+<title>מעקב כוח אדם</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Assistant:wght@400;600;700&display=swap">
+<style>
+/* Layout: one-column phone app, header band with name/ID, large tile entries, sub-screens routed by hash */
+:root{
+  --bg:#f1f0e8; --surface:#fbfaf4; --fg:#22241c; --muted:#6b6d5c; --line:#cfcdb9;
+  --accent:#4f5b2e; --accent-fg:#f5f4e8; --tile:#e3e2d2; --danger:#a3372a;
+  --ok:#2f7a3c; --warn:#b07a12; --info:#2f5f8a;
+  --display:"Secular One","Assistant",system-ui,sans-serif;
+  --body:"Assistant",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#171812; --surface:#20221a; --fg:#ecebdf; --muted:#9c9e88; --line:#3a3c2f;
+  --accent:#a9b876; --accent-fg:#171812; --tile:#2a2c22; --danger:#e07a6a;
+  --ok:#7cc48a; --warn:#e0b252; --info:#7fb0dc; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171812; --surface:#20221a; --fg:#ecebdf; --muted:#9c9e88; --line:#3a3c2f;
+  --accent:#a9b876; --accent-fg:#171812; --tile:#2a2c22; --danger:#e07a6a;
+  --ok:#7cc48a; --warn:#e0b252; --info:#7fb0dc; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45;direction:rtl}
+.wrap{max-width:560px;margin:0 auto;padding-top:env(safe-area-inset-top,0px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding-bottom:14px;border-bottom:2px solid var(--fg)}
+.who{min-width:0}
+.lbl{font-size:12px;letter-spacing:.06em;color:var(--muted);display:block}
+.who .name{font-family:var(--display);font-size:24px;line-height:1.15;overflow-wrap:anywhere}
+.pid{text-align:left;direction:ltr}
+.pid .num{font-family:var(--mono);font-size:19px;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.linkbtn{background:none;border:0;color:var(--accent);font:inherit;font-size:13px;padding:2px 0;cursor:pointer;text-decoration:underline}
+.role{display:inline-block;font-size:12px;font-weight:700;background:var(--accent);color:var(--accent-fg);border-radius:6px;padding:0 6px;margin-inline-start:6px;vertical-align:middle}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px}
+.tiles.three{grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.tile{background:var(--tile);border:1px solid var(--line);border-radius:14px;padding:18px 10px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--fg);text-decoration:none;font:inherit;cursor:pointer;position:relative}
+.three .tile{padding:12px 6px 10px;gap:6px}
+.tile[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 2px var(--accent)}
+.tile:active{transform:scale(.98)}
+.tile svg{width:84px;height:84px}
+.three .tile svg{width:40px;height:40px}
+.tile .t{font-family:var(--display);font-size:22px}
+.three .tile .t{font-size:17px}
+.tile .c{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.badge{position:absolute;top:6px;left:6px;background:var(--warn);color:#1b1a12;border-radius:999px;font-size:12px;font-weight:700;min-width:20px;padding:0 6px;text-align:center}
+.status{margin-top:18px;font-size:13px;color:var(--muted);text-align:center}
+.bar{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.back{background:none;border:1px solid var(--line);border-radius:10px;padding:6px 12px;font:inherit;color:var(--fg);cursor:pointer;flex:none}
+.bar h1{font-family:var(--display);font-size:26px;margin:0;font-weight:400;min-width:0;overflow-wrap:anywhere}
+.bar .count{margin-inline-start:auto;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.primary{background:var(--accent);color:var(--accent-fg);border:0;border-radius:12px;padding:13px 16px;font:inherit;font-weight:700;width:100%;cursor:pointer;font-size:17px}
+.primary:disabled{opacity:.5}
+form.add,.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px;margin-block:12px 18px}
+label.f{display:grid;gap:4px;font-size:14px;color:var(--muted)}
+input[type=text],input[type=tel],input[type=date],input[type=time],select,textarea{font:inherit;font-size:17px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+textarea{min-height:70px;resize:vertical}
+input.ltr{direction:ltr;text-align:right;font-family:var(--mono)}
+.photo-pick{display:flex;align-items:center;gap:12px}
+.av{width:64px;height:64px;border-radius:50%;object-fit:cover;background:var(--tile);border:1px solid var(--line);flex:none;display:grid;place-items:center;color:var(--muted)}
+.av svg{width:55%;height:55%}
+.av.sm{width:52px;height:52px}
+.av.lg{width:76px;height:76px}
+.ghost{background:none;border:1px solid var(--accent);color:var(--accent);border-radius:10px;padding:8px 12px;font:inherit;cursor:pointer}
+.row2{display:flex;gap:8px;flex-wrap:wrap}
+.row2>*{flex:1}
+.err{color:var(--danger);font-size:14px;margin:0}
+ul.list{list-style:none;padding:0;margin:0}
+ul.list li{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}
+ul.list li.tap{cursor:pointer}
+ul.list .info{min-width:0;flex:1}
+.n1{font-weight:700;font-size:17px;overflow-wrap:anywhere}
+.n2{font-family:var(--mono);color:var(--muted);direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+.n3{font-size:14px;color:var(--muted)}
+.wicon{width:48px;height:48px;border-radius:10px;background:var(--tile);display:grid;place-items:center;flex:none}
+.wicon svg{width:36px;height:36px}
+.del{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;cursor:pointer;padding:6px;flex:none}
+.del.armed{color:var(--danger);font-weight:700}
+.empty{text-align:center;color:var(--muted);padding:24px 8px;border:1px dashed var(--line);border-radius:14px}
+.search{margin-bottom:12px}
+.sh{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:2px solid var(--fg)}
+.sh .info{min-width:0}
+.sh .n1{font-family:var(--display);font-weight:400;font-size:24px}
+h2.sec{font-family:var(--display);font-weight:400;font-size:20px;margin:18px 0 8px}
+/* calendar */
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:16px}
+.cal-head .mid{text-align:center;min-width:0}
+.cal-head .g{font-family:var(--display);font-size:20px}
+.cal-head .h{font-size:14px;color:var(--muted)}
+.nav{background:var(--tile);border:1px solid var(--line);border-radius:10px;width:40px;height:40px;font:inherit;font-size:20px;color:var(--fg);cursor:pointer;flex:none}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;margin-top:10px}
+.dow{text-align:center;font-size:12px;color:var(--muted);padding-bottom:2px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:8px;min-height:54px;padding:3px 4px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;font:inherit;color:var(--fg);text-align:right}
+.day.out{visibility:hidden}
+.day .gd{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
+.day .hd{font-size:12px;color:var(--muted)}
+.day.today{border-color:var(--accent);border-width:2px}
+.day.sel{background:var(--accent);color:var(--accent-fg)}
+.day.sel .hd{color:var(--accent-fg)}
+.dots{display:flex;gap:2px;min-height:6px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--info)}
+.dot.r{background:var(--warn)}
+.dayhead{font-family:var(--display);font-size:18px;margin:16px 0 4px}
+/* requests */
+.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:1px 9px;border:1px solid currentColor}
+.st-pending{color:var(--warn)} .st-approved{color:var(--ok)} .st-rejected{color:var(--danger)}
+.imp{display:inline-block;font-size:12px;border-radius:6px;padding:0 6px;background:var(--tile);color:var(--fg)}
+.imp-3,.imp-4{background:var(--danger);color:#fff}
+.req{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:6px;background:var(--surface)}
+.req+.req{margin-top:10px}
+.req .top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.req .when{font-weight:700}
+.req .notes{color:var(--muted);font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere}
+.approve{background:var(--ok);color:#fff;border:0;border-radius:10px;padding:9px;font:inherit;font-weight:700;cursor:pointer}
+.reject{background:none;color:var(--danger);border:1px solid var(--danger);border-radius:10px;padding:9px;font:inherit;font-weight:700;cursor:pointer}
+.mini{font-size:13px;color:var(--muted)}
+.inline{display:flex;gap:8px;align-items:center}
+.inline select{flex:1;min-width:0}
+.inline button{flex:none}
+.unitf{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.unitf label.f:last-child:nth-child(odd){grid-column:1/-1}
+input[readonly]{opacity:.65}
+.setup-head{text-align:center;padding-top:10px}
+.setup-head svg{width:72px;height:72px}
+.setup-head h1{font-family:var(--display);font-weight:400;font-size:28px;margin:6px 0 4px}
+.warnline{color:var(--warn);font-weight:700}
+.approvals{margin-top:14px;width:100%;background:none;border:1px solid var(--warn);color:var(--warn);border-radius:12px;padding:10px;font:inherit;font-weight:700;cursor:pointer}
+.chip{font-size:12px;background:var(--tile);border-radius:6px;padding:1px 7px;color:var(--muted)}
+.or{text-align:center;color:var(--muted);font-size:13px;margin:4px 0}
+.hdr-actions{display:flex;gap:12px;flex-wrap:wrap}
+input[type=email],input[type=password]{font:inherit;font-size:17px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+#v-noaccess .setup-head p{max-width:40ch;margin-inline:auto}
+a.approvals{display:block;text-align:center;text-decoration:none;border-color:var(--accent);color:var(--accent)}
+.joinunit{background:var(--tile);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;font-weight:700;margin-top:12px}
+.unit{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px;background:var(--surface);margin-bottom:10px}
+.unit.closed{opacity:.7}
+.utop{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ubtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ubtns .primary.sm,.ubtns .ghost.sm{width:auto;padding:8px 12px;font-size:15px}
+.phone{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.phone a.tel{font-family:var(--mono);direction:ltr;font-size:17px;color:var(--accent);font-weight:700;text-decoration:none;border:1px solid var(--accent);border-radius:999px;padding:3px 12px}
+.phone a.tel::before{content:"☎ "}
+.phone input{width:auto;flex:1;min-width:0;font-size:16px;padding:8px 10px}
+.phone .primary.sm,.phone .ghost.sm{width:auto;padding:8px 12px;font-size:15px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.tile:active{transform:none}}
+</style>
+<style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <!-- CONFIG MISSING -->
+  <section id="v-config" hidden>
+    <div class="setup-head"><h1>חסרות הגדרות Firebase</h1>
+    <p class="mini">פתחו את הקובץ index.html והדביקו את פרטי הפרויקט ב-FIREBASE_CONFIG ואת המייל שלכם ב-ADMIN_EMAILS.</p></div>
+  </section>
+
+  <!-- LOGIN -->
+  <section id="v-login" hidden>
+    <div class="setup-head">
+      <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M14 30c0-11 8-18 18-18s18 7 18 18" fill="var(--accent)" fill-opacity=".25"/><path d="M10 30h44"/><path d="M20 30v6c0 7 5 12 12 12s12-5 12-12v-6"/><path d="M12 60c2-7 8-11 20-11s18 4 20 11"/></svg>
+      <h1>מעקב כוח אדם</h1>
+      <p class="mini" id="loginSub">התחברו כדי להמשיך</p>
+    </div>
+    <div class="panel">
+      <button class="primary" type="button" id="googleBtn">התחברות עם Google</button>
+      <p class="err" id="lErr" hidden></p>
+    </div>
+  </section>
+
+  <!-- NO ACCESS -->
+  <section id="v-noaccess" hidden>
+    <div class="setup-head">
+      <h1 id="naTitle">צריך קישור הצטרפות</h1>
+      <p id="naText">כדי להיכנס, פתחו את קישור ההצטרפות של המסגרת שלכם. את הקישור מקבלים מהמפקד או ממנהל המערכת.</p>
+    </div>
+    <form class="panel" id="keyForm">
+      <strong>יש לך סיסמת מפתח?</strong>
+      <label class="f">סיסמת מפתח<input type="password" id="keyIn" class="ltr" required autocomplete="off"></label>
+      <p class="err" id="keyErr" hidden></p>
+      <button class="ghost" type="submit">כניסה עם סיסמת מפתח</button>
+    </form>
+    <button class="ghost" type="button" id="naOut" style="width:100%">התנתקות</button>
+  </section>
+
+  <!-- SETUP / JOIN -->
+  <section id="v-setup" hidden>
+    <div class="bar"><button class="back" type="button" id="setupBack">→ חזרה להתחברות</button></div>
+    <div class="setup-head">
+      <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M14 30c0-11 8-18 18-18s18 7 18 18" fill="var(--accent)" fill-opacity=".25"/><path d="M10 30h44"/><path d="M20 30v6c0 7 5 12 12 12s12-5 12-12v-6"/><path d="M12 60c2-7 8-11 20-11s18 4 20 11"/></svg>
+      <h1 id="setupTitle">הצטרפות</h1>
+    </div>
+    <div class="joinunit" id="joinUnit" hidden></div>
+    <form class="add" id="setupForm">
+      <label class="f">שם מלא<input type="text" id="uName" maxlength="40" required autocomplete="name"></label>
+      <label class="f">מספר אישי<input type="tel" id="uPid" class="ltr" inputmode="numeric" maxlength="12" required></label>
+      <label class="f">תפקיד
+        <select id="uTitle" required>
+          <option value="" disabled selected>בחרו תפקיד</option>
+          <option value='מ"כ'>מ"כ</option>
+          <option value="סמל">סמל</option>
+          <option value='מ"מ'>מ"מ</option>
+          <option value='סמ"פ'>סמ"פ</option>
+          <option value='מ"פ'>מ"פ</option>
+          <option value='סמג"ד'>סמג"ד</option>
+          <option value='מג"ד'>מג"ד</option>
+          <option value="כללי">כללי</option>
+        </select>
+      </label>
+      <p class="err" id="uErr" hidden></p>
+      <div class="row2"><button class="primary" type="submit" id="setupBtn">כניסה</button><button class="ghost" type="button" id="setupCancel" hidden>ביטול</button></div>
+    </form>
+  </section>
+
+  <!-- HOME -->
+  <section id="v-home" hidden>
+    <header class="top">
+      <div class="who">
+        <span class="lbl">שם משתמש</span>
+        <div class="name"><span id="meName">…</span><span class="role" id="meRole" hidden></span></div>
+        <div class="mini" id="meUnit"></div>
+        <div class="hdr-actions"><button class="linkbtn" id="editMe" type="button">עריכת פרטים</button><button class="linkbtn" id="logout" type="button">התנתקות</button></div>
+      </div>
+      <div class="pid">
+        <span class="lbl">מספר אישי</span>
+        <div class="num" id="meId">—</div>
+      </div>
+    </header>
+    <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
+    <nav class="tiles">
+      <a class="tile" href="#soldiers">
+        <span class="badge" id="pendBadge" hidden></span>
+        <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M14 30c0-11 8-18 18-18s18 7 18 18" fill="var(--accent)" fill-opacity=".25"/>
+          <path d="M10 30h44"/><path d="M20 30v6c0 7 5 12 12 12s12-5 12-12v-6"/>
+          <path d="M12 60c2-7 8-11 20-11s18 4 20 11"/><path d="M27 40h0M37 40h0" stroke-width="4"/>
+        </svg>
+        <span class="t">חיילים</span><span class="c" id="cntS">—</span>
+      </a>
+      <a class="tile" href="#weapons">
+        <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M4 24h40l6-4h10v8H48l-4 4H30l-4 14h-9l3-14H4z" fill="var(--accent)" fill-opacity=".25"/>
+          <path d="M28 32l3 8h5"/><path d="M8 24v-4h6"/>
+        </svg>
+        <span class="t">אמל"ח</span><span class="c" id="cntW">—</span>
+      </a>
+    </nav>
+    <p class="status" id="status">מתחבר…</p>
+  </section>
+
+    <!-- UNITS -->
+  <section id="v-units" hidden>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>מסגרות</h1><span class="count" id="cntU"></span></div>
+    <button class="primary" id="openU" type="button">+ פתיחת מסגרת</button>
+    <form class="add" id="formU" hidden>
+      <span class="mini">ממלאים מלמעלה למטה, עד הרמה של המסגרת. למשל לפלוגה: חטיבה, גדוד ופלוגה, בלי מחלקה וכיתה. מי שנכנס בקישור של מסגרת רואה את כל מה שמתחתיה.</span>
+      <div class="unitf" id="uNew"></div>
+      <p class="err" id="unErr" hidden></p>
+      <div class="row2"><button class="primary" type="submit">פתיחה</button><button class="ghost" type="button" id="cancelU">ביטול</button></div>
+    </form>
+    <div style="height:14px"></div>
+    <div id="listU"></div>
+    <div class="empty" id="emptyU" hidden>עדיין אין מסגרות. פתחו את הראשונה כדי לקבל קישור הצטרפות.</div>
+
+    <form class="panel" id="masterForm" hidden style="margin-top:22px">
+      <strong>סיסמת מפתח</strong>
+      <span class="mini">מי שמזין את הסיסמה הזו יכול לפתוח ולסגור מסגרות ורואה את כל הנתונים. החלפת הסיסמה מבטלת את כל מי שנכנס עם הסיסמה הקודמת.</span>
+      <label class="f">סיסמה חדשה (לפחות 8 תווים)<input type="password" id="masterIn" class="ltr" minlength="8" required autocomplete="new-password"></label>
+      <p class="err" id="masterErr" hidden></p>
+      <button class="ghost" type="submit">שמירת סיסמת מפתח</button>
+    </form>
+  </section>
+
+  <!-- SOLDIERS -->
+  <section id="v-soldiers" hidden>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>חיילים</h1><span class="count" id="cntS2"></span></div>
+    <button class="primary" id="openS" type="button">+ הוספת חייל</button>
+    <form class="add" id="formS" hidden>
+      <div class="photo-pick">
+        <div class="av" id="sPrev"></div>
+        <label class="ghost" for="sPhoto">בחירת תמונה</label>
+        <input type="file" id="sPhoto" accept="image/*" hidden>
+      </div>
+      <label class="f">שם מלא<input type="text" id="sName" maxlength="50" required></label>
+      <label class="f">מספר אישי<input type="tel" id="sNum" class="ltr" inputmode="numeric" maxlength="12" required></label>
+      <label class="f">מספר טלפון (לא חובה)<input type="tel" id="sPhone" class="ltr" inputmode="tel" maxlength="20" placeholder="050-0000000" autocomplete="off"></label>
+      <label class="f">מסגרת<select id="sUnitSel" required></select></label>
+      <p class="err" id="sErr" hidden></p>
+      <div class="row2"><button class="primary" type="submit">שמירה</button><button class="ghost" type="button" id="cancelS">ביטול</button></div>
+    </form>
+    <div style="height:14px"></div>
+    <input type="text" id="qS" class="search" placeholder="חיפוש לפי שם או מספר אישי">
+    <ul class="list" id="listS"></ul>
+    <div class="empty" id="emptyS" hidden>עדיין אין חיילים ברשימה. לחצו "הוספת חייל" כדי להתחיל.</div>
+  </section>
+
+  <!-- SOLDIER DETAIL -->
+  <section id="v-soldier" hidden>
+    <div class="bar"><button class="back" type="button" data-go="soldiers">→ חיילים</button><span style="margin-inline-start:auto" id="dDel"></span></div>
+    <div class="sh">
+      <div class="av lg" id="dAv"></div>
+      <div class="info"><div class="n1" id="dName"></div><div class="n2" id="dNum"></div><div id="dPhone" class="phone"></div></div>
+    </div>
+    <div class="tiles three" role="tablist">
+      <button class="tile" type="button" data-tab="tzalam" aria-pressed="true">
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><path d="M4 24h40l6-4h10v8H48l-4 4H30l-4 14h-9l3-14H4z" fill="var(--accent)" fill-opacity=".25"/></svg>
+        <span class="t">צל"מ</span><span class="c" id="cntT">0</span>
+      </button>
+      <button class="tile" type="button" data-tab="cal" aria-pressed="false">
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><rect x="8" y="12" width="48" height="44" rx="5" fill="var(--accent)" fill-opacity=".25"/><path d="M8 24h48M20 6v12M44 6v12"/><path d="M18 34h6M30 34h6M42 34h4M18 44h6M30 44h6" stroke-linecap="round"/></svg>
+        <span class="t">לוח שנה</span><span class="c" id="cntE">0</span>
+      </button>
+      <button class="tile" type="button" data-tab="req" aria-pressed="false">
+        <span class="badge" id="dPend" hidden></span>
+        <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M14 6h26l12 12v40H14z" fill="var(--accent)" fill-opacity=".25"/><path d="M40 6v12h12M22 30h20M22 40h20M22 50h12"/></svg>
+        <span class="t">בקש"צים</span><span class="c" id="cntR">0</span>
+      </button>
+    </div>
+
+    <!-- tzalam -->
+    <div id="t-tzalam">
+      <h2 class="sec">אמל"ח חתום</h2>
+      <div class="inline">
+        <select id="assignSel" aria-label="נשק להחתמה"></select>
+        <button class="ghost" type="button" id="assignBtn">החתמה</button>
+      </div>
+      <button class="primary" type="button" id="openTW" style="margin-top:10px">+ הוספת נשק חדש לחייל</button>
+      <form class="add" id="formTW" hidden>
+        <label class="f">סוג נשק<input type="text" id="twType" list="wTypes" maxlength="40" required></label>
+        <label class="f">מספר נשק<input type="text" id="twNum" class="ltr" maxlength="20" required></label>
+        <div class="row2"><button class="primary" type="submit">הוספה והחתמה</button><button class="ghost" type="button" id="cancelTW">ביטול</button></div>
+      </form>
+      <p class="err" id="tErr" hidden></p>
+      <ul class="list" id="listT" style="margin-top:8px"></ul>
+      <div class="empty" id="emptyT" hidden>החייל לא חתום על אמל"ח.</div>
+    </div>
+
+    <!-- calendar -->
+    <div id="t-cal" hidden>
+      <div class="cal-head">
+        <button class="nav" type="button" id="prevM" aria-label="חודש קודם">›</button>
+        <div class="mid"><div class="g" id="calG"></div><div class="h" id="calH"></div></div>
+        <button class="nav" type="button" id="nextM" aria-label="חודש הבא">‹</button>
+      </div>
+      <div class="grid" id="calGrid"></div>
+      <div class="mini" style="margin-top:6px"><span class="dot" style="display:inline-block"></span> אירוע &nbsp; <span class="dot r" style="display:inline-block"></span> בקש"צ</div>
+      <div class="dayhead" id="dayHead"></div>
+      <ul class="list" id="dayList"></ul>
+      <form class="add" id="formE">
+        <label class="f">אירוע חדש ביום הזה<input type="text" id="eTitle" maxlength="80" required placeholder="למשל: תור לרופא, שמירה, קורס"></label>
+        <label class="f">שעה (לא חובה)<input type="time" id="eTime"></label>
+        <p class="err" id="eErr" hidden></p>
+        <button class="primary" type="submit">הוספת אירוע</button>
+      </form>
+    </div>
+
+    <!-- requests -->
+    <div id="t-req" hidden>
+      <button class="primary" id="openR" type="button" style="margin-top:14px">+ בקש"צ חדש</button>
+      <form class="add" id="formR" hidden>
+        <div class="row2">
+          <label class="f">מתאריך<input type="date" id="rFrom" required></label>
+          <label class="f">עד תאריך<input type="date" id="rTo"></label>
+        </div>
+        <label class="f">סיבת הבקשה<input type="text" id="rReason" maxlength="100" required></label>
+        <label class="f">רמת חשיבות
+          <select id="rImp"><option value="1">נמוכה</option><option value="2" selected>בינונית</option><option value="3">גבוהה</option><option value="4">דחופה</option></select>
+        </label>
+        <label class="f">הערות<textarea id="rNotes" maxlength="500"></textarea></label>
+        <p class="err" id="rErr" hidden></p>
+        <div class="row2"><button class="primary" type="submit">שליחת בקשה</button><button class="ghost" type="button" id="cancelR">ביטול</button></div>
+      </form>
+      <div id="listR" style="margin-top:14px"></div>
+      <div class="empty" id="emptyR" hidden>אין בקש"צים לחייל הזה.</div>
+    </div>
+  </section>
+
+  <!-- WEAPONS -->
+  <section id="v-weapons" hidden>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>אמל"ח</h1><span class="count" id="cntW2"></span></div>
+    <button class="primary" id="openW" type="button">+ הוספת נשק</button>
+    <form class="add" id="formW" hidden>
+      <label class="f">סוג נשק<input type="text" id="wType" list="wTypes" maxlength="40" required></label>
+      <datalist id="wTypes"><option value="M4"><option value="M16"><option value="תבור"><option value="מיקרו תבור"><option value="נגב"><option value="מאג"><option value="אקדח"><option value="רימון"><option value="משקפת לילה"></datalist>
+      <label class="f">מספר נשק<input type="text" id="wNum" class="ltr" maxlength="20" required></label>
+      <label class="f">שייך ל<select id="wOwner"></select></label>
+      <label class="f" id="wUnitWrap">מסגרת<select id="wUnit"></select></label>
+      <p class="err" id="wErr" hidden></p>
+      <div class="row2"><button class="primary" type="submit" id="wSave">שמירה</button><button class="ghost" type="button" id="cancelW">ביטול</button></div>
+    </form>
+    <div style="height:14px"></div>
+    <input type="text" id="qW" class="search" placeholder="חיפוש לפי סוג, מספר או שם חייל">
+    <ul class="list" id="listW"></ul>
+    <div class="empty" id="emptyW" hidden>עדיין לא נרשם אמל"ח. לחצו "הוספת נשק" כדי להתחיל.</div>
+  </section>
+</div>
+
+<p class="status" id="bootStatus">טוען…</p>
+<script>
+/* ====== הגדרות: הדביקו כאן את פרטי הפרויקט שלכם מ-Firebase ====== */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyC-g0AaFEYJQrqTbq11R5kl0-yEKPdSi8c",
+  authDomain: "soldier-management-76628.firebaseapp.com",
+  projectId: "soldier-management-76628",
+  storageBucket: "soldier-management-76628.firebasestorage.app",
+  messagingSenderId: "621410368808",
+  appId: "1:621410368808:web:bd299df15b021a6367641d"
+};
+/* המייל של מנהל המערכת (חשבון Google). חייב להיות זהה לרשימה בקובץ firestore.rules */
+const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
+/* ================================================================ */
+
+(function(){
+  const $=id=>document.getElementById(id);
+  const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;};
+  let fs=null,auth=null,authUser=null,uid=null,isAdmin=false,isMaster=false,ready=false,editingMe=false;
+  let soldiers=[],weapons=[],events=[],requests=[],units=[],tokens={},allMembers=[];
+  let me=null,unsubs=[],mgmtUnsubs=[],scopeKey=null,pendingJoin=null;
+  let curSoldier=null,curTab="tzalam",editingW=null;
+  const today=new Date();let calY=today.getFullYear(),calM=today.getMonth(),selDay=key(today);
+  const personSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="9" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>';
+  const gunSvg='<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><path d="M4 24h40l6-4h10v8H48l-4 4H30l-4 14h-9l3-14H4z"/></svg>';
+  const IMP={1:"נמוכה",2:"בינונית",3:"גבוהה",4:"דחופה"};
+  const ST={pending:"ממתין לאישור",approved:"אושר",rejected:"נדחה"};
+
+  /* ---------- units & scope (mirrors firestore.rules) ---------- */
+  const LV=["b","g","p","m","k"];
+  const LVN={b:"חטיבה",g:"גדוד",p:"פלוגה",m:"מחלקה",k:"כיתה"};
+  const normU=v=>String(v||"").replace(/["'׳״`]/g,"").replace(/\s+/g," ").trim();
+  const mgr=()=>isAdmin||isMaster;
+  const unitById=id=>units.find(u=>u.id===id);
+  const myUnit=()=>me&&me.unitId?unitById(me.unitId):null;
+  const memberOk=()=>{const u=myUnit();return !!u&&u.open===true;};
+  const myLen=()=>mgr()?0:(memberOk()?myUnit().depth:-1);
+  function sameUpTo(u,base,n){for(let i=0;i<n;i++){const k=LV[i];if(!u||!base||(u[k]||"")!==(base[k]||""))return false;}return true;}
+  const inScope=u=>{const n=myLen();return n===0||(n>0&&sameUpTo(u,myUnit().path,n));};
+  function unitText(u,upTo){if(!u)return "ללא מסגרת";const n=upTo==null?5:upTo;return LV.slice(0,n).filter(k=>u[k]).map(k=>LVN[k]+" "+u[k]).join(" · ");}
+  const unitLabel=u=>u?unitText(u.path,u.depth):"";
+  const canDecideReq=u=>mgr()||(memberOk()&&myUnit().depth<=4&&inScope(u));
+  const pathKey=p=>LV.map(k=>p[k]||"").join("\u0001");
+
+  /* ---------- dates ---------- */
+  function key(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+  function parseKey(k){const [y,m,d]=k.split("-").map(Number);return new Date(y,m-1,d);}
+  const GM=["ינואר","פברואר","מרץ","אפריל","מאי","יוני","יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
+  const DOW=["א","ב","ג","ד","ה","ו","ש"],DOWL=["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+  let hParts,hMonth;
+  try{hParts=new Intl.DateTimeFormat("en-u-ca-hebrew",{day:"numeric",year:"numeric"});hMonth=new Intl.DateTimeFormat("he-u-ca-hebrew",{month:"long"});}catch(_){}
+  function gem(n){
+    const L=[[400,"ת"],[300,"ש"],[200,"ר"],[100,"ק"],[90,"צ"],[80,"פ"],[70,"ע"],[60,"ס"],[50,"נ"],[40,"מ"],[30,"ל"],[20,"כ"],[10,"י"],[9,"ט"],[8,"ח"],[7,"ז"],[6,"ו"],[5,"ה"],[4,"ד"],[3,"ג"],[2,"ב"],[1,"א"]];
+    let s="";for(const [v,c] of L){while(n>=v){s+=c;n-=v;}}
+    s=s.replace(/יה$/,"טו").replace(/יו$/,"טז");
+    return s.length<2?s+"׳":s.slice(0,-1)+"״"+s.slice(-1);
+  }
+  function heb(d){if(!hParts)return null;const p=hParts.formatToParts(d);const g=t=>parseInt((p.find(x=>x.type===t)||{}).value,10);return {day:g("day"),year:g("year"),month:hMonth.format(d)};}
+  function hebFull(d){const h=heb(d);return h?gem(h.day)+" ב"+h.month+" "+gem(h.year%1000):"";}
+  function fmtG(k){const d=parseKey(k);return d.getDate()+"."+(d.getMonth()+1)+"."+d.getFullYear();}
+
+  /* ---------- helpers ---------- */
+  function avatar(src,cls){if(src){const im=el("img","av "+(cls||""));im.src=src;im.alt="";return im;}const d=el("div","av "+(cls||""));d.innerHTML=personSvg;return d;}
+  function delBtn(onDel,label){
+    label=label||"מחיקה";const b=el("button","del",label);b.type="button";
+    let t;b.onclick=ev=>{ev.stopPropagation();
+      if(b.classList.contains("armed")){clearTimeout(t);onDel();return;}
+      b.classList.add("armed");b.textContent="לאשר?";t=setTimeout(()=>{b.classList.remove("armed");b.textContent=label;},3000);};
+    return b;
+  }
+  function showErr(id,msg){$(id).textContent=msg||"";$(id).hidden=!msg;}
+  const rnd=n=>{const a=new Uint8Array(n);crypto.getRandomValues(a);return Array.from(a,b=>b.toString(16).padStart(2,"0")).join("");};
+  const newId=()=>Date.now().toString(36)+rnd(3);
+  async function sha256(t){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return Array.from(new Uint8Array(b),x=>x.toString(16).padStart(2,"0")).join("");}
+  const vis=arr=>arr.filter(x=>inScope(x.unit));
+  const soldierById=id=>soldiers.find(s=>s.id===id&&inScope(s.unit));
+  const errMsg=e=>e&&e.code==="permission-denied"?"אין לך הרשאה לפעולה הזו במסגרת הזו.":"השמירה נכשלה. בדקו חיבור לאינטרנט ונסו שוב.";
+  async function write(path,data,errId){try{await fs.doc(path).set(data);if(errId)showErr(errId,"");return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));return false;}}
+  async function patch(path,data,errId){try{await fs.doc(path).update(data);if(errId)showErr(errId,"");return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));return false;}}
+  async function remove(path){try{await fs.doc(path).delete();}catch(e){console.warn(path,e);}}
+  function unitOptions(sel,val){
+    const prev=val!=null?val:sel.value;sel.textContent="";
+    const list=units.filter(u=>u.open&&inScope(u.path)).sort((a,b)=>pathKey(a.path).localeCompare(pathKey(b.path),"he"));
+    list.forEach(u=>{const o=el("option",null,unitLabel(u));o.value=u.id;sel.append(o);});
+    if(list.some(u=>u.id===prev))sel.value=prev;else if(me&&list.some(u=>u.id===me.unitId))sel.value=me.unitId;
+    return list.length;
+  }
+  function pathOf(unitId){const u=unitById(unitId);return u?Object.assign({},u.path):null;}
+
+  /* ---------- screens ---------- */
+  const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier"];
+  function show(ids){ALL.forEach(i=>$(i).hidden=!ids.includes(i));$("bootStatus").hidden=true;}
+  function route(){
+    if(!ready)return;
+    if(!authUser){
+      $("loginSub").textContent=pendingJoin?"הוזמנת להצטרף. התחברו כדי להמשיך.":"התחברו כדי להמשיך";
+      return show(["v-login"]);
+    }
+    if(pendingJoin&&!(me&&me.unitId===pendingJoin.id))return openSetup("join");
+    if(editingMe)return show(["v-setup"]);
+    if(mgr()&&!me)return openSetup("profile");
+    if(!mgr()){
+      if(!me||!me.unitId){$("naTitle").textContent="צריך קישור הצטרפות";$("naText").textContent="כדי להיכנס, פתחו את קישור ההצטרפות של המסגרת שלכם. את הקישור מקבלים מהמפקד או ממנהל המערכת.";return show(["v-noaccess"]);}
+      if(!memberOk()){$("naTitle").textContent="המסגרת סגורה";$("naText").textContent="המסגרת שלך ("+(unitLabel(myUnit())||"לא נמצאה")+") סגורה כרגע. פנו למנהל המערכת, או פתחו קישור הצטרפות של מסגרת אחרת.";return show(["v-noaccess"]);}
+    }
+    const h=location.hash.replace("#","");
+    const sm=h.match(/^soldier-([A-Za-z0-9]+)$/);
+    if(sm){if(curSoldier!==sm[1]){curSoldier=sm[1];setTab("tzalam");}show(["v-soldier"]);renderDetail();return;}
+    curSoldier=null;
+    if(h==="units"&&mgr()){show(["v-units"]);renderUnits();return;}
+    show([h==="soldiers"?"v-soldiers":h==="weapons"?"v-weapons":"v-home"]);
+  }
+  addEventListener("hashchange",()=>{readJoin();route();window.scrollTo(0,0);});
+  document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{location.hash=b.dataset.go;});
+
+  /* ---------- join links ---------- */
+  function readJoin(){
+    const m=location.hash.match(/^#join=([A-Za-z0-9]+)\.([a-f0-9]+)$/);
+    if(m){pendingJoin={id:m[1],token:m[2]};try{localStorage.setItem("pendingJoin",JSON.stringify(pendingJoin));}catch(_){}
+      history.replaceState(null,"",location.pathname+location.search);}
+    else if(!pendingJoin){try{const v=JSON.parse(localStorage.getItem("pendingJoin")||"null");if(v&&v.id&&v.token)pendingJoin=v;}catch(_){}}
+  }
+  function clearJoin(){pendingJoin=null;try{localStorage.removeItem("pendingJoin");}catch(_){}}
+  const joinLink=(u,tok)=>location.origin+location.pathname+"#join="+u.id+"."+tok;
+  readJoin();
+
+  /* ---------- login ---------- */
+  const authErr=e=>({"auth/invalid-credential":"מייל או סיסמה לא נכונים.","auth/wrong-password":"מייל או סיסמה לא נכונים.","auth/user-not-found":"לא נמצא משתמש עם המייל הזה.","auth/email-already-in-use":"המייל הזה כבר רשום. נסו להיכנס.","auth/weak-password":"הסיסמה צריכה להיות לפחות 6 תווים.","auth/invalid-email":"כתובת המייל לא תקינה.","auth/popup-closed-by-user":"","auth/unauthorized-domain":"הכתובת של האתר לא מאושרת ב-Firebase. הוסיפו אותה ב-Authentication › Settings › Authorized domains."}[e&&e.code]??"ההתחברות נכשלה. נסו שוב.");
+  $("googleBtn").onclick=async()=>{
+    const p=new firebase.auth.GoogleAuthProvider();
+    try{await auth.signInWithPopup(p);}
+    catch(e){if(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment"){try{await auth.signInWithRedirect(p);}catch(e2){showErr("lErr",authErr(e2));}}else showErr("lErr",authErr(e));}
+  };
+  const logout=()=>auth.signOut();
+  $("logout").onclick=logout;$("naOut").onclick=logout;
+
+  /* ---------- master key ---------- */
+  async function probeMaster(){
+    if(isAdmin){isMaster=true;return;}
+    try{await fs.collection("unitTokens").limit(1).get();isMaster=true;}catch(_){isMaster=false;}
+  }
+  $("keyForm").onsubmit=async e=>{
+    e.preventDefault();
+    const k=await sha256($("keyIn").value);
+    try{await fs.doc("masters/"+uid).set({key:k,at:Date.now()});}
+    catch(err){return showErr("keyErr","הסיסמה שגויה.");}
+    await probeMaster();
+    if(!isMaster)return showErr("keyErr","הסיסמה שגויה.");
+    $("keyIn").value="";showErr("keyErr","");startMgmt();startData();renderAll();route();
+  };
+  $("masterForm").onsubmit=async e=>{
+    e.preventDefault();
+    const pw=$("masterIn").value;if(pw.length<8)return showErr("masterErr","לפחות 8 תווים.");
+    const k=await sha256(pw);
+    if(await write("config/master",{key:k,at:Date.now()},"masterErr")){$("masterIn").value="";showErr("masterErr","נשמר. מי שנכנס עם סיסמה קודמת צריך להזין את החדשה.");}
+  };
+
+  /* ---------- setup / join ---------- */
+  let setupMode="join";
+  function openSetup(mode){
+    setupMode=mode;
+    const ju=$("joinUnit");
+    if(mode==="join"){
+      const u=unitById(pendingJoin.id);
+      $("setupTitle").textContent="הצטרפות למסגרת";
+      ju.hidden=false;ju.textContent=u?unitLabel(u):"המסגרת לא נמצאה";
+      if(u&&!u.open)ju.textContent+=" (סגורה)";
+      $("setupBtn").textContent="הצטרפות";
+      $("setupCancel").hidden=!me;
+    }else{
+      $("setupTitle").textContent=me?"עריכת פרטים":"פרטים אישיים";
+      ju.hidden=!(me&&me.unitId);ju.textContent=me&&me.unitId?unitLabel(myUnit()):"";
+      $("setupBtn").textContent="שמירה";$("setupCancel").hidden=!me;
+    }
+    if(!$("uName").value)$("uName").value=(me&&me.name)||(authUser&&authUser.displayName)||"";
+    if(!$("uPid").value)$("uPid").value=(me&&me.pid)||"";
+    if(!$("uTitle").value)$("uTitle").value=(me&&me.title)||"";
+    show(["v-setup"]);
+  }
+  $("editMe").onclick=()=>{editingMe=true;$("uName").value="";$("uPid").value="";$("uTitle").value="";openSetup("profile");};
+  $("setupBack").onclick=()=>{editingMe=false;auth.signOut();};
+  $("setupCancel").onclick=()=>{editingMe=false;if(setupMode==="join")clearJoin();route();};
+  $("setupForm").onsubmit=async e=>{
+    e.preventDefault();
+    const base={name:$("uName").value.trim(),pid:$("uPid").value.trim(),title:$("uTitle").value.trim(),email:authUser.email||"",at:Date.now()};
+    const btn=e.submitter;if(btn)btn.disabled=true;
+    let ok;
+    if(setupMode==="join"){
+      const u=unitById(pendingJoin.id);
+      if(!u){if(btn)btn.disabled=false;return showErr("uErr","הקישור לא תקין או שהמסגרת נמחקה. בקשו קישור חדש.");}
+      if(!u.open){if(btn)btn.disabled=false;return showErr("uErr","המסגרת הזו סגורה כרגע.");}
+      ok=await write("members/"+uid,Object.assign(base,{unitId:pendingJoin.id,token:pendingJoin.token}),"uErr");
+      if(!ok)showErr("uErr","הקישור לא תקף. ייתכן שהוחלף בקישור חדש. בקשו מהמפקד קישור עדכני.");
+      else clearJoin();
+    }else{
+      ok=me?await patch("members/"+uid,{name:base.name,pid:base.pid,title:base.title},"uErr")
+           :await write("members/"+uid,Object.assign(base,{unitId:"",token:""}),"uErr");
+    }
+    if(btn)btn.disabled=false;
+    if(ok){editingMe=false;route();}
+  };
+
+  /* ---------- home ---------- */
+  function renderMe(){
+    if(!me&&!mgr())return;
+    $("meName").textContent=(me&&me.name)||"משתמש";$("meId").textContent=(me&&me.pid)||"—";
+    const badge=isAdmin?"מנהל":isMaster?"מפתח":(me&&me.title)||"";
+    $("meRole").hidden=!badge;$("meRole").textContent=badge;
+    $("meUnit").textContent=memberOk()?unitLabel(myUnit()):(mgr()?"גישה לכל המסגרות":"");
+    $("openUnits").hidden=!mgr();
+  }
+  function counts(){
+    const S=vis(soldiers),W=vis(weapons);
+    $("cntS").textContent=S.length+" חיילים";$("cntS2").textContent=S.length||"";
+    $("cntW").textContent=W.length+" פריטים";$("cntW2").textContent=W.length||"";
+    const pend=vis(requests).filter(r=>r.status==="pending"&&canDecideReq(r.unit)).length;
+    $("pendBadge").textContent=pend;$("pendBadge").hidden=!pend;
+  }
+
+  /* ---------- units management ---------- */
+  function newUnitFields(){
+    const box=$("uNew");box.textContent="";
+    LV.forEach(k=>{
+      const lab=el("label","f",LVN[k]);const inp=el("input");inp.type="text";inp.id="nu-"+k;inp.maxLength=30;inp.setAttribute("list","nu-"+k+"-dl");
+      const dl=el("datalist");dl.id="nu-"+k+"-dl";
+      [...new Set(units.map(u=>u.path[k]).filter(Boolean))].sort().forEach(v=>{const o=el("option");o.value=v;dl.append(o);});
+      lab.append(inp,dl);box.append(lab);
+    });
+  }
+  $("openU").onclick=()=>{newUnitFields();$("formU").hidden=false;$("openU").hidden=true;$("nu-b").focus();};
+  $("cancelU").onclick=()=>{$("formU").hidden=true;$("openU").hidden=false;showErr("unErr","");};
+  $("formU").onsubmit=async e=>{
+    e.preventDefault();
+    const path={};LV.forEach(k=>path[k]=normU($("nu-"+k).value));
+    let depth=0;while(depth<5&&path[LV[depth]])depth++;
+    if(!depth)return showErr("unErr","מלאו לפחות חטיבה.");
+    if(LV.slice(depth).some(k=>path[k]))return showErr("unErr","יש למלא ברצף מלמעלה, בלי לדלג על רמה.");
+    if(units.some(u=>pathKey(u.path)===pathKey(path)))return showErr("unErr","המסגרת הזו כבר קיימת.");
+    const id=newId(),tok=rnd(16);
+    const btn=e.submitter;if(btn)btn.disabled=true;
+    const ok=await write("unitTokens/"+id,{token:tok},"unErr")&&await write("units/"+id,{path,depth,open:true,by:uid,at:Date.now()},"unErr");
+    if(btn)btn.disabled=false;
+    if(ok){$("formU").hidden=true;$("openU").hidden=false;showErr("unErr","");}
+  };
+  async function shareLink(u,tok){
+    const link=joinLink(u,tok),text="הצטרפות ל"+unitLabel(u)+" באפליקציית כוח אדם:\n"+link;
+    if(navigator.share){try{await navigator.share({title:"הצטרפות למסגרת",text});return;}catch(e){if(e&&e.name==="AbortError")return;}}
+    window.open("https://wa.me/?text="+encodeURIComponent(text),"_blank");
+  }
+  async function copyLink(u,tok,btn){
+    const link=joinLink(u,tok);
+    try{await navigator.clipboard.writeText(link);btn.textContent="הועתק ✓";}
+    catch(_){window.prompt("העתיקו את הקישור:",link);}
+    setTimeout(()=>{btn.textContent="העתקה";},2000);
+  }
+  async function setOpen(u,open){
+    const ids=[u.id];
+    if(!open)units.forEach(x=>{if(x.id!==u.id&&x.depth>u.depth&&sameUpTo(x.path,u.path,u.depth)&&x.open)ids.push(x.id);});
+    const b=fs.batch();ids.forEach(id=>b.update(fs.doc("units/"+id),{open}));
+    try{await b.commit();}catch(e){console.warn(e);}
+  }
+  const openMembers=new Set();
+  function renderUnits(){
+    if(!mgr())return;
+    $("masterForm").hidden=!isAdmin;
+    const box=$("listU");box.textContent="";
+    const list=units.slice().sort((a,b)=>pathKey(a.path).localeCompare(pathKey(b.path),"he"));
+    $("cntU").textContent=list.length||"";$("emptyU").hidden=list.length>0;
+    list.forEach(u=>{
+      const c=el("div","unit"+(u.open?"":" closed"));c.style.marginInlineStart=Math.min(u.depth-1,4)*12+"px";
+      const top=el("div","utop");
+      const nm=el("div","info");nm.append(el("div","n1",LVN[LV[u.depth-1]]+" "+u.path[LV[u.depth-1]]));
+      if(u.depth>1)nm.append(el("div","n3",unitText(u.path,u.depth-1)));
+      top.append(nm,el("span","pill "+(u.open?"st-approved":"st-rejected"),u.open?"פתוחה":"סגורה"));
+      c.append(top);
+      const mem=allMembers.filter(m=>m.unitId===u.id);
+      const tok=tokens[u.id];
+      const row=el("div","ubtns");
+      if(u.open&&tok){
+        const sh=el("button","primary sm","שליחת קישור");sh.type="button";sh.onclick=()=>shareLink(u,tok);
+        const cp=el("button","ghost sm","העתקה");cp.type="button";cp.onclick=()=>copyLink(u,tok,cp);
+        row.append(sh,cp);
+      }
+      const tg=el("button","ghost sm",u.open?"סגירה":"פתיחה");tg.type="button";tg.onclick=()=>setOpen(u,!u.open);row.append(tg);
+      c.append(row);
+      const row2=el("div","ubtns");
+      const mb=el("button","linkbtn",(openMembers.has(u.id)?"הסתרת ":"")+mem.length+" משתמשים");mb.type="button";
+      mb.onclick=()=>{openMembers.has(u.id)?openMembers.delete(u.id):openMembers.add(u.id);renderUnits();};
+      row2.append(mb);
+      const rl=delBtn(async()=>{await write("unitTokens/"+u.id,{token:rnd(16)});},"קישור חדש");rl.title="הקישור הקודם יפסיק לעבוד. מי שכבר הצטרף נשאר.";row2.append(rl);
+      if(!mem.length)row2.append(delBtn(async()=>{await remove("units/"+u.id);await remove("unitTokens/"+u.id);},"מחיקה"));
+      c.append(row2);
+      if(openMembers.has(u.id)){
+        const ul=el("ul","list");
+        mem.forEach(m=>{const li=el("li");const info=el("div","info");
+          info.append(el("div","n1",(m.name||"ללא שם")+(m.title?" · "+m.title:"")),el("div","n2",m.pid||""),el("div","n3",m.email||""));
+          li.append(info,delBtn(()=>remove("members/"+m.id),"הסרה"));ul.append(li);});
+        if(!mem.length)ul.append(el("li","mini","אין משתמשים במסגרת."));
+        c.append(ul);
+      }
+      box.append(c);
+    });
+  }
+
+  /* ---------- soldiers ---------- */
+  function renderS(){
+    const q=$("qS").value.trim().toLowerCase(),ul=$("listS");ul.textContent="";
+    const S=vis(soldiers),len=myLen();
+    S.filter(s=>!q||(s.name||"").toLowerCase().includes(q)||(s.num||"").includes(q)).forEach(s=>{
+      const li=el("li","tap");li.onclick=()=>{location.hash="soldier-"+s.id;};
+      const info=el("div","info");info.append(el("div","n1",s.name),el("div","n2",s.num));
+      const W=vis(weapons).filter(w=>w.owner===s.id).length,P=vis(requests).filter(r=>r.soldierId===s.id&&r.status==="pending").length;
+      const meta=[];if(len<5&&s.unit){const t=LV.slice(Math.max(len,0)).filter(k=>s.unit[k]).map(k=>LVN[k]+" "+s.unit[k]).join(" · ");if(t)meta.push(t);}
+      if(W)meta.push(W+' אמל"ח');if(P)meta.push(P+" בקשות ממתינות");
+      if(meta.length)info.append(el("div","n3",meta.join(" · ")));
+      li.append(avatar(s.photo,"sm"),info,el("span","mini","‹"));ul.append(li);
+    });
+    $("emptyS").hidden=S.length>0;counts();
+  }
+  $("qS").oninput=renderS;
+  let photoData="";
+  $("sPhoto").onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const img=new Image(),url=URL.createObjectURL(f);
+    img.onload=()=>{const s=240,c=document.createElement("canvas");c.width=c.height=s;const m=Math.min(img.width,img.height);
+      c.getContext("2d").drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,s,s);
+      photoData=c.toDataURL("image/jpeg",0.75);URL.revokeObjectURL(url);
+      const p=$("sPrev");p.innerHTML="";p.style.backgroundImage="url("+photoData+")";p.style.backgroundSize="cover";};
+    img.onerror=()=>showErr("sErr","לא ניתן לקרוא את הקובץ. נסו תמונה אחרת.");
+    img.src=url;
+  };
+  function resetS(){$("formS").reset();photoData="";const p=$("sPrev");p.style.backgroundImage="";p.innerHTML=personSvg;showErr("sErr","");$("formS").hidden=true;$("openS").hidden=false;}
+  resetS();
+  $("openS").onclick=()=>{
+    if(!unitOptions($("sUnitSel")))return showErr("sErr",mgr()?"אין מסגרת פתוחה. פתחו מסגרת במסך ניהול מסגרות.":"אין מסגרת פתוחה.");
+    $("formS").hidden=false;$("openS").hidden=true;$("sName").focus();
+  };
+  $("cancelS").onclick=resetS;
+  $("formS").onsubmit=async e=>{
+    e.preventDefault();
+    const name=$("sName").value.trim(),num=$("sNum").value.trim(),unit=pathOf($("sUnitSel").value);
+    if(!unit||!inScope(unit))return showErr("sErr","בחרו מסגרת מהרשימה.");
+    if(soldiers.some(s=>s.num===num))return showErr("sErr","כבר קיים חייל עם המספר האישי הזה.");
+    const btn=e.submitter;if(btn)btn.disabled=true;
+    const phone=$("sPhone").value.trim();
+    if(await write("soldiers/"+newId(),{name,num,phone,photo:photoData,unit,addedBy:uid,at:Date.now()},"sErr"))resetS();
+    if(btn)btn.disabled=false;
+  };
+
+  /* ---------- soldier detail ---------- */
+  function setTab(t){
+    curTab=t;document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.tab===t)));
+    $("t-tzalam").hidden=t!=="tzalam";$("t-cal").hidden=t!=="cal";$("t-req").hidden=t!=="req";
+  }
+  document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{setTab(b.dataset.tab);if(b.dataset.tab==="cal")renderCal();});
+  function renderDetail(){
+    if(!curSoldier)return;
+    const s=soldierById(curSoldier);
+    if(!s){$("dName").textContent="החייל לא נמצא";$("dNum").textContent="";$("dDel").textContent="";["t-tzalam","t-cal","t-req"].forEach(i=>$(i).hidden=true);return;}
+    setTab(curTab);
+    $("dName").textContent=s.name;$("dNum").textContent=s.num+"  ·  "+unitText(s.unit).replace(/ · /g," / ");
+    const av=avatar(s.photo,"lg");av.id="dAv";$("dAv").replaceWith(av);
+    renderPhone(s);
+    const dd=$("dDel");dd.textContent="";dd.append(delBtn(async()=>{
+      for(const w of weapons.filter(w=>w.owner===s.id))await patch("weapons/"+w.id,{owner:""});
+      await remove("soldiers/"+s.id);location.hash="soldiers";
+    },"מחיקת חייל"));
+    const W=vis(weapons),mine=W.filter(w=>w.owner===s.id);
+    $("cntT").textContent=mine.length;
+    const ul=$("listT");ul.textContent="";
+    mine.forEach(w=>{
+      const li=el("li");const ic=el("div","wicon");ic.innerHTML=gunSvg;
+      const info=el("div","info");info.append(el("div","n1",w.type),el("div","n2",w.num));
+      li.append(ic,info,delBtn(()=>patch("weapons/"+w.id,{owner:""},"tErr"),"זיכוי"));ul.append(li);
+    });
+    $("emptyT").hidden=mine.length>0;
+    const sel=$("assignSel"),prev=sel.value;sel.textContent="";
+    const free=W.filter(w=>!w.owner||!soldierById(w.owner));
+    const o0=el("option",null,free.length?"בחרו נשק פנוי להחתמה":'אין אמל"ח פנוי');o0.value="";sel.append(o0);
+    free.forEach(w=>{const o=el("option",null,w.type+" · "+w.num);o.value=w.id;sel.append(o);});
+    sel.value=free.some(w=>w.id===prev)?prev:"";$("assignBtn").disabled=!free.length;
+    const ev=vis(events).filter(x=>x.soldierId===s.id),rq=vis(requests).filter(x=>x.soldierId===s.id);
+    $("cntE").textContent=ev.length;$("cntR").textContent=rq.length;
+    const np=rq.filter(r=>r.status==="pending").length;$("dPend").textContent=np;$("dPend").hidden=!np;
+    if(curTab==="cal")renderCal();
+    renderReqs();
+  }
+  function resetTW(){$("formTW").reset();$("formTW").hidden=true;$("openTW").hidden=false;}
+  $("openTW").onclick=()=>{$("formTW").hidden=false;$("openTW").hidden=true;showErr("tErr","");$("twType").focus();};
+  $("cancelTW").onclick=()=>{resetTW();showErr("tErr","");};
+  $("formTW").onsubmit=async e=>{
+    e.preventDefault();
+    const s=soldierById(curSoldier);if(!s)return;
+    const type=$("twType").value.trim(),num=$("twNum").value.trim();
+    if(weapons.some(w=>w.num===num&&w.type===type))return showErr("tErr","הנשק הזה כבר רשום. אפשר להחתים אותו מהרשימה למעלה.");
+    const btn=e.submitter;if(btn)btn.disabled=true;
+    const ok=await write("weapons/"+newId(),{type,num,owner:curSoldier,unit:s.unit,addedBy:uid,at:Date.now()},"tErr");
+    if(btn)btn.disabled=false;if(ok)resetTW();
+  };
+  let editingPhone=null;
+  const telHref=p=>"tel:"+String(p).replace(/[^\d+]/g,"");
+  function renderPhone(s){
+    const box=$("dPhone");
+    if(editingPhone===s.id&&box.querySelector("input"))return;
+    box.textContent="";
+    if(editingPhone===s.id){
+      const inp=el("input");inp.type="tel";inp.className="ltr";inp.inputMode="tel";inp.maxLength=20;inp.value=s.phone||"";inp.placeholder="050-0000000";
+      const sv=el("button","primary sm","שמירה");sv.type="button";
+      const cn=el("button","ghost sm","ביטול");cn.type="button";
+      sv.onclick=async()=>{sv.disabled=true;await patch("soldiers/"+s.id,{phone:inp.value.trim()});editingPhone=null;renderDetail();};
+      cn.onclick=()=>{editingPhone=null;renderDetail();};
+      const r=el("div","ubtns");r.append(inp,sv,cn);box.append(r);inp.focus();return;
+    }
+    if(s.phone){const a=el("a","tel",s.phone);a.href=telHref(s.phone);box.append(a);}
+    const ed=el("button","linkbtn",s.phone?"עריכה":"+ הוספת טלפון");ed.type="button";ed.onclick=()=>{editingPhone=s.id;renderDetail();};
+    box.append(ed);
+  }
+  $("assignBtn").onclick=async()=>{
+    const id=$("assignSel").value;if(!id)return showErr("tErr","בחרו נשק מהרשימה.");
+    const s=soldierById(curSoldier);if(!s)return;
+    await patch("weapons/"+id,{owner:curSoldier,unit:s.unit},"tErr");
+  };
+
+  /* ---------- calendar ---------- */
+  function reqDays(r){
+    const out=[];if(!r.from)return out;let d=parseKey(r.from);const end=parseKey(r.to&&r.to>=r.from?r.to:r.from);
+    for(let i=0;d<=end&&i<62;i++){out.push(key(d));d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);}return out;
+  }
+  function renderCal(){
+    if(!curSoldier||!soldierById(curSoldier))return;
+    const first=new Date(calY,calM,1),last=new Date(calY,calM+1,0);
+    $("calG").textContent=GM[calM]+" "+calY;
+    const h1=heb(first),h2=heb(last);
+    $("calH").textContent=h1?(h1.month===h2.month?h1.month:h1.month+" – "+h2.month)+" "+gem(h2.year%1000):"";
+    const ev=vis(events).filter(x=>x.soldierId===curSoldier);
+    const rqMap={};vis(requests).filter(r=>r.soldierId===curSoldier&&r.status!=="rejected").forEach(r=>reqDays(r).forEach(k=>rqMap[k]=1));
+    const evMap={};ev.forEach(x=>evMap[x.date]=(evMap[x.date]||0)+1);
+    const g=$("calGrid");g.textContent="";DOW.forEach(d=>g.append(el("div","dow",d)));
+    for(let i=0;i<first.getDay();i++)g.append(el("div","day out"));
+    const tk=key(new Date());
+    for(let d=1;d<=last.getDate();d++){
+      const dt=new Date(calY,calM,d),k=key(dt);
+      const b=el("button","day"+(k===tk?" today":"")+(k===selDay?" sel":""));b.type="button";
+      const h=heb(dt);const top=el("div");top.append(el("span","gd",d));
+      const dots=el("div","dots");for(let i=0;i<Math.min(evMap[k]||0,3);i++)dots.append(el("span","dot"));if(rqMap[k])dots.append(el("span","dot r"));
+      b.append(top,el("div","hd",h?gem(h.day):""),dots);
+      b.setAttribute("aria-label",d+" "+GM[calM]+(h?", "+hebFull(dt):""));
+      b.onclick=()=>{selDay=k;renderCal();};g.append(b);
+    }
+    const sd=parseKey(selDay);
+    $("dayHead").textContent="יום "+DOWL[sd.getDay()]+", "+fmtG(selDay)+(hParts?" · "+hebFull(sd):"");
+    const ul=$("dayList");ul.textContent="";
+    ev.filter(x=>x.date===selDay).sort((a,b)=>(a.time||"").localeCompare(b.time||"")).forEach(x=>{
+      const li=el("li");const info=el("div","info");info.append(el("div","n1",x.title));if(x.time)info.append(el("div","n2",x.time));
+      li.append(info,delBtn(()=>remove("events/"+x.id)));ul.append(li);
+    });
+    vis(requests).filter(r=>r.soldierId===curSoldier&&reqDays(r).includes(selDay)).forEach(r=>{
+      const li=el("li");const info=el("div","info");info.append(el("div","n1",'בקש"צ: '+r.reason));li.append(info,el("span","pill st-"+r.status,ST[r.status]||""));ul.append(li);
+    });
+    if(!ul.children.length)ul.append(el("li","mini","אין אירועים ביום הזה."));
+  }
+  $("prevM").onclick=()=>{calM--;if(calM<0){calM=11;calY--;}renderCal();};
+  $("nextM").onclick=()=>{calM++;if(calM>11){calM=0;calY++;}renderCal();};
+  $("formE").onsubmit=async e=>{
+    e.preventDefault();const s=soldierById(curSoldier);const title=$("eTitle").value.trim();if(!title||!s)return;
+    if(await write("events/"+newId(),{soldierId:curSoldier,unit:s.unit,date:selDay,time:$("eTime").value||"",title,addedBy:uid,at:Date.now()},"eErr"))$("formE").reset();
+  };
+
+  /* ---------- requests ---------- */
+  function renderReqs(){
+    const s=soldierById(curSoldier);if(!s)return;
+    const box=$("listR");box.textContent="";
+    const order={pending:0,approved:1,rejected:2};
+    const rq=vis(requests).filter(r=>r.soldierId===curSoldier).sort((a,b)=>(order[a.status]-order[b.status])||(b.from||"").localeCompare(a.from||""));
+    const canDecide=canDecideReq(s.unit);
+    rq.forEach(r=>{
+      const c=el("div","req");const top=el("div","top");
+      top.append(el("span","when",fmtG(r.from)+(r.to&&r.to!==r.from?" – "+fmtG(r.to):"")),el("span","pill st-"+r.status,ST[r.status]||""));c.append(top);
+      if(hParts)c.append(el("div","mini",hebFull(parseKey(r.from))));
+      c.append(el("div","n1",r.reason));
+      const im=el("div");im.append(el("span","imp imp-"+r.imp,"חשיבות: "+(IMP[r.imp]||"")));c.append(im);
+      if(r.notes)c.append(el("div","notes",r.notes));
+      if(r.status!=="pending"&&r.decidedAt)c.append(el("div","mini",(r.status==="approved"?"אושר":"נדחה")+(r.decidedByName?' ע"י '+r.decidedByName:"")+" · "+fmtG(key(new Date(r.decidedAt)))));
+      if(canDecide){const row=el("div","row2");
+        if(r.status!=="approved"){const a=el("button","approve","אישור");a.type="button";a.onclick=()=>decide(r,"approved");row.append(a);}
+        if(r.status!=="rejected"){const n=el("button","reject","דחייה");n.type="button";n.onclick=()=>decide(r,"rejected");row.append(n);}
+        c.append(row);}
+      const d=el("div");d.style.textAlign="left";d.append(delBtn(()=>remove("requests/"+r.id)));c.append(d);
+      box.append(c);
+    });
+    $("emptyR").hidden=rq.length>0;
+  }
+  async function decide(r,status){if(!canDecideReq(r.unit))return;await patch("requests/"+r.id,{status,decidedBy:uid,decidedByName:((me&&me.name)||"")+((me&&me.title)?" ("+me.title+")":isAdmin?" (מנהל)":""),decidedAt:Date.now()},"rErr");}
+  function resetR(){$("formR").reset();showErr("rErr","");$("formR").hidden=true;$("openR").hidden=false;}
+  $("openR").onclick=()=>{$("formR").hidden=false;$("openR").hidden=true;$("rFrom").value=key(new Date());$("rReason").focus();};
+  $("cancelR").onclick=resetR;
+  $("formR").onsubmit=async e=>{
+    e.preventDefault();const s=soldierById(curSoldier);if(!s)return;
+    const from=$("rFrom").value,to=$("rTo").value||from;
+    if(to<from)return showErr("rErr","תאריך הסיום מוקדם מתאריך ההתחלה.");
+    const btn=e.submitter;if(btn)btn.disabled=true;
+    const ok=await write("requests/"+newId(),{soldierId:curSoldier,unit:s.unit,from,to,reason:$("rReason").value.trim(),imp:Number($("rImp").value),notes:$("rNotes").value.trim(),status:"pending",decidedBy:"",addedBy:uid,at:Date.now()},"rErr");
+    if(btn)btn.disabled=false;if(ok)resetR();
+  };
+
+  /* ---------- weapons ---------- */
+  function fillOwnerSelect(val){
+    const sel=$("wOwner");sel.textContent="";const o0=el("option",null,"לא משויך");o0.value="";sel.append(o0);
+    vis(soldiers).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he")).forEach(s=>{const o=el("option",null,s.name+" · "+s.num);o.value=s.id;sel.append(o);});
+    sel.value=val&&soldierById(val)?val:"";
+    $("wUnitWrap").hidden=!!sel.value;
+  }
+  $("wOwner").onchange=()=>{$("wUnitWrap").hidden=!!$("wOwner").value;};
+  function renderW(){
+    const q=$("qW").value.trim().toLowerCase(),ul=$("listW");ul.textContent="";
+    const W=vis(weapons);
+    W.filter(w=>{const s=soldierById(w.owner);return !q||(w.type||"").toLowerCase().includes(q)||(w.num||"").toLowerCase().includes(q)||(s&&(s.name||"").toLowerCase().includes(q));}).forEach(w=>{
+      const li=el("li","tap");li.onclick=()=>openW(w);
+      const ic=el("div","wicon");ic.innerHTML=gunSvg;
+      const info=el("div","info");info.append(el("div","n1",w.type),el("div","n2",w.num));
+      const s=soldierById(w.owner);info.append(el("div","n3",s?"שייך ל: "+s.name:"לא משויך · "+unitText(w.unit)));
+      li.append(ic,info,delBtn(()=>remove("weapons/"+w.id)));ul.append(li);
+    });
+    $("emptyW").hidden=W.length>0;counts();
+  }
+  $("qW").oninput=renderW;
+  function unitIdForPath(p){const u=units.find(x=>p&&sameUpTo(x.path,p,5));return u?u.id:null;}
+  function openW(w){
+    editingW=w?w.id:null;$("formW").hidden=false;$("openW").hidden=true;
+    $("wType").value=w?w.type:"";$("wNum").value=w?w.num:"";fillOwnerSelect(w?w.owner:"");
+    unitOptions($("wUnit"),w?unitIdForPath(w.unit):undefined);
+    $("wSave").textContent=w?"עדכון":"שמירה";showErr("wErr","");
+    $("formW").scrollIntoView({block:"nearest"});$("wType").focus();
+  }
+  function resetW(){editingW=null;$("formW").reset();showErr("wErr","");$("formW").hidden=true;$("openW").hidden=false;}
+  $("openW").onclick=()=>openW(null);$("cancelW").onclick=resetW;
+  $("formW").onsubmit=async e=>{
+    e.preventDefault();
+    const type=$("wType").value.trim(),num=$("wNum").value.trim(),owner=$("wOwner").value;
+    if(weapons.some(w=>w.id!==editingW&&w.num===num&&w.type===type))return showErr("wErr","הנשק הזה כבר רשום.");
+    const s=owner?soldierById(owner):null;
+    const prevW=editingW&&weapons.find(w=>w.id===editingW);
+    const unit=s?s.unit:(pathOf($("wUnit").value)||(prevW&&prevW.unit));
+    if(!unit)return showErr("wErr","בחרו מסגרת לנשק.");
+    const btn=e.submitter;if(btn)btn.disabled=true;
+    const ok=editingW?await patch("weapons/"+editingW,{type,num,owner,unit},"wErr"):await write("weapons/"+newId(),{type,num,owner,unit,addedBy:uid,at:Date.now()},"wErr");
+    if(btn)btn.disabled=false;if(ok)resetW();
+  };
+
+  function renderAll(){
+    if(!ready)return;
+    renderMe();renderS();renderW();
+    if(curSoldier)renderDetail();
+    if(!$("v-units").hidden)renderUnits();
+  }
+
+  /* ---------- data subscriptions (queries match the security rules) ---------- */
+  function scoped(col){
+    let q=fs.collection(col);const n=myLen();
+    if(n>0){const p=myUnit().path;for(let i=0;i<n;i++)q=q.where("unit."+LV[i],"==",p[LV[i]]);}
+    return q;
+  }
+  function startData(){
+    const n=myLen();const k=n<0?"none":n+"|"+(n?LV.slice(0,n).map(x=>myUnit().path[x]).join("|"):"all");
+    if(k===scopeKey)return;
+    unsubs.forEach(u=>{try{u();}catch(_){}});unsubs=[];scopeKey=k;
+    soldiers=[];weapons=[];events=[];requests=[];
+    if(n<0)return;
+    let got=0;$("status").textContent="טוען נתונים…";
+    const sub=(col,set,label)=>unsubs.push(scoped(col).onSnapshot(s=>{set(s.docs.map(d=>({id:d.id,...d.data()})));renderAll();if(++got===4)$("status").textContent="מסונכרן בזמן אמת";},e=>{console.warn(col,e);$("status").textContent="שגיאה בטעינת "+label+(e.code==="permission-denied"?" (אין הרשאה)":"")+".";}));
+    sub("soldiers",v=>soldiers=v.sort((a,b)=>(b.at||0)-(a.at||0)),"החיילים");
+    sub("weapons",v=>weapons=v.sort((a,b)=>(b.at||0)-(a.at||0)),'האמל"ח');
+    sub("events",v=>events=v,"האירועים");
+    sub("requests",v=>requests=v,'הבקש"צים');
+  }
+  function startMgmt(){
+    mgmtUnsubs.forEach(u=>{try{u();}catch(_){}});mgmtUnsubs=[];tokens={};allMembers=[];
+    if(!mgr())return;
+    mgmtUnsubs.push(fs.collection("unitTokens").onSnapshot(s=>{tokens={};s.docs.forEach(d=>tokens[d.id]=d.data().token);renderAll();},e=>console.warn("tokens",e)));
+    mgmtUnsubs.push(fs.collection("members").onSnapshot(s=>{allMembers=s.docs.map(d=>({id:d.id,...d.data()}));renderAll();},e=>console.warn("members",e)));
+  }
+  function stopAll(){[...unsubs,...mgmtUnsubs].forEach(u=>{try{u();}catch(_){}});unsubs=[];mgmtUnsubs=[];scopeKey=null;soldiers=[];weapons=[];events=[];requests=[];tokens={};allMembers=[];}
+
+  /* ---------- boot ---------- */
+  if(String(FIREBASE_CONFIG.apiKey).includes("PASTE")){show(["v-config"]);return;}
+  if(!window.firebase){$("bootStatus").textContent="לא ניתן לטעון את Firebase. בדקו חיבור לאינטרנט.";return;}
+  firebase.initializeApp(FIREBASE_CONFIG);
+  auth=firebase.auth();fs=firebase.firestore();
+  auth.getRedirectResult().catch(e=>showErr("lErr",authErr(e)));
+  let meUnsub=null,unitsUnsub=null;
+  auth.onAuthStateChanged(async u=>{
+    authUser=u;uid=u?u.uid:null;
+    if(meUnsub){meUnsub();meUnsub=null;}if(unitsUnsub){unitsUnsub();unitsUnsub=null;}
+    stopAll();me=null;units=[];editingMe=false;isMaster=false;
+    isAdmin=!!u&&u.emailVerified&&ADMIN_EMAILS.map(x=>x.toLowerCase()).includes((u.email||"").toLowerCase());
+    if(!u){ready=true;route();return;}
+    ready=false;$("bootStatus").hidden=false;$("bootStatus").textContent="טוען…";
+    ALL.forEach(i=>$(i).hidden=true);
+    await probeMaster();
+    let gotMe=false,gotUnits=false;
+    const step=()=>{if(!gotMe||!gotUnits)return;ready=true;
+      if(!mgmtUnsubs.length)startMgmt();
+      startData();renderAll();route();};
+    unitsUnsub=fs.collection("units").onSnapshot(s=>{units=s.docs.map(d=>({id:d.id,...d.data()}));gotUnits=true;step();},e=>{console.warn("units",e);gotUnits=true;step();});
+    meUnsub=fs.doc("members/"+uid).onSnapshot(s=>{me=s.exists?{id:uid,...s.data()}:null;gotMe=true;step();},e=>{gotMe=true;step();});
+  });
+})();
+
+</script>
+</body>
+</html>
