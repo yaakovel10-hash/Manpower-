@@ -233,6 +233,8 @@ body.bulking #openS,body.bulking #openImp,body.bulking #openW{display:none}
 .impitem.noown select{border-color:var(--warn)}
 .linkbtn.danger{color:var(--danger);justify-self:start}
 .undolist{max-height:30vh;overflow:auto;overflow-wrap:anywhere}
+.netbar{position:fixed;top:0;left:0;right:0;z-index:50;text-align:center;font-size:13px;font-weight:700;padding:calc(env(safe-area-inset-top,0px) + 5px) 12px 5px;background:var(--accent);color:var(--accent-fg)}
+.netbar.off{background:var(--warn);color:#1b1a12}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.tile:active{transform:none}}
 </style>
@@ -579,6 +581,7 @@ body.bulking #openS,body.bulking #openImp,body.bulking #openW{display:none}
     <button class="linkbtn muted" type="button" id="bulkCancel">ביטול</button>
   </div>
 </div>
+<div class="netbar" id="netBar" hidden></div>
 <p class="status" id="bootStatus">טוען…</p>
 <script>
 /* ====== הגדרות: הדביקו כאן את פרטי הפרויקט שלכם מ-Firebase ====== */
@@ -704,9 +707,24 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   const vis=arr=>arr.filter(x=>inScope(x.unit)&&inView(x.unit));
   const soldierById=id=>soldiers.find(s=>s.id===id&&inScope(s.unit)&&inView(s.unit));
   const errMsg=e=>e&&e.code==="permission-denied"?"אין לך הרשאה לפעולה הזו במסגרת הזו.":"השמירה נכשלה. בדקו חיבור לאינטרנט ונסו שוב.";
-  async function write(path,data,errId){try{await fs.doc(path).set(data);if(errId)showErr(errId,"");return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));return false;}}
-  async function patch(path,data,errId){try{await fs.doc(path).update(data);if(errId)showErr(errId,"");return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));return false;}}
-  async function remove(path){try{await fs.doc(path).delete();}catch(e){console.warn(path,e);}}
+  /* offline: a write is kept on the phone and sent later, so don't wait for the server */
+  let pending=0;
+  function qc(p){
+    pending++;netUI();
+    const done=p.then(()=>true).finally(()=>{pending=Math.max(0,pending-1);netUI();});
+    done.catch(e=>{console.warn(e);if(e&&e.code==="permission-denied")toast("שינוי נדחה: אין הרשאה");});
+    return Promise.race([done,new Promise(r=>setTimeout(()=>r("queued"),navigator.onLine?7000:250))]);
+  }
+  function netUI(){
+    const b=$("netBar");if(!b)return;
+    const off=!navigator.onLine;
+    b.hidden=!off&&!pending;b.classList.toggle("off",off);
+    b.textContent=off?("אופליין · מוצגים נתונים שמורים"+(pending?" · "+pending+" שינויים יישלחו כשתחזור הקליטה":"")):("שולח "+pending+" שינויים…");
+  }
+  addEventListener("online",netUI);addEventListener("offline",netUI);
+  async function write(path,data,errId){try{await qc(fs.doc(path).set(data));if(errId)showErr(errId,"");return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));return false;}}
+  async function patch(path,data,errId){try{await qc(fs.doc(path).update(data));if(errId)showErr(errId,"");return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));return false;}}
+  async function remove(path){try{await qc(fs.doc(path).delete());}catch(e){console.warn(path,e);}}
   function unitOptions(sel,val){
     const prev=val!=null?val:sel.value;sel.textContent="";
     const list=units.filter(u=>u.open&&inScope(u.path)&&inView(u.path)).sort((a,b)=>pathKey(a.path).localeCompare(pathKey(b.path),"he"));
@@ -767,7 +785,11 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   /* ---------- master key ---------- */
   async function probeMaster(){
     if(isAdmin){isMaster=true;return;}
-    try{await fs.collection("unitTokens").limit(1).get();isMaster=true;}catch(_){isMaster=false;}
+    const k="isMaster:"+uid;
+    if(!navigator.onLine){try{isMaster=localStorage.getItem(k)==="1";}catch(_){isMaster=false;}return;}
+    try{await fs.collection("unitTokens").limit(1).get({source:"server"});isMaster=true;}
+    catch(e){if(e&&e.code==="permission-denied")isMaster=false;else{try{isMaster=localStorage.getItem(k)==="1";}catch(_){isMaster=false;}return;}}
+    try{localStorage.setItem(k,isMaster?"1":"0");}catch(_){}
   }
   $("keyForm").onsubmit=async e=>{
     e.preventDefault();
@@ -899,7 +921,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const ids=[u.id];
     if(!open)units.forEach(x=>{if(x.id!==u.id&&x.depth>u.depth&&sameUpTo(x.path,u.path,u.depth)&&x.open)ids.push(x.id);});
     const b=fs.batch();ids.forEach(id=>b.update(fs.doc("units/"+id),{open}));
-    try{await b.commit();}catch(e){console.warn(e);}
+    try{await qc(b.commit());}catch(e){console.warn(e);}
   }
   const openMembers=new Set();
   function renderUnits(){
@@ -981,7 +1003,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const b0=$("bulkMove");b0.disabled=true;b0.textContent="מעביר…";
     const tgt=to==="me"?null:soldiers.find(x=>x.id===to);
     const data=to==="me"?{owner:"",ownerMember:uid,ownerName:(me&&me.name)||"",prevOwnerName:""}:{owner:to,ownerMember:"",ownerName:"",prevOwnerName:"",unit:tgt.unit};
-    try{for(let i=0;i<ids.length;i+=400){const b=fs.batch();ids.slice(i,i+400).forEach(id=>b.update(fs.doc("weapons/"+id),data));await b.commit();}
+    try{for(let i=0;i<ids.length;i+=400){const b=fs.batch();ids.slice(i,i+400).forEach(id=>b.update(fs.doc("weapons/"+id),data));await qc(b.commit());}
       b0.textContent="העברה";setBulk(null);}
     catch(e){console.warn(e);b0.textContent="נכשל";setTimeout(()=>{b0.textContent="העברה";renderBulk();},2500);}
   };
@@ -1001,7 +1023,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
         const sn=(soldiers.find(x=>x.id===id)||{}).name||"";
         weapons.filter(w=>w.owner===id).forEach(w=>ops.push(b=>b.update(fs.doc("weapons/"+w.id),{owner:"",prevOwnerName:sn})));});
     }else ids.forEach(id=>ops.push(b=>b.delete(fs.doc("weapons/"+id))));
-    try{for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await b.commit();}setBulk(null);}
+    try{for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await qc(b.commit());}setBulk(null);}
     catch(e){console.warn(e);d.disabled=false;d.textContent="המחיקה נכשלה";setTimeout(renderBulk,2500);}
   };
   addEventListener("hashchange",()=>{if(bulk.k)setBulk(null);});
@@ -1326,7 +1348,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     });
     const btn=$("impSave");btn.disabled=true;$("impStatus").textContent="שומר…";
     try{
-      for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await b.commit();}
+      for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await qc(b.commit());}
       $("impStatus").textContent="נשמר: "+(nSold?nSold+" חיילים חדשים, ":"")+nNew+' פריטי אמל"ח חדשים'+(nUpd?", "+nUpd+" עודכנו":"")+".";
       impItems=[];impMode="soldiers";$("impFile").value="";renderImp();showErr("impErr","");
     }catch(err){console.warn(err);showErr("impErr",errMsg(err));$("impStatus").textContent="";btn.disabled=false;}
@@ -1378,7 +1400,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const ops=docs.map(o=>b=>b.delete(fs.doc(o.c+"/"+o.d.id)));
       const sids=new Set(S.map(o=>o.d.id));
       weapons.filter(w=>sids.has(w.owner)&&!docs.some(o=>o.d.id===w.id)).forEach(w=>ops.push(b=>b.update(fs.doc("weapons/"+w.id),{owner:""})));
-      try{for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await b.commit();}
+      try{for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await qc(b.commit());}
         box.textContent="";box.append(el("div",null,"הייבוא בוטל."));}
       catch(e){console.warn(e);go.disabled=false;go.textContent="מחיקה";showErr("impErr",errMsg(e));}
     };
@@ -1434,7 +1456,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!ops.length){$("impStatus").textContent="אין מה לעדכן, הכול כבר קיים.";return;}
     const btn=$("impSave");btn.disabled=true;$("impStatus").textContent="שומר…";
     try{
-      for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await b.commit();}
+      for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await qc(b.commit());}
       $("impStatus").textContent="נשמר: "+nS+" חיילים חדשים, "+nNew+' פריטי אמל"ח חדשים'+(nMoved?", "+nMoved+" פריטים הוחתמו מחדש":"")+".";
       impRows=[];typeMap={};$("impFile").value="";renderImp();showErr("impErr","");
     }catch(err){console.warn(err);showErr("impErr",errMsg(err));$("impStatus").textContent="";btn.disabled=false;}
@@ -1840,7 +1862,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     soldiers=[];weapons=[];events=[];requests=[];
     if(n<0)return;
     let got=0;$("status").textContent="טוען נתונים…";
-    const sub=(col,set,label)=>unsubs.push(scoped(col).onSnapshot(s=>{set(s.docs.map(d=>({id:d.id,...d.data()})));renderAll();if(++got===4)$("status").textContent="מסונכרן בזמן אמת";},e=>{console.warn(col,e);$("status").textContent="שגיאה בטעינת "+label+(e.code==="permission-denied"?" (אין הרשאה)":"")+".";}));
+    const sub=(col,set,label)=>unsubs.push(scoped(col).onSnapshot(s=>{set(s.docs.map(d=>({id:d.id,...d.data()})));renderAll();if(++got===4)$("status").textContent=navigator.onLine?"מסונכרן בזמן אמת":"אופליין · מוצגים נתונים שמורים";},e=>{console.warn(col,e);$("status").textContent="שגיאה בטעינת "+label+(e.code==="permission-denied"?" (אין הרשאה)":"")+".";}));
     sub("soldiers",v=>soldiers=v.sort((a,b)=>(b.at||0)-(a.at||0)),"החיילים");
     sub("weapons",v=>weapons=v.sort((a,b)=>(b.at||0)-(a.at||0)),'האמל"ח');
     sub("events",v=>events=v,"האירועים");
@@ -1859,6 +1881,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   if(!window.firebase){$("bootStatus").textContent="לא ניתן לטעון את Firebase. בדקו חיבור לאינטרנט.";return;}
   firebase.initializeApp(FIREBASE_CONFIG);
   auth=firebase.auth();fs=firebase.firestore();
+  fs.enablePersistence({synchronizeTabs:true}).catch(e=>console.warn("offline cache",e&&e.code));
+  if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(e=>console.warn("sw",e));
+  netUI();
   auth.getRedirectResult().catch(e=>showErr("lErr",authErr(e)));
   let meUnsub=null,unitsUnsub=null;
   auth.onAuthStateChanged(async u=>{
