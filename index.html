@@ -3626,8 +3626,30 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   $("obColsClr").onclick=()=>{const d=obData();d.cols.right=[];d.cols.left=[];obSel=null;obSave();renderOrbat();};
   addEventListener("hashchange",()=>{obSel=null;if(!obDirty)obLocal=null;});
 
+  /* notes that mention "בלאי" go to the wear list automatically (one wear item per note, never twice) */
+  const wearItemFromNote=t=>(t||"").replace(/בלאי/g," ").replace(/[-–:,.]+/g," ").replace(/\s+/g," ").trim()||"בלאי";
+  let wearSyncBusy=false;
+  async function syncWearNotes(){
+    if(wearSyncBusy||!uid||!soldiersLoaded)return;
+    const todo=[];
+    vis(soldiers).forEach(s=>sNotes(s).forEach(g=>{if(!/בלאי/.test(g.text||""))return;
+      if(g.id==="_old"?s.noteWear:g.wear)return; // already sent to the wear list
+      todo.push({s,g,wid:"wear-"+s.id+"-"+(g.id==="_old"?"note":g.id)});}));
+    if(!todo.length)return;
+    wearSyncBusy=true;
+    try{const b=fs.batch();
+      const bySol=new Map();todo.forEach(t=>{if(!bySol.has(t.s.id))bySol.set(t.s.id,t.s);});
+      bySol.forEach(s=>{const ids=new Set(todo.filter(t=>t.s.id===s.id).map(t=>t.g.id)),upd={};
+        if(ids.has("_old"))upd.noteWear=true;
+        if((s.gaps||[]).some(g=>ids.has(g.id)))upd.gaps=(s.gaps||[]).map(g=>ids.has(g.id)?Object.assign({},g,{wear:true}):g);
+        b.update(fs.doc("soldiers/"+s.id),upd);});
+      todo.forEach(({s,g,wid})=>b.set(fs.doc("events/"+wid),{kind:"wear",soldierId:s.id,ownerName:"",ownerMember:"",unit:s.unit,item:wearItemFromNote(g.text),why:"מהערה: "+g.text,status:"open",date:"",at:g.at||Date.now(),addedBy:uid,addedByName:(me&&me.name)||"",fromNote:true}));
+      await qc(b.commit());}catch(e){console.warn("wear sync",e);}
+    wearSyncBusy=false;
+  }
   function renderAll(){
     if(!ready)return;
+    setTimeout(syncWearNotes,0);
     ensureLink();mergeSweep();
     renderMe();renderS();renderW();
     if(curSoldier)renderDetail();
