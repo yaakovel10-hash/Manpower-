@@ -199,7 +199,8 @@ html,body{overflow-x:clip}
 #homeTiles.editing .tile{touch-action:none;animation:wiggle .35s ease-in-out infinite alternate;cursor:grab}
 #homeTiles.editing .tile:nth-child(2n){animation-delay:.17s}
 #homeTiles.editing.dragon .tile{animation:none}
-#homeTiles.editing .tile.dragging{animation:none;transition:none;pointer-events:none;opacity:.92;z-index:5;box-shadow:0 22px 34px -12px var(--shadow);cursor:grabbing}
+#homeTiles.editing .tile.dragging{animation:none;opacity:.25;outline:2px dashed var(--accent);outline-offset:-2px}
+.tile.tghost{position:fixed;left:0;top:0;margin:0;z-index:60;pointer-events:none;transition:none;animation:none!important;opacity:.95;box-shadow:0 24px 36px -12px var(--shadow);will-change:transform}
 @keyframes wiggle{from{transform:rotate(-1.2deg)}to{transform:rotate(1.2deg)}}
 .tilebar{position:fixed;top:calc(env(safe-area-inset-top) + 10px);left:16px;right:16px;max-width:560px;margin:0 auto;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--accent);box-shadow:0 10px 24px -12px var(--shadow)}
 .tilebar[hidden]{display:none}
@@ -1353,13 +1354,15 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       if(me){me.tileOrder=ord;qc(fs.doc("members/"+uid).update({tileOrder:ord})).catch(e=>toast(errMsg(e)));}};
     nav.addEventListener("contextmenu",e=>e.preventDefault());
     nav.addEventListener("click",e=>{if(nav.classList.contains("editing")||nav.dataset.justLp){e.preventDefault();e.stopPropagation();}},true);
-    let gx=0,gy=0,lx=0,ly=0,pid=null;
-    const others=()=>[...nav.querySelectorAll(":scope > .tile")].filter(t=>t!==drag&&!t.hidden);
-    // keep the dragged tile exactly under the finger
-    const place=()=>{if(!drag)return;drag.style.transform="none";const r=drag.getBoundingClientRect();
-      drag.style.transform="translate("+(lx-gx-r.left)+"px,"+(ly-gy-r.top)+"px) scale(1.05)";};
+    // drag: a floating copy follows the finger; the real tile stays in the grid as a placeholder
+    let gx=0,gy=0,lx=0,ly=0,pid=null,ghost=null,lastSwap=0;
+    const place=()=>{if(ghost)ghost.style.transform="translate("+(lx-gx)+"px,"+(ly-gy)+"px) scale(1.05)";};
     const start=(t,x,y)=>{drag=t;const r=t.getBoundingClientRect();gx=x-r.left;gy=y-r.top;lx=x;ly=y;
-      nav.classList.add("dragon");t.classList.add("dragging");try{nav.setPointerCapture(pid);}catch(_){}place();};
+      nav.classList.add("dragon");
+      ghost=t.cloneNode(true);ghost.removeAttribute("id");ghost.querySelectorAll("[id]").forEach(n=>n.removeAttribute("id"));
+      ghost.classList.add("tghost");ghost.style.width=r.width+"px";ghost.style.height=r.height+"px";
+      document.body.append(ghost);t.classList.add("dragging");place();
+      try{nav.setPointerCapture(pid);}catch(_){}};
     nav.addEventListener("pointerdown",e=>{
       const t=e.target.closest(".tile");if(!t)return;sx=e.clientX;sy=e.clientY;pid=e.pointerId;lx=sx;ly=sy;
       if(nav.classList.contains("editing")){start(t,sx,sy);return;}
@@ -1368,22 +1371,21 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     nav.addEventListener("pointermove",e=>{
       lx=e.clientX;ly=e.clientY;
       if(lp&&Math.hypot(lx-sx,ly-sy)>10){clearTimeout(lp);lp=null;}
-      if(!drag)return;e.preventDefault();
-      const under=document.elementFromPoint(lx,ly),o=under&&under.closest("#homeTiles > .tile");
-      if(o&&o!==drag){
-        // smooth swap: remember where the other tiles were, move, then slide them from there
-        const O=others(),before=new Map(O.map(t=>[t,t.getBoundingClientRect()]));
-        const T=[...nav.children],di=T.indexOf(drag),oi=T.indexOf(o);
-        if(di<oi)o.after(drag);else o.before(drag);
-        O.forEach(t=>{const a=before.get(t),b=t.getBoundingClientRect(),dx=a.left-b.left,dy=a.top-b.top;
-          if(!dx&&!dy)return;t.style.transition="none";t.style.transform="translate("+dx+"px,"+dy+"px)";
-          t.getBoundingClientRect();t.style.transition="transform .22s ease";t.style.transform="";});
-      }
-      place();
+      if(!drag)return;e.preventDefault();place();
+      const now=Date.now();if(now-lastSwap<150)return;
+      // swap only when the finger is well inside another tile (avoids flicker on the edges)
+      const T=[...nav.querySelectorAll(":scope > .tile")].filter(t=>!t.hidden);
+      const o=T.find(t=>{if(t===drag)return false;const r=t.getBoundingClientRect(),mx=r.width*.2,my=r.height*.2;
+        return lx>r.left+mx&&lx<r.right-mx&&ly>r.top+my&&ly<r.bottom-my;});
+      if(!o)return;
+      const A=[...nav.children],di=A.indexOf(drag),oi=A.indexOf(o);
+      if(di<oi)o.after(drag);else o.before(drag);
+      lastSwap=now;haptic(false);
     });
     const up=()=>{clearTimeout(lp);lp=null;
-      if(drag){const d=drag;drag=null;d.style.transition="transform .18s ease";d.style.transform="";
-        setTimeout(()=>{d.classList.remove("dragging");d.style.transition="";nav.classList.remove("dragon");exit();},190);}};
+      if(drag){const d=drag,g=ghost;drag=null;ghost=null;
+        if(g){const r=d.getBoundingClientRect();g.style.transition="transform .18s ease";g.style.transform="translate("+r.left+"px,"+r.top+"px)";}
+        setTimeout(()=>{if(g)g.remove();d.classList.remove("dragging");nav.classList.remove("dragon");exit();},190);}};
     nav.addEventListener("pointerup",up);nav.addEventListener("pointercancel",up);
     nav.addEventListener("dragstart",e=>e.preventDefault());
     nav.addEventListener("touchmove",e=>{if(drag||nav.classList.contains("editing"))e.preventDefault();},{passive:false});
