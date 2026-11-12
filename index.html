@@ -2860,8 +2860,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const mk=rollKey("att"),marks=getMarks(mk);
     const S=vis(soldiers).filter(s=>!isCmdSoldier(s)&&(sq==="*"||(s.squad||"")===sq)).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));
     const here=[],away=[];S.forEach(s=>{const r=awayInfo(s.id);r?away.push({s,r}):here.push(s);});
-    // commanders: separate list at the bottom (never yourself), can be hidden
-    const C=vis(soldiers).filter(s=>isCmdSoldier(s)&&!isMe(s)&&(sq==="*"||!s.squad||s.squad===sq)).sort((a,b)=>rankIx(a.role)-rankIx(b.role)||(a.name||"").localeCompare(b.name||"","he"));
+    // commanders (including you): separate list at the bottom, can be hidden
+    const C=vis(soldiers).filter(s=>isCmdSoldier(s)&&(sq==="*"||!s.squad||s.squad===sq)).sort((a,b)=>rankIx(a.role)-rankIx(b.role)||(a.name||"").localeCompare(b.name||"","he"));
     const cHere=[];C.forEach(s=>{const r=awayInfo(s.id);r?away.push({s,r}):cHere.push(s);});
     let showC=true;try{showC=localStorage.getItem("showCmds")!=="off";}catch(_){}
     $("atCmdH").hidden=!cHere.length;$("atCmdT").textContent=showC?"הסתרה":"הצגה";
