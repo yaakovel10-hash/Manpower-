@@ -265,7 +265,13 @@ body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
 .searchbox input::placeholder{color:var(--muted)}
 .sbclear{flex:none;width:30px;height:30px;border-radius:50%;border:0;background:var(--tile);color:var(--fg);font-size:14px;padding:0;cursor:pointer}
 .zrsum{font-weight:700;margin:4px 0 6px;color:var(--muted)}
-.zrrow{align-items:center}
+.zrrow{align-items:center;gap:8px}
+.zrdel{flex:none;min-width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--muted);padding:0 6px;font:inherit;font-size:12px;font-weight:700;display:grid;place-items:center}
+.zrdel svg{width:18px;height:18px}
+.zrdel.armed{background:var(--danger);border-color:var(--danger);color:#fff}
+.wmenu .mdel{color:var(--danger)}
+.wmenu .mdel.armed{background:var(--danger);color:#fff}
+.stsw{width:128px!important}
 .zrrow .info{flex:1;min-width:0}
 .stsw{position:relative;flex:none;display:grid;grid-template-columns:1fr 1fr;align-items:center;width:150px;height:40px;padding:0;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
 .stsw span.a,.stsw span.b{position:relative;z-index:1;text-align:center;transition:color .2s}
@@ -1082,6 +1088,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <button type="button" role="menuitem" data-act="faults">⚠ תקלות נשק</button>
       <button type="button" role="menuitem" data-act="notes">📝 הערות</button>
       <button type="button" role="menuitem" data-act="edit">✎ עריכה</button>
+      <button type="button" role="menuitem" data-act="del" class="mdel">🗑 מחיקה</button>
     </div>
     <div class="panel wcard" id="wCard" hidden>
       <div class="wchead">
@@ -2618,10 +2625,15 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     m.style.top=(window.scrollY+r.bottom+4)+"px";
     m.style.left=Math.max(8,Math.min(window.innerWidth-mw-8,r.left))+"px";
     const f=openFaults(w).length;m.querySelector('[data-act="faults"]').textContent="⚠ תקלות נשק"+(f?" ("+f+")":"");
+    const d=m.querySelector('[data-act="del"]');d.textContent="🗑 מחיקה";d.classList.remove("armed");
   }
   function closeMenu(){$("wMenu").hidden=true;menuW=null;}
   $("wMenu").querySelectorAll("button").forEach(b=>b.onclick=e=>{
-    e.stopPropagation();const w=menuW;closeMenu();if(!w)return;
+    e.stopPropagation();const w=menuW;
+    if(b.dataset.act==="del"&&w){
+      if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="לחצו שוב למחיקת "+wType(w.type)+" "+(w.num||"");return;}
+      closeMenu();if(cardW===w.id)closeCard();remove("weapons/"+w.id);toast(wType(w.type)+" "+(w.num||"")+" נמחק");return;}
+    closeMenu();if(!w)return;
     if(b.dataset.act==="edit"){closeCard();openW(w);}else openCard(w,b.dataset.act);
   });
   document.addEventListener("click",e=>{if(!$("wMenu").hidden&&!$("wMenu").contains(e.target))closeMenu();});
@@ -3421,7 +3433,10 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
         sw.onclick=()=>{const v=!w.stored;w.stored=v;sw.setAttribute("aria-pressed",String(v));haptic(v);
           patch("weapons/"+w.id,v?{stored:true,storedAt:Date.now()}:{stored:false,storedAt:0});
           const s2=W.filter(x=>x.stored).length;$("zrSum").textContent="עליו "+(W.length-s2)+" · מאופסן "+s2;};
-        li.append(ic,info,sw);ul.append(li);});
+        const del=el("button","zrdel");del.type="button";del.setAttribute("aria-label","מחיקת "+wType(w.type)+" "+(w.num||""));del.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
+        let dt;del.onclick=()=>{if(!del.classList.contains("armed")){del.classList.add("armed");del.textContent="למחוק?";dt=setTimeout(()=>{del.classList.remove("armed");del.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';},3000);return;}
+          clearTimeout(dt);li.remove();remove("weapons/"+w.id);toast(wType(w.type)+" "+(w.num||"")+" נמחק");};
+        li.append(ic,info,sw,del);ul.append(li);});
       box.append(ul);
     });
   }
