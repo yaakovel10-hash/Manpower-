@@ -193,7 +193,9 @@ a.approvals.mine{margin-top:14px;font-size:17px}
 .wchead .n1{font-family:var(--display);font-weight:400;font-size:22px}
 .wcfoot{display:flex;justify-content:space-between;align-items:center}
 .linkbtn.muted{color:var(--muted)}
-.setpanel{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.setpanel{display:grid;gap:8px;margin-top:10px;padding:12px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.pid{display:flex;flex-direction:column;align-items:flex-start}
+.homegear{margin-top:10px;margin-inline-start:0}
 .fault .approve{width:100%}
 .ubtns.end{justify-content:flex-end}
 #wType::-webkit-calendar-picker-indicator,#twType::-webkit-calendar-picker-indicator,#mwType::-webkit-calendar-picker-indicator{display:none!important;opacity:0}
@@ -470,14 +472,15 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <span class="lbl">שם משתמש</span>
         <div class="name"><span id="meName">…</span><span class="role" id="meRole" hidden></span></div>
         <div class="mini" id="meUnit"></div>
-        <div class="hdr-actions"><button class="linkbtn" id="editMe" type="button">עריכת פרטים</button><button class="linkbtn" id="setBtn" type="button" aria-expanded="false">הגדרות</button><button class="linkbtn" id="logout" type="button">התנתקות</button></div>
-        <div class="setpanel" id="setPanel" hidden><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label></div>
+        <div class="hdr-actions"><button class="linkbtn" id="editMe" type="button">עריכת פרטים</button><button class="linkbtn" id="logout" type="button">התנתקות</button></div>
       </div>
       <div class="pid">
         <span class="lbl">מספר אישי</span>
         <div class="num" id="meId">—</div>
+        <button class="pencil homegear" id="setBtn" type="button" aria-expanded="false" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </div>
     </header>
+    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <nav class="tiles">
