@@ -1306,7 +1306,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     return unitTileDefault(k);
   }
   $("openU").onclick=()=>{newUnitFields();
-    {const pu=null;HIDEABLE.forEach(([k])=>{$("nuT-"+k).checked=true;});}$("formU").hidden=false;$("openU").hidden=true;$("nu-b").focus();};
+    HIDEABLE.forEach(([k])=>{$("nuT-"+k).checked=true;});$("formU").hidden=false;$("openU").hidden=true;$("nu-b").focus();};
   $("cancelU").onclick=()=>{$("formU").hidden=true;$("openU").hidden=false;showErr("unErr","");};
   $("formU").onsubmit=async e=>{
     e.preventDefault();
