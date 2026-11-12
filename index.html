@@ -1371,10 +1371,11 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
      if(on){sel.textContent="";const o=el("option",null,"ללא מסגרת");o.value="";sel.append(o);
        units.slice().sort((a,b)=>unitLabel(a).localeCompare(unitLabel(b),"he")).forEach(u=>{const x=el("option",null,unitLabel(u));x.value=u.id;sel.append(x);});
        sel.value=me.unitId&&unitById(me.unitId)?me.unitId:"";}}
+    $("setupBack").textContent=me&&mode!=="join"?"→ חזרה":"→ חזרה להתחברות";
     show(["v-setup"]);
   }
   $("editMe").onclick=()=>{editingMe=true;$("uName").value="";$("uPid").value="";$("uTitle").value="";openSetup("profile");};
-  $("setupBack").onclick=()=>{editingMe=false;auth.signOut();};
+  $("setupBack").onclick=()=>{if(me&&setupMode!=="join"){editingMe=false;route();return;}editingMe=false;auth.signOut();};
   $("setupCancel").onclick=()=>{editingMe=false;if(setupMode==="join")clearJoin();route();};
   $("setupForm").onsubmit=async e=>{
     e.preventDefault();
