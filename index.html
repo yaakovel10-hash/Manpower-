@@ -220,6 +220,7 @@ html,body{overflow-x:clip}
 #v-verify{position:relative}
 .cmdhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:22px}
 .cmdhead .sec{margin:0}
+.pencil.wa-al{display:none}body.alertmode .pencil.wa-al{display:grid}
 .alertonly{display:none;margin-bottom:12px}body.alertmode .alertonly{display:block}
 body.alertmode #v-weapons .wadd,body.alertmode #formW,body.alertmode #editW,body.alertmode #v-weapons .wfilter{display:none}
 .wmenu button:active,.wmenu button:hover{background:var(--tile)}
@@ -944,7 +945,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 
   <!-- WEAPONS -->
   <section id="v-weapons" hidden>
-    <div class="bar"><button class="back" type="button" data-go="verify">→ חזרה</button><h1 id="wTitle">ניהול אמל"ח</h1><span class="count" id="cntW2"></span><button class="pencil" type="button" id="editW" aria-label="בחירה ומחיקה" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button></div>
+    <div class="bar"><button class="back" type="button" data-go="verify">→ חזרה</button><h1 id="wTitle">ניהול אמל"ח</h1><span class="count" id="cntW2"></span><button class="pencil wa wa-al" type="button" id="alWa" aria-label="שליחת ההתראות בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button><button class="pencil" type="button" id="editW" aria-label="בחירה ומחיקה" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button></div>
     <div class="alertonly">
       <button class="primary" id="openAF" type="button">+ הוספת תקלה</button>
       <form class="add" id="formAF" hidden>
@@ -3245,6 +3246,16 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     open.forEach((x,i)=>{const s=x.soldierId&&soldiers.find(z=>z.id===x.soldierId);
       L.push((i+1)+". "+(x.item||"בלאי")+" – "+(s?s.name:(x.ownerName||"ללא שם"))+(x.why?" ("+x.why+")":""));});
     L.push("","סה\"כ "+open.length+" פריטים");
+    sendWA(L.join("\n"));
+  };
+  $("alWa").onclick=()=>{
+    const W=vis(weapons),F=W.filter(w=>openFaults(w).length),U=W.filter(w=>isFree(w));
+    if(!F.length&&!U.length){toast("אין התראות לשליחה");return;}
+    const own=w=>{const o=w.owner&&soldiers.find(z=>z.id===w.owner);return o?o.name:(w.ownerName||"");};
+    const L=['*התראות אמל"ח'+(viewName()?" – "+viewName():"")+"*",waDate(Date.now())];
+    if(F.length){L.push("","*תקלות פתוחות ("+F.length+")*");F.forEach(w=>{const of=openFaults(w);
+      L.push("• "+wType(w.type)+" "+(w.num||"")+(own(w)?" ("+own(w)+")":"")+": "+of.map(f=>f.desc).join(" · "));});}
+    if(U.length){L.push("","*נשקים לא חתומים ("+U.length+")*");U.forEach(w=>L.push("• "+wType(w.type)+" "+(w.num||"")+(w.prevOwnerName?" (היה של "+w.prevOwnerName+")":"")));}
     sendWA(L.join("\n"));
   };
   $("gpWa").onclick=()=>{
