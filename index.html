@@ -525,6 +525,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
           <option value="כללי">כללי</option>
         </select>
       </label>
+      <label class="f" id="uUnitWrap" hidden>המסגרת שלי<select id="uUnit"></select><span class="mini">כדי שתופיע ברשימת החיילים והמפקדים של המסגרת הזו</span></label>
       <p class="err" id="uErr" hidden></p>
       <div class="row2"><button class="primary" type="submit" id="setupBtn">כניסה</button><button class="ghost" type="button" id="setupCancel" hidden>ביטול</button></div>
     </form>
@@ -1366,6 +1367,10 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!$("uName").value)$("uName").value=(me&&me.name)||(authUser&&authUser.displayName)||"";
     if(!$("uPid").value)$("uPid").value=(me&&me.pid)||"";
     if(!$("uTitle").value)$("uTitle").value=(me&&me.title)||"";
+    {const w=$("uUnitWrap"),sel=$("uUnit"),on=mode!=="join"&&!!me&&mgr();w.hidden=!on;
+     if(on){sel.textContent="";const o=el("option",null,"ללא מסגרת");o.value="";sel.append(o);
+       units.slice().sort((a,b)=>unitLabel(a).localeCompare(unitLabel(b),"he")).forEach(u=>{const x=el("option",null,unitLabel(u));x.value=u.id;sel.append(x);});
+       sel.value=me.unitId&&unitById(me.unitId)?me.unitId:"";}}
     show(["v-setup"]);
   }
   $("editMe").onclick=()=>{editingMe=true;$("uName").value="";$("uPid").value="";$("uTitle").value="";openSetup("profile");};
@@ -1384,7 +1389,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       if(!ok)showErr("uErr","הקישור לא תקף. בקשו מהמפקד את הקישור של המסגרת.");
       else clearJoin();
     }else{
-      ok=me?await patch("members/"+uid,{name:base.name,pid:base.pid,title:base.title},"uErr")
+      const upd={name:base.name,pid:base.pid,title:base.title};
+      if(me&&mgr()&&!$("uUnitWrap").hidden){const nu=$("uUnit").value;if(nu!==(me.unitId||"")){upd.unitId=nu;upd.token="";linkDone=false;}}
+      ok=me?await patch("members/"+uid,upd,"uErr")
            :await write("members/"+uid,Object.assign(base,{unitId:"",token:""}),"uErr");
     }
     if(btn)btn.disabled=false;
