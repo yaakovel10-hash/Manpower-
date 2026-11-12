@@ -3072,7 +3072,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
 
   /* ---------- פערים: all notes on soldiers and weapons ---------- */
   // send a list as a WhatsApp message (opens WhatsApp with the text ready; you pick the chat)
-  function viewName(){const cv=curView();if(cv&&cv!=="*"){const u=unitById(cv);if(u)return unitLabel(u);}const u=me&&me.unitId&&unitById(me.unitId);return u?unitLabel(u):"";}
+  function viewName(){const cv=curView();let u=cv&&cv!=="*"?unitById(cv):null;if(!u)u=me&&me.unitId&&unitById(me.unitId);
+    if(!u)return "";const k=LV[u.depth-1];return LVC[k]+" "+u.path[k];}
   function sendWA(text){location.href="https://wa.me/?text="+encodeURIComponent(text);}
   const waDate=t=>{const d=new Date(t);return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();};
   $("wrWa").onclick=()=>{
