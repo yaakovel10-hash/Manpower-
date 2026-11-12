@@ -20,7 +20,7 @@
   --bg:#f1f0e8; --surface:#fbfaf4; --fg:#22241c; --muted:#6b6d5c; --line:#cfcdb9;
   --accent:#4f5b2e; --accent-fg:#f5f4e8; --tile:#e3e2d2; --danger:#a3372a;
   --ok:#2f7a3c; --warn:#b07a12; --info:#2f5f8a;
-  --sand:#9c5b3b; --steel:#3f6b8f; --plum:#7a4f8a; --teal:#227a78; --olive:#5b6b2a; --shadow:rgba(40,38,20,.18); --hi:rgba(255,255,255,.7);
+  --sand:#9c5b3b; --steel:#3f6b8f; --plum:#7a4f8a; --teal:#227a78; --olive:#5b6b2a; --navy:#3d4f8f; --shadow:rgba(40,38,20,.18); --hi:rgba(255,255,255,.7);
   --display:"Secular One","Assistant",system-ui,sans-serif;
   --body:"Assistant",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -29,12 +29,12 @@
   --bg:#171812; --surface:#20221a; --fg:#ecebdf; --muted:#9c9e88; --line:#3a3c2f;
   --accent:#a9b876; --accent-fg:#171812; --tile:#2a2c22; --danger:#e07a6a;
   --ok:#7cc48a; --warn:#e0b252; --info:#7fb0dc;
-  --sand:#dd9a78; --steel:#8ab6da; --plum:#c79ad8; --teal:#74c9c3; --olive:#b3c46e; --shadow:rgba(0,0,0,.55); --hi:rgba(255,255,255,.07); color-scheme:dark}}
+  --sand:#dd9a78; --steel:#8ab6da; --plum:#c79ad8; --teal:#74c9c3; --olive:#b3c46e; --navy:#a3b1ea; --shadow:rgba(0,0,0,.55); --hi:rgba(255,255,255,.07); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#171812; --surface:#20221a; --fg:#ecebdf; --muted:#9c9e88; --line:#3a3c2f;
   --accent:#a9b876; --accent-fg:#171812; --tile:#2a2c22; --danger:#e07a6a;
   --ok:#7cc48a; --warn:#e0b252; --info:#7fb0dc;
-  --sand:#dd9a78; --steel:#8ab6da; --plum:#c79ad8; --teal:#74c9c3; --olive:#b3c46e; --shadow:rgba(0,0,0,.55); --hi:rgba(255,255,255,.07); color-scheme:dark}
+  --sand:#dd9a78; --steel:#8ab6da; --plum:#c79ad8; --teal:#74c9c3; --olive:#b3c46e; --navy:#a3b1ea; --shadow:rgba(0,0,0,.55); --hi:rgba(255,255,255,.07); color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45;direction:rtl}
 .wrap{max-width:560px;margin:0 auto;padding-top:env(safe-area-inset-top,0px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
@@ -218,6 +218,40 @@ html,body{overflow-x:clip}
 .wmenu button{background:none;border:0;text-align:right;font:inherit;font-size:17px;color:var(--fg);padding:12px;border-radius:8px;cursor:pointer}
 .gearmenu{top:62px;left:0}
 #v-verify{position:relative}
+/* ---- מבנה הארגון לקרב ---- */
+.seg{display:flex;gap:4px;padding:4px;margin-top:12px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.seg button{flex:1;min-height:42px;border:0;border-radius:10px;background:transparent;color:var(--fg);font:inherit;font-weight:700;font-size:15px}
+.seg button.on{background:var(--accent);color:var(--on-accent,#1b1d16)}
+.seg.small button{min-height:36px;font-size:14px}
+.ironrow{display:flex;align-items:center;gap:10px}
+.ironrow .ironin{width:56px;text-align:center;font-weight:800;font-size:18px;padding:8px 4px;border-radius:12px}
+.ironrow .info{flex:1;min-width:0}
+.ironrow .pakin{width:110px;padding:8px;border-radius:10px}
+.ironrow.cmd .n1::after{content:" · מפקד";font-weight:400;font-size:13px;color:var(--muted)}
+.ogrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.ogroup{min-width:0;border:2px dashed color-mix(in srgb,var(--fg) 35%,transparent);border-radius:14px;padding:8px;display:grid;gap:8px;align-content:start}
+.ogroup.wide{grid-column:1/-1}
+.ogroup .ghead{display:flex;gap:4px;align-items:center}
+.ogroup .gtitle{flex:1;min-width:0;width:100%;font-weight:800;text-align:center;padding:6px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-size:14px}
+.ogroup .gbtn{flex:none;width:26px;min-width:26px;min-height:30px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:14px;padding:0}
+.ocards{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.ocard{position:relative;width:74px;display:grid;justify-items:center;gap:2px;padding:6px 4px;border-radius:12px;border:1px solid var(--line);background:var(--tile);color:var(--fg);font:inherit;cursor:pointer}
+.ocard svg{width:30px;height:30px;color:var(--accent)}
+.ocard .pk{font-weight:800;font-size:13px;line-height:1.1}
+.ocard .nm{font-size:12px;line-height:1.15;text-align:center;word-break:break-word}
+.ocard .ir{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;line-height:20px;border-radius:999px;background:var(--fg);color:var(--bg);font-size:11px;font-weight:800;text-align:center;padding:0 4px}
+.ocard.sel{outline:3px solid var(--accent);outline-offset:1px;transform:scale(1.04)}
+.oslot{width:74px;min-height:70px;border-radius:12px;border:2px dashed var(--line);background:transparent;color:var(--muted);font-size:22px}
+.opool{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
+.ocols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.ocol{display:grid;gap:8px;align-content:start}
+.ocols.staggered .ocol:last-child{padding-top:44px}
+.ocol .ocard{width:100%;grid-template-columns:auto 1fr;justify-items:start;align-items:center;text-align:start;padding:8px 10px;column-gap:8px}
+.ocol .ocard svg{grid-row:1/4}
+.ocol .ocard .x{position:absolute;top:4px;left:6px;border:0;background:transparent;color:var(--muted);font-size:14px;padding:2px}
+.ocol .oslot{width:100%;min-height:44px}
+.ocolh{font-weight:800;text-align:center;font-size:14px;color:var(--muted)}
 .cmdhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:22px}
 .cmdhead .sec{margin:0}
 .pencil.wa-al{display:none}body.alertmode .pencil.wa-al{display:grid}
@@ -307,7 +341,7 @@ header.top .pid .num{text-shadow:0 1px 0 var(--hi)}
 .tile .t{text-shadow:0 1px 0 var(--hi)}
 .tile .c{color:color-mix(in srgb,var(--tc) 65%,var(--fg));font-weight:700}
 .tile:active{transform:translateY(2px) scale(.985);box-shadow:inset 0 1px 0 var(--hi),0 6px 14px -10px var(--shadow)}
-.tile.t-green{--tc:var(--ok)}.tile.t-yellow{--tc:var(--warn)}.tile.t-sand{--tc:var(--sand)}.tile.t-steel{--tc:var(--steel)}.tile.t-plum{--tc:var(--plum)}.tile.t-red{--tc:var(--danger)}.tile.t-olive{--tc:var(--olive)}.tile.t-teal{--tc:var(--teal)}
+.tile.t-green{--tc:var(--ok)}.tile.t-yellow{--tc:var(--warn)}.tile.t-sand{--tc:var(--sand)}.tile.t-steel{--tc:var(--steel)}.tile.t-plum{--tc:var(--plum)}.tile.t-red{--tc:var(--danger)}.tile.t-olive{--tc:var(--olive)}.tile.t-teal{--tc:var(--teal)}.tile.t-navy{--tc:var(--navy)}
 .swatches{display:flex;gap:10px;flex-wrap:wrap;padding-top:4px}
 .sw{width:38px;height:38px;border-radius:50%;border:3px solid var(--surface);background:var(--sw);box-shadow:0 0 0 1px var(--line),0 3px 8px -3px var(--shadow);cursor:pointer;padding:0}
 .sw.on{box-shadow:0 0 0 3px var(--fg),0 3px 8px -3px var(--shadow)}
@@ -511,7 +545,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <button class="pencil homegear" id="setBtn" type="button" aria-expanded="false" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </div>
     </header>
-    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label></div>
+    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה הארגון לקרב</label></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <nav class="tiles" id="homeTiles">
@@ -553,6 +587,10 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 36h52l-4-10H40l-4-6H18l-4 6H8z" fill="var(--accent)" fill-opacity=".25"/><path d="M30 20v-6h14"/><rect x="4" y="36" width="56" height="12" rx="6"/><circle cx="14" cy="42" r="3"/><circle cx="25" cy="42" r="3"/><circle cx="36" cy="42" r="3"/><circle cx="48" cy="42" r="3"/></svg>
         <span class="t">נמ"ר</span><span class="c" id="cntNm">—</span>
       </a>
+      <a class="tile t-navy" href="#orbat" id="tileOrbat">
+        <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><rect x="22" y="6" width="20" height="13" rx="3" fill="var(--accent)" fill-opacity=".25"/><rect x="5" y="41" width="16" height="13" rx="3" fill="var(--accent)" fill-opacity=".25"/><rect x="24" y="41" width="16" height="13" rx="3" fill="var(--accent)" fill-opacity=".25"/><rect x="43" y="41" width="16" height="13" rx="3" fill="var(--accent)" fill-opacity=".25"/><path d="M32 19v11M13 41v-6h38v6M32 30v11"/></svg>
+        <span class="t">מבנה הארגון לקרב</span><span class="c" id="cntOb">—</span>
+      </a>
       <a class="tile t-sand" href="#gaps" id="tileGaps">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M14 8h28l10 10v38H14z" fill="var(--accent)" fill-opacity=".25"/><path d="M42 8v10h10"/><path d="M22 28h20M22 36h20M22 44h12"/><circle cx="48" cy="48" r="9" fill="var(--bg)"/><path d="M48 43v6M48 53v.5"/></svg>
         <span class="t">פערים</span><span class="c" id="cntGp">—</span>
@@ -574,7 +612,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <span class="mini">ממלאים מלמעלה למטה, עד הרמה של המסגרת. למשל לפלוגה: חטיבה, גדוד ופלוגה, בלי מחלקה וכיתה. מי שנכנס בקישור של מסגרת רואה את כל מה שמתחתיה.</span>
       <div class="unitf" id="uNew"></div>
       <div class="f">רובריקות שיופיעו במסגרת<span class="mini">ברירת מחדל לכל המפקדים במסגרת. כל מפקד יכול לשנות לעצמו בהגדרות.</span>
-        <div class="tilechk"><label class="allday"><input type="checkbox" id="nuT-nmr" checked> נמ"ר</label><label class="allday"><input type="checkbox" id="nuT-veh" checked> רכב</label><label class="allday"><input type="checkbox" id="nuT-gaps" checked> פערים</label></div></div>
+        <div class="tilechk"><label class="allday"><input type="checkbox" id="nuT-nmr" checked> נמ"ר</label><label class="allday"><input type="checkbox" id="nuT-veh" checked> רכב</label><label class="allday"><input type="checkbox" id="nuT-gaps" checked> פערים</label><label class="allday"><input type="checkbox" id="nuT-orbat" checked> מבנה הארגון לקרב</label></div></div>
       <p class="err" id="unErr" hidden></p>
       <div class="row2"><button class="primary" type="submit">פתיחה</button><button class="ghost" type="button" id="cancelU">ביטול</button></div>
     </form>
@@ -664,6 +702,41 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
   </section>
 
   <!-- WEAR (בלאי) -->
+  <section id="v-orbat" hidden>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>מבנה הארגון לקרב</h1></div>
+    <div class="seg" role="tablist" id="obTabs">
+      <button type="button" role="tab" data-t="iron">מספרי ברזל</button>
+      <button type="button" role="tab" data-t="front">2 לפנים</button>
+      <button type="button" role="tab" data-t="cols">2 טורים</button>
+    </div>
+    <p class="err" id="obErr" hidden></p>
+
+    <div id="obIron" hidden>
+      <p class="mini">לכל אחד מספר ברזל ייחודי, ופק"ל. לוחצים על המספר או על הפק"ל כדי לשנות.</p>
+      <div class="row2"><button class="ghost sm" type="button" id="obAuto">מספור אוטומטי לחסרים</button></div>
+      <ul class="list" id="obIronList"></ul>
+    </div>
+
+    <div id="obFront" hidden>
+      <p class="mini">לוחצים על חייל ואז על המקום החדש (חייל אחר להחלפה, או "+" בחוליה). לחיצה נוספת מבטלת.</p>
+      <div class="row2"><button class="ghost sm" type="button" id="obFrontAuto">סידור לפי כיתות</button><button class="ghost sm" type="button" id="obAddGrp">+ חוליה</button></div>
+      <div class="ogrid" id="obGroups"></div>
+    </div>
+
+    <div id="obCols" hidden>
+      <div class="seg small" id="obColMode"><button type="button" data-m="regular">2 טורים רגיל</button><button type="button" data-m="staggered">2 טורים מדורג</button></div>
+      <p class="mini">לוחצים על חייל ואז על המקום החדש. ✕ מחזיר לרשימה.</p>
+      <div class="row2"><button class="ghost sm" type="button" id="obColsAuto">מילוי לפי מספרי ברזל</button><button class="ghost sm" type="button" id="obColsClr">ניקוי</button></div>
+      <div class="ocols" id="obColsBox"><div class="ocol" id="obColR"></div><div class="ocol" id="obColL"></div></div>
+    </div>
+
+    <div id="obPoolWrap" hidden>
+      <h2 class="sec">לא משובצים <span class="mini" id="obPoolN"></span></h2>
+      <div class="opool" id="obPool"></div>
+    </div>
+    <datalist id="pakalList"><option value="מפקד"><option value="קלע"><option value="מאג"><option value="נגב"><option value="מטול"><option value="מקלען"><option value="חובש"><option value="קשר"><option value="צלף"><option value="רחפן"><option value="לאו"><option value="מטאדור"><option value="נוהג"><option value="חוד"><option value="פורץ"><option value="סמל"></datalist>
+  </section>
+
   <section id="v-gaps" hidden>
     <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>פערים</h1><span class="count" id="gpCount"></span><button class="pencil wa" type="button" id="gpWa" aria-label="שליחת רשימת הפערים בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
     <p class="mini">כל ההערות שנרשמו על חיילים ועל אמל"ח. מוסיפים הערה מדף החייל, או מתפריט ⋮ של הנשק.</p>
@@ -1190,7 +1263,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   function pathOf(unitId){const u=unitById(unitId);return u?Object.assign({},u.path):null;}
 
   /* ---------- screens ---------- */
-  const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps"];
+  const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat"];
   function show(ids){ALL.forEach(i=>$(i).hidden=!ids.includes(i));$("bootStatus").hidden=true;}
   function route(){
     if(!ready)return;
@@ -1215,6 +1288,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(h==="sched"){show(["v-sched"]);renderSched();return;}
     if(h==="wear"){show(["v-wear"]);renderWear();return;}
     if(h==="gaps"){show(["v-gaps"]);renderGaps();return;}
+    if(h==="orbat"){show(["v-orbat"]);renderOrbat();return;}
     if(h==="nmr"||h==="veh"){setVk(h);show(["v-nmr"]);renderNmr();return;}
     {const nm=h.match(/^(nmr|veh)-([A-Za-z0-9]+)$/);if(nm){setVk(nm[1]);curNmr=nm[2];show(["v-nmrd"]);renderNmrD();return;}}
     if(h==="absent"){show(["v-absent"]);renderAbsent();return;}
@@ -1421,7 +1495,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     document.addEventListener("pointerdown",e=>{if(nav.classList.contains("editing")&&!e.target.closest("#homeTiles"))exit();});
     addEventListener("hashchange",exit);
   }
-  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"]];
+  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"],["orbat","מבנה הארגון לקרב","tileOrbat","setShowOrbat"]];
   // default for a tile: the closest unit (own unit, then its parents) that set it; otherwise shown
   function unitTileDefault(k){
     let u=me&&me.unitId?unitById(me.unitId):null;
@@ -3294,13 +3368,149 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     $("gpSH").hidden=!S.length;$("gpWH").hidden=!W.length;$("gpEmpty").hidden=n>0;
   }
 
+  /* ---------- מבנה הארגון לקרב ---------- */
+  const FIG='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a7 6 0 0 1 14 0z" fill="currentColor" fill-opacity=".25"/><path d="M7 11h18"/><circle cx="16" cy="14" r="4"/><path d="M8 29c0-5 3.5-8 8-8s8 3 8 8"/><path d="M22 20l6-5"/></svg>';
+  let obTab="iron",obSel=null,obSaveT=null;
+  try{obTab=localStorage.getItem("obTab")||"iron";}catch(_){}
+  const obId=()=>{const id=curView();return "orbat-"+(id!=="*"?id:(me&&me.unitId)||"all");};
+  const obDoc=()=>events.find(x=>x.id===obId())||null;
+  let obLocal=null; // working copy, saved shortly after each change
+  let obDirty=false;
+  function obData(){
+    const doc=obDoc();
+    // keep my working copy while I'm editing; otherwise take the latest saved version (someone else may have changed it)
+    if(obLocal&&obLocal.id===obId()&&(obDirty||!doc||(doc.at||0)<=(obLocal.at||0)))return obLocal;
+    const d=JSON.parse(JSON.stringify(Object.assign({front:null,cols:null,at:0},doc||{},{id:obId()})));
+    if(!d.front||!Array.isArray(d.front.groups))d.front={groups:[{id:newId(),title:"חוליית פיקוד",ids:[]},{id:newId(),title:"כיתה א'",ids:[]},{id:newId(),title:"כיתה ב'",ids:[]},{id:newId(),title:"כיתה ג'",ids:[]}]};
+    if(!d.cols)d.cols={mode:"regular",right:[],left:[]};
+    obLocal=d;return d;
+  }
+  function obSave(){
+    obDirty=true;if(obLocal)obLocal.at=Date.now();
+    clearTimeout(obSaveT);obSaveT=setTimeout(async()=>{
+      const d=obLocal;if(!d){obDirty=false;return;}const unit=writeUnit();if(!unit){obDirty=false;return showErr("obErr","בחרו מסגרת מוצגת.");}
+      await write("events/"+d.id,{kind:"orbat",soldierId:"",unit,date:"",front:d.front,cols:d.cols,at:d.at,by:uid},"obErr");
+      obDirty=false;
+    },350);
+  }
+  const obPeople=()=>{const P=vis(soldiers);return P.slice().sort((a,b)=>((a.iron||9999)-(b.iron||9999))||(isCmdSoldier(b)-isCmdSoldier(a))||(a.name||"").localeCompare(b.name||"","he"));};
+  function oCard(s,place){
+    const b=el("button","ocard");b.type="button";b.innerHTML=FIG;
+    b.append(el("span","pk",s.pakal||(isCmdSoldier(s)?(s.role&&s.role!=="חייל"?s.role:"מפקד"):"—")),el("span","nm",s.name||""));
+    if(s.iron)b.append(el("span","ir",String(s.iron)));
+    if(obSel&&obSel.sid===s.id)b.classList.add("sel");
+    b.onclick=e=>{e.stopPropagation();obTap({sid:s.id,place});};
+    return b;
+  }
+  // remove a soldier from wherever he is in the current tab's layout
+  function obPull(d,sid){
+    if(obTab==="front")d.front.groups.forEach(g=>{g.ids=g.ids.filter(x=>x!==sid);});
+    else{d.cols.right=d.cols.right.filter(x=>x!==sid);d.cols.left=d.cols.left.filter(x=>x!==sid);}
+  }
+  const obList=(d,place)=>place==="pool"?null:obTab==="front"?(d.front.groups.find(g=>g.id===place)||{}).ids:place==="R"?d.cols.right:d.cols.left;
+  // tap logic: first tap picks a soldier, second tap on a soldier swaps, on a "+" slot moves there
+  function obTap(t){
+    const d=obData();
+    if(!obSel){if(t.sid){obSel=t;haptic(true);}renderOrbat();return;}
+    const a=obSel;obSel=null;
+    if(t.sid&&t.sid===a.sid){renderOrbat();return;}
+    if(t.sid){ // swap places
+      const la=obList(d,a.place),lb=obList(d,t.place);
+      const ia=la?la.indexOf(a.sid):-1,ib=lb?lb.indexOf(t.sid):-1;
+      if(la&&lb){la[ia]=t.sid;lb[ib]=a.sid;}
+      else if(la&&!lb){la[ia]=t.sid;}          // a was placed, t from pool: t takes a's spot
+      else if(!la&&lb){lb[ib]=a.sid;}          // a from pool takes t's spot
+    }else if(t.slot){obPull(d,a.sid);const l=obList(d,t.slot);if(l)l.push(a.sid);}
+    else if(t.pool){obPull(d,a.sid);}
+    haptic(false);obSave();renderOrbat();
+  }
+  function renderOrbat(){
+    {const P=vis(soldiers),n=P.filter(s=>s.iron).length;$("cntOb").textContent=P.length?n+"/"+P.length+" ממוספרים":"—";}
+    if($("v-orbat").hidden)return;
+    document.querySelectorAll("#obTabs button").forEach(b=>{const on=b.dataset.t===obTab;b.classList.toggle("on",on);b.setAttribute("aria-selected",String(on));});
+    $("obIron").hidden=obTab!=="iron";$("obFront").hidden=obTab!=="front";$("obCols").hidden=obTab!=="cols";
+    document.body.classList.toggle("obsel",!!obSel);
+    const P=obPeople(),byId=new Map(P.map(s=>[s.id,s]));
+    if(obTab==="iron"){
+      $("obPoolWrap").hidden=true;
+      const ul=$("obIronList");if(ul.contains(document.activeElement))return;ul.textContent="";
+      P.forEach(s=>{const li=el("li","ironrow"+(isCmdSoldier(s)?" cmd":""));
+        const n=el("input","ironin");n.type="number";n.inputMode="numeric";n.min="1";n.value=s.iron||"";n.placeholder="#";n.setAttribute("aria-label","מספר ברזל של "+s.name);
+        n.onchange=async()=>{const v=parseInt(n.value,10)||0;
+          if(v&&P.some(o=>o.id!==s.id&&o.iron===v)){const o=P.find(o=>o.id!==s.id&&o.iron===v);toast("מספר "+v+" כבר שייך ל"+o.name);n.value=s.iron||"";return;}
+          await patch("soldiers/"+s.id,{iron:v||0},"obErr");};
+        const info=el("div","info");info.append(el("div","n1",s.name||""),el("div","n3",[s.squad?"כיתה "+s.squad:"",s.role&&s.role!=="חייל"?s.role:""].filter(Boolean).join(" · ")||" "));
+        const k=el("input","pakin");k.type="text";k.setAttribute("list","pakalList");k.maxLength=20;k.value=s.pakal||"";k.placeholder='פק"ל';k.setAttribute("aria-label",'פק"ל של '+s.name);
+        k.onchange=()=>patch("soldiers/"+s.id,{pakal:k.value.trim()},"obErr");
+        li.append(n,info,k);ul.append(li);});
+      if(!P.length)ul.append(el("li","mini","אין חיילים במסגרת המוצגת."));
+      return;
+    }
+    const d=obData(),placed=new Set();
+    if(obTab==="front"){
+      const box=$("obGroups");box.textContent="";
+      d.front.groups.forEach((g,gi)=>{
+        g.ids=g.ids.filter(id=>byId.has(id)&&!placed.has(id));g.ids.forEach(id=>placed.add(id));
+        const gr=el("div","ogroup"+(g.wide?" wide":""));
+        const hd=el("div","ghead");
+        const ti=el("input","gtitle");ti.value=g.title||"";ti.maxLength=30;ti.onchange=()=>{g.title=ti.value.trim()||"חוליה";obSave();};
+        const up=el("button","gbtn","▲");up.type="button";up.title="הזזה למעלה";up.disabled=gi===0;up.onclick=()=>{d.front.groups.splice(gi-1,0,d.front.groups.splice(gi,1)[0]);obSave();renderOrbat();};
+        const wd=el("button","gbtn",g.wide?"⇥":"⇔");wd.type="button";wd.title=g.wide?"חצי רוחב":"רוחב מלא";wd.onclick=()=>{g.wide=!g.wide;obSave();renderOrbat();};
+        const rm=el("button","gbtn","✕");rm.type="button";rm.title="מחיקת החוליה";rm.onclick=()=>{if(g.ids.length&&!rm.dataset.arm){rm.dataset.arm="1";rm.textContent="?";setTimeout(()=>{delete rm.dataset.arm;rm.textContent="✕";},2500);return;}d.front.groups.splice(gi,1);obSave();renderOrbat();};
+        hd.append(up,ti,wd,rm);
+        const cards=el("div","ocards");g.ids.forEach(id=>cards.append(oCard(byId.get(id),g.id)));
+        const sl=el("button","oslot","+");sl.type="button";sl.setAttribute("aria-label","העברה ל"+(g.title||"חוליה"));sl.onclick=()=>{if(obSel)obTap({slot:g.id});else toast("קודם לוחצים על חייל");};cards.append(sl);
+        gr.append(hd,cards);box.append(gr);});
+    }else{
+      const m=d.cols.mode==="staggered"?"staggered":"regular";
+      document.querySelectorAll("#obColMode button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+      $("obColsBox").classList.toggle("staggered",m==="staggered");
+      [["R","right",$("obColR"),"טור ימין"],["L","left",$("obColL"),"טור שמאל"]].forEach(([pl,key,col,lab])=>{
+        d.cols[key]=d.cols[key].filter(id=>byId.has(id)&&!placed.has(id));d.cols[key].forEach(id=>placed.add(id));
+        col.textContent="";col.append(el("div","ocolh",lab));
+        d.cols[key].forEach((id,i)=>{const c=oCard(byId.get(id),pl);const s=byId.get(id);
+          c.textContent="";c.innerHTML=FIG;c.append(el("span","nm",(i+1)+". "+(s.name||"")),el("span","pk",'פק"ל: '+(s.pakal||"—")),el("span","mini","ברזל: "+(s.iron||"—")));
+          const x=el("span","x","✕");x.onclick=e=>{e.stopPropagation();obPull(d,id);obSel=null;obSave();renderOrbat();};c.append(x);col.append(c);});
+        const sl=el("button","oslot","+");sl.type="button";sl.onclick=()=>{if(obSel)obTap({slot:pl});else toast("קודם לוחצים על חייל");};col.append(sl);});
+    }
+    const pool=P.filter(s=>!placed.has(s.id)),pb=$("obPool");pb.textContent="";
+    pool.forEach(s=>pb.append(oCard(s,"pool")));
+    $("obPoolWrap").hidden=false;$("obPoolN").textContent=pool.length?"("+pool.length+")":"— כולם משובצים";
+    $("obPoolWrap").onclick=()=>{if(obSel&&obSel.place!=="pool")obTap({pool:true});};
+  }
+  document.querySelectorAll("#obTabs button").forEach(b=>b.onclick=()=>{obTab=b.dataset.t;obSel=null;try{localStorage.setItem("obTab",obTab);}catch(_){}renderOrbat();});
+  document.querySelectorAll("#obColMode button").forEach(b=>b.onclick=()=>{const d=obData();d.cols.mode=b.dataset.m;obSave();renderOrbat();});
+  $("obAuto").onclick=async()=>{
+    const P=obPeople(),used=new Set(P.map(s=>s.iron).filter(Boolean));let n=1,ops=0;
+    const b=fs.batch();
+    P.filter(s=>!s.iron).forEach(s=>{while(used.has(n))n++;used.add(n);b.update(fs.doc("soldiers/"+s.id),{iron:n});ops++;});
+    if(!ops){toast("לכולם כבר יש מספר");return;}
+    try{await qc(b.commit());toast("מוספרו "+ops);}catch(e){showErr("obErr",errMsg(e));}
+  };
+  $("obAddGrp").onclick=()=>{const d=obData();d.front.groups.push({id:newId(),title:"חוליה חדשה",ids:[]});obSave();renderOrbat();};
+  $("obFrontAuto").onclick=()=>{
+    const d=obData(),P=obPeople();
+    const find=t=>{let g=d.front.groups.find(x=>x.title===t);if(!g){g={id:newId(),title:t,ids:[]};d.front.groups.push(g);}return g;};
+    d.front.groups.forEach(g=>g.ids=[]);
+    P.forEach(s=>{const g=s.squad?find("כיתה "+s.squad+"'"):find("חוליית פיקוד");g.ids.push(s.id);});
+    obSel=null;obSave();renderOrbat();toast("סודר לפי כיתות");
+  };
+  $("obColsAuto").onclick=()=>{
+    const d=obData(),P=obPeople().filter(s=>s.iron);
+    if(!P.length){toast("קודם תנו מספרי ברזל");return;}
+    d.cols.right=P.filter(s=>s.iron%2===1).map(s=>s.id);d.cols.left=P.filter(s=>s.iron%2===0).map(s=>s.id);
+    obSel=null;obSave();renderOrbat();toast("אי-זוגיים מימין, זוגיים משמאל");
+  };
+  $("obColsClr").onclick=()=>{const d=obData();d.cols.right=[];d.cols.left=[];obSel=null;obSave();renderOrbat();};
+  addEventListener("hashchange",()=>{obSel=null;if(!obDirty)obLocal=null;});
+
   function renderAll(){
     if(!ready)return;
     ensureLink();mergeSweep();
     renderMe();renderS();renderW();
     if(curSoldier)renderDetail();
     if(!$("v-units").hidden)renderUnits();
-    renderMine();renderAttend();renderVerify();renderSched();renderAbsent();renderWear();renderNmr();renderNmrD();renderGaps();
+    renderMine();renderAttend();renderVerify();renderSched();renderAbsent();renderWear();renderNmr();renderNmrD();renderGaps();renderOrbat();
     {const t=key(new Date()),ue=unitEv().filter(x=>onDay(x,t)).length,ab=absEv().filter(x=>onDay(x,t)).length+vis(requests).filter(r=>r.status==="approved"&&r.from&&r.from<=t&&(r.to||r.from)>=t).length;
      $("cntSc").textContent=ue?ue+" אירועים היום":"אין אירועים היום";$("cntAb").textContent=ab?ab+" היום":"אין היום";}
     {const S=vis(soldiers).filter(s=>!isCmdSoldier(s)),here=S.filter(s=>!awayInfo(s.id)),m=getMarks(rollKey("att"));
