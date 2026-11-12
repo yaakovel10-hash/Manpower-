@@ -256,7 +256,14 @@ body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
 .cmdhead .sec{margin:0}
 .vfacts{display:flex;justify-content:flex-end;margin:-6px 0 10px}
 #v-verify .bar h1{white-space:nowrap;overflow-wrap:normal}
-.zrq{width:100%;margin-top:8px}
+.searchbox{position:sticky;top:8px;z-index:6;display:flex;align-items:center;gap:10px;margin:10px 0 6px;padding:0 14px;height:52px;border-radius:999px;background:var(--surface);border:1.5px solid var(--line);box-shadow:0 8px 20px -14px var(--shadow);transition:border-color .2s,box-shadow .2s}
+.searchbox:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent),0 8px 20px -14px var(--shadow)}
+.searchbox svg{width:20px;height:20px;flex:none;color:var(--muted)}
+.searchbox:focus-within svg{color:var(--accent)}
+.searchbox input{flex:1;min-width:0;height:100%;border:0!important;background:transparent!important;box-shadow:none!important;outline:none;padding:0;font:inherit;font-size:16px;color:var(--fg)}
+.searchbox input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
+.searchbox input::placeholder{color:var(--muted)}
+.sbclear{flex:none;width:30px;height:30px;border-radius:50%;border:0;background:var(--tile);color:var(--fg);font-size:14px;padding:0;cursor:pointer}
 .zrsum{font-weight:700;margin:4px 0 6px;color:var(--muted)}
 .zrrow{align-items:center}
 .zrrow .info{flex:1;min-width:0}
@@ -754,7 +761,11 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
   <section id="v-zr" hidden>
     <div class="bar"><button class="back" type="button" data-go="verify">→ אמל"ח</button><h1>דו"ח צל"מ</h1><span class="count" id="zrCount"></span><button class="pencil wa" type="button" id="vfWa" aria-label="שליחת דוח צ בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
     <p class="mini">לכל פריט: עליו או מאופסן. לוחצים על המתג כדי לשנות. הכפתור הירוק שולח את הדו"ח בוואטסאפ.</p>
-    <input type="search" id="zrQ" class="zrq" placeholder="חיפוש לפי שם, מספר או סוג…" autocomplete="off" aria-label="חיפוש בדו&quot;ח צל&quot;מ">
+    <label class="searchbox">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input type="search" id="zrQ" placeholder="חיפוש לפי שם, מספר או סוג" autocomplete="off" enterkeyhint="search" aria-label="חיפוש בדו&quot;ח צל&quot;מ">
+      <button type="button" class="sbclear" id="zrQx" aria-label="ניקוי החיפוש" hidden>✕</button>
+    </label>
     <div class="zrsum" id="zrSum"></div>
     <div id="zrBox"></div>
     <div class="empty" id="zrEmpty" hidden>אין אמל"ח במסגרת המוצגת.</div>
@@ -3383,8 +3394,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     });
     sendWA(L.join("\n"));
   };
-  $("openZR").onclick=()=>{$("zrQ").value="";location.hash="zreport";};
-  $("zrQ").oninput=()=>renderZR();
+  $("openZR").onclick=()=>{$("zrQ").value="";$("zrQx").hidden=true;location.hash="zreport";};
+  $("zrQ").oninput=()=>{$("zrQx").hidden=!$("zrQ").value;renderZR();};
+  $("zrQx").onclick=e=>{e.preventDefault();$("zrQ").value="";$("zrQx").hidden=true;renderZR();$("zrQ").focus();};
   function renderZR(){
     if($("v-zr").hidden)return;
     const own=w=>{if(w.ownerMember)return w.ownerMember===uid?((me&&me.name)||""):(w.ownerName||"");const o=w.owner&&soldiers.find(z=>z.id===w.owner);return o?o.name:"";};
