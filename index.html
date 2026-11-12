@@ -352,6 +352,9 @@ li.rollrow.ok .rolltrack{box-shadow:inset 0 2px 6px rgba(0,0,0,.2),0 0 0 3px col
 .notebox{margin-top:12px;padding:10px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);display:grid;gap:8px}
 .notebox.has{border-color:color-mix(in srgb,var(--danger) 55%,var(--line));background:color-mix(in srgb,var(--danger) 8%,var(--surface))}
 .notebox textarea{min-height:56px}
+.gaprow{align-items:center}
+.gapnote{margin-top:4px;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--danger) 10%,transparent);border-inline-start:3px solid var(--danger);white-space:pre-wrap;font-size:15px}
+.gaprow .n1 .ndot{margin-inline-start:0}
 .ndot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 25%,transparent);vertical-align:middle;margin-inline-start:8px;flex:none}
 button.ndot{border:0;padding:0;cursor:pointer;width:12px;height:12px}
 .n1 .ndot{position:relative;top:-1px}
@@ -488,7 +491,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <button class="pencil homegear" id="setBtn" type="button" aria-expanded="false" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </div>
     </header>
-    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label></div>
+    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <nav class="tiles">
@@ -530,6 +533,10 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 36h52l-4-10H40l-4-6H18l-4 6H8z" fill="var(--accent)" fill-opacity=".25"/><path d="M30 20v-6h14"/><rect x="4" y="36" width="56" height="12" rx="6"/><circle cx="14" cy="42" r="3"/><circle cx="25" cy="42" r="3"/><circle cx="36" cy="42" r="3"/><circle cx="48" cy="42" r="3"/></svg>
         <span class="t">נמ"ר</span><span class="c" id="cntNm">—</span>
       </a>
+      <a class="tile t-sand" href="#gaps" id="tileGaps">
+        <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M14 8h28l10 10v38H14z" fill="var(--accent)" fill-opacity=".25"/><path d="M42 8v10h10"/><path d="M22 28h20M22 36h20M22 44h12"/><circle cx="48" cy="48" r="9" fill="var(--bg)"/><path d="M48 43v6M48 53v.5"/></svg>
+        <span class="t">פערים</span><span class="c" id="cntGp">—</span>
+      </a>
       <a class="tile t-steel" href="#veh" id="tileVeh">
         <svg aria-hidden="true" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 44v-9l5-3 7-11h26l8 11 6 3v9z" fill="var(--accent)" fill-opacity=".25"/><path d="M20 23l-4 9h14v-9zM34 23v9h14l-6-9z"/><circle cx="18" cy="44" r="6" fill="var(--bg)"/><circle cx="46" cy="44" r="6" fill="var(--bg)"/><path d="M6 37h4M54 37h4"/></svg>
         <span class="t">רכב</span><span class="c" id="cntVh">—</span>
@@ -547,7 +554,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <span class="mini">ממלאים מלמעלה למטה, עד הרמה של המסגרת. למשל לפלוגה: חטיבה, גדוד ופלוגה, בלי מחלקה וכיתה. מי שנכנס בקישור של מסגרת רואה את כל מה שמתחתיה.</span>
       <div class="unitf" id="uNew"></div>
       <div class="f">רובריקות שיופיעו במסגרת<span class="mini">ברירת מחדל לכל המפקדים במסגרת. כל מפקד יכול לשנות לעצמו בהגדרות.</span>
-        <div class="tilechk"><label class="allday"><input type="checkbox" id="nuT-nmr" checked> נמ"ר</label><label class="allday"><input type="checkbox" id="nuT-veh" checked> רכב</label></div></div>
+        <div class="tilechk"><label class="allday"><input type="checkbox" id="nuT-nmr" checked> נמ"ר</label><label class="allday"><input type="checkbox" id="nuT-veh" checked> רכב</label><label class="allday"><input type="checkbox" id="nuT-gaps" checked> פערים</label></div></div>
       <p class="err" id="unErr" hidden></p>
       <div class="row2"><button class="primary" type="submit">פתיחה</button><button class="ghost" type="button" id="cancelU">ביטול</button></div>
     </form>
@@ -637,6 +644,16 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
   </section>
 
   <!-- WEAR (בלאי) -->
+  <section id="v-gaps" hidden>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>פערים</h1><span class="count" id="gpCount"></span></div>
+    <p class="mini">כל ההערות שנרשמו על חיילים ועל אמל"ח. מוסיפים הערה מדף החייל, או מתפריט ⋮ של הנשק.</p>
+    <h2 class="sec" id="gpSH" hidden>חיילים</h2>
+    <ul class="list" id="gpS"></ul>
+    <h2 class="sec" id="gpWH" hidden>אמל"ח</h2>
+    <ul class="list" id="gpW"></ul>
+    <div class="empty" id="gpEmpty" hidden>אין פערים פתוחים. כל הכבוד.</div>
+  </section>
+
   <section id="v-wear" hidden>
     <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>בלאי</h1><span class="count" id="wrCount"></span></div>
     <div class="row2">
@@ -1134,7 +1151,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   function pathOf(unitId){const u=unitById(unitId);return u?Object.assign({},u.path):null;}
 
   /* ---------- screens ---------- */
-  const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd"];
+  const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps"];
   function show(ids){ALL.forEach(i=>$(i).hidden=!ids.includes(i));$("bootStatus").hidden=true;}
   function route(){
     if(!ready)return;
@@ -1158,6 +1175,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(h==="attend"){show(["v-attend"]);renderAttend();return;}
     if(h==="sched"){show(["v-sched"]);renderSched();return;}
     if(h==="wear"){show(["v-wear"]);renderWear();return;}
+    if(h==="gaps"){show(["v-gaps"]);renderGaps();return;}
     if(h==="nmr"||h==="veh"){setVk(h);show(["v-nmr"]);renderNmr();return;}
     {const nm=h.match(/^(nmr|veh)-([A-Za-z0-9]+)$/);if(nm){setVk(nm[1]);curNmr=nm[2];show(["v-nmrd"]);renderNmrD();return;}}
     if(h==="absent"){show(["v-absent"]);renderAbsent();return;}
@@ -1300,7 +1318,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       lab.append(inp,dl);box.append(lab);
     });
   }
-  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"]];
+  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"]];
   // default for a tile: the closest unit (own unit, then its parents) that set it; otherwise shown
   function unitTileDefault(k){
     let u=me&&me.unitId?unitById(me.unitId):null;
@@ -3035,13 +3053,37 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const dd=$("ndDel");dd.textContent="";dd.append(delBtn(async()=>{await remove("events/"+x.id);location.hash=vk;},"מחיקת ה"+VK[vk].name));
   }
 
+  /* ---------- פערים: all notes on soldiers and weapons ---------- */
+  function renderGaps(){
+    const S=vis(soldiers).filter(x=>(x.note||"").trim()).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));
+    const W=vis(weapons).filter(w=>(w.notes||"").trim()).sort((a,b)=>wType(a.type).localeCompare(wType(b.type),"he"));
+    const n=S.length+W.length;$("cntGp").textContent=n?n+" פתוחים":"אין פערים";
+    if($("v-gaps").hidden)return;
+    $("gpCount").textContent=n||"";
+    const done=(path,data,label)=>{const b=el("button","ghost sm","✓ טופל");b.type="button";
+      b.onclick=e=>{e.stopPropagation();if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="למחוק את ההערה?";setTimeout(()=>{b.classList.remove("armed");b.textContent="✓ טופל";},3000);return;}
+        patch(path,data).then(ok=>{if(ok)toast(label+" – ההערה נמחקה");});};return b;};
+    const us=$("gpS");us.textContent="";
+    S.forEach(x=>{const li=el("li","tap gaprow");li.onclick=()=>{location.hash="soldier-"+x.id;};
+      const info=el("div","info");const n1=el("div","n1");n1.append(el("span","ndot")," "+x.name);
+      info.append(n1,el("div","gapnote",x.note),el("div","n3",[x.squad?"כיתה "+x.squad:"",x.role&&x.role!=="חייל"?x.role:""].filter(Boolean).join(" · ")));
+      li.append(info,done("soldiers/"+x.id,{note:""},x.name));us.append(li);});
+    const uw=$("gpW");uw.textContent="";
+    W.forEach(w=>{const li=el("li","gaprow");const o=w.owner&&soldiers.find(z=>z.id===w.owner);
+      if(o){li.classList.add("tap");li.onclick=()=>{location.hash="soldier-"+o.id;};}
+      const info=el("div","info");const n1=el("div","n1");n1.append(el("span","ndot")," "+wType(w.type)+" ","⁦"+(w.num||"")+"⁩");
+      info.append(n1,el("div","gapnote",w.notes),el("div","n3",o?"שייך ל: "+o.name:(w.ownerName?"שייך ל: "+w.ownerName:"לא חתום")));
+      li.append(info,done("weapons/"+w.id,{notes:""},wType(w.type)+" "+(w.num||"")));uw.append(li);});
+    $("gpSH").hidden=!S.length;$("gpWH").hidden=!W.length;$("gpEmpty").hidden=n>0;
+  }
+
   function renderAll(){
     if(!ready)return;
     ensureLink();mergeSweep();
     renderMe();renderS();renderW();
     if(curSoldier)renderDetail();
     if(!$("v-units").hidden)renderUnits();
-    renderMine();renderAttend();renderVerify();renderSched();renderAbsent();renderWear();renderNmr();renderNmrD();
+    renderMine();renderAttend();renderVerify();renderSched();renderAbsent();renderWear();renderNmr();renderNmrD();renderGaps();
     {const t=key(new Date()),ue=unitEv().filter(x=>onDay(x,t)).length,ab=absEv().filter(x=>onDay(x,t)).length+vis(requests).filter(r=>r.status==="approved"&&r.from&&r.from<=t&&(r.to||r.from)>=t).length;
      $("cntSc").textContent=ue?ue+" אירועים היום":"אין אירועים היום";$("cntAb").textContent=ab?ab+" היום":"אין היום";}
     {const S=vis(soldiers).filter(s=>!isCmdSoldier(s)),here=S.filter(s=>!awayInfo(s.id)),m=getMarks(rollKey("att"));
