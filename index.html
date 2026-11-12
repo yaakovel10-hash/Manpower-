@@ -353,6 +353,7 @@ li.rollrow.ok .rolltrack{box-shadow:inset 0 2px 6px rgba(0,0,0,.2),0 0 0 3px col
 .notebox.has{border-color:color-mix(in srgb,var(--danger) 55%,var(--line));background:color-mix(in srgb,var(--danger) 8%,var(--surface))}
 .notebox textarea{min-height:56px}
 .gaprow{align-items:center}
+.pencil.wa{color:#25d366;border-color:color-mix(in srgb,#25d366 45%,var(--line))}
 .notelist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .notelist li{display:flex;gap:10px;align-items:center}
 .notelist .info{flex:1;min-width:0}
@@ -650,7 +651,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 
   <!-- WEAR (בלאי) -->
   <section id="v-gaps" hidden>
-    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>פערים</h1><span class="count" id="gpCount"></span></div>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>פערים</h1><span class="count" id="gpCount"></span><button class="pencil wa" type="button" id="gpWa" aria-label="שליחת רשימת הפערים בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
     <p class="mini">כל ההערות שנרשמו על חיילים ועל אמל"ח. מוסיפים הערה מדף החייל, או מתפריט ⋮ של הנשק.</p>
     <h2 class="sec" id="gpSH" hidden>חיילים</h2>
     <ul class="list" id="gpS"></ul>
@@ -660,7 +661,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
   </section>
 
   <section id="v-wear" hidden>
-    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>בלאי</h1><span class="count" id="wrCount"></span></div>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>בלאי</h1><span class="count" id="wrCount"></span><button class="pencil wa" type="button" id="wrWa" aria-label="שליחת רשימת הבלאי בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
     <div class="row2">
       <button class="primary" type="button" id="openWR">+ הוספת בלאי</button>
       <button class="ghost" type="button" id="wrAllDone">✓ הכול טופל</button>
@@ -3070,6 +3071,30 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   }
 
   /* ---------- פערים: all notes on soldiers and weapons ---------- */
+  // send a list as a WhatsApp message (opens WhatsApp with the text ready; you pick the chat)
+  function viewName(){const cv=curView();if(cv&&cv!=="*"){const u=unitById(cv);if(u)return unitLabel(u);}const u=me&&me.unitId&&unitById(me.unitId);return u?unitLabel(u):"";}
+  function sendWA(text){location.href="https://wa.me/?text="+encodeURIComponent(text);}
+  const waDate=t=>{const d=new Date(t);return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();};
+  $("wrWa").onclick=()=>{
+    const open=wearEv().filter(x=>x.status!=="done").sort((a,b)=>(a.at||0)-(b.at||0));
+    if(!open.length){toast("אין בלאי פתוח לשליחה");return;}
+    const L=["*בלאי פתוח"+(viewName()?" – "+viewName():"")+"*",waDate(Date.now()),""];
+    open.forEach((x,i)=>{const s=x.soldierId&&soldiers.find(z=>z.id===x.soldierId);
+      L.push((i+1)+". "+(x.item||"בלאי")+" – "+(s?s.name:(x.ownerName||"ללא שם"))+(x.why?" ("+x.why+")":""));});
+    L.push("","סה\"כ "+open.length+" פריטים");
+    sendWA(L.join("\n"));
+  };
+  $("gpWa").onclick=()=>{
+    const S=vis(soldiers).filter(x=>sNotes(x).length).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));
+    const W=vis(weapons).filter(w=>(w.notes||"").trim());
+    if(!S.length&&!W.length){toast("אין פערים לשליחה");return;}
+    const L=["*פערים"+(viewName()?" – "+viewName():"")+"*",waDate(Date.now())];
+    if(S.length){L.push("","*חיילים*");S.forEach(x=>{const N=sNotes(x);
+      if(N.length===1)L.push("• "+x.name+": "+N[0].text);else{L.push("• "+x.name+":");N.forEach(g=>L.push("   – "+g.text));}});}
+    if(W.length){L.push("",'*אמל"ח*');W.forEach(w=>{const o=w.owner&&soldiers.find(z=>z.id===w.owner);
+      L.push("• "+wType(w.type)+" "+(w.num||"")+(o?" ("+o.name+")":(w.ownerName?" ("+w.ownerName+")":""))+": "+w.notes);});}
+    sendWA(L.join("\n"));
+  };
   function renderGaps(){
     const S=vis(soldiers).filter(x=>sNotes(x).length).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));
     const W=vis(weapons).filter(w=>(w.notes||"").trim()).sort((a,b)=>wType(a.type).localeCompare(wType(b.type),"he"));
