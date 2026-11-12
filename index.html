@@ -194,10 +194,12 @@ a.approvals.mine{margin-top:14px;font-size:17px}
 .wcfoot{display:flex;justify-content:space-between;align-items:center}
 .linkbtn.muted{color:var(--muted)}
 .tiles .tile[hidden]{display:none}
+html,body{overflow-x:clip}
 #homeTiles .tile{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 #homeTiles.editing .tile{touch-action:none;animation:wiggle .35s ease-in-out infinite alternate;cursor:grab}
 #homeTiles.editing .tile:nth-child(2n){animation-delay:.17s}
-#homeTiles.editing .tile.dragging{animation:none;transform:scale(1.06);opacity:.85;z-index:5;box-shadow:0 18px 30px -10px var(--shadow);cursor:grabbing}
+#homeTiles.editing.dragon .tile{animation:none}
+#homeTiles.editing .tile.dragging{animation:none;transition:none;pointer-events:none;opacity:.92;z-index:5;box-shadow:0 22px 34px -12px var(--shadow);cursor:grabbing}
 @keyframes wiggle{from{transform:rotate(-1.2deg)}to{transform:rotate(1.2deg)}}
 .tilebar{position:fixed;top:calc(env(safe-area-inset-top) + 10px);left:16px;right:16px;max-width:560px;margin:0 auto;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--accent);box-shadow:0 10px 24px -12px var(--shadow)}
 .tilebar[hidden]{display:none}
@@ -507,7 +509,6 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
-    <div class="tilebar" id="tileBar" hidden><span>גוררים רובריקה למקום החדש</span><button class="primary sm" type="button" id="tileDone">✓ סיום</button></div>
     <nav class="tiles" id="homeTiles">
       <a class="tile t-green" href="#attend">
         <span class="badge" id="pendBadge" hidden></span>
@@ -1346,31 +1347,47 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   }
   {
     const nav=$("homeTiles");let lp=null,drag=null,sx=0,sy=0;
-    const enter=()=>{nav.classList.add("editing");$("tileBar").hidden=false;haptic(true);};
-    const exit=()=>{if(!nav.classList.contains("editing"))return;nav.classList.remove("editing");$("tileBar").hidden=true;
+    const enter=()=>{nav.classList.add("editing");haptic(true);};
+    const exit=()=>{if(!nav.classList.contains("editing"))return;nav.classList.remove("editing");
       const ord=[...nav.querySelectorAll(":scope > .tile")].map(tileKey);
       if(me){me.tileOrder=ord;qc(fs.doc("members/"+uid).update({tileOrder:ord})).catch(e=>toast(errMsg(e)));}};
-    $("tileDone").onclick=exit;
     nav.addEventListener("contextmenu",e=>e.preventDefault());
     nav.addEventListener("click",e=>{if(nav.classList.contains("editing")||nav.dataset.justLp){e.preventDefault();e.stopPropagation();}},true);
+    let gx=0,gy=0,lx=0,ly=0,pid=null;
+    const others=()=>[...nav.querySelectorAll(":scope > .tile")].filter(t=>t!==drag&&!t.hidden);
+    // keep the dragged tile exactly under the finger
+    const place=()=>{if(!drag)return;drag.style.transform="none";const r=drag.getBoundingClientRect();
+      drag.style.transform="translate("+(lx-gx-r.left)+"px,"+(ly-gy-r.top)+"px) scale(1.05)";};
+    const start=(t,x,y)=>{drag=t;const r=t.getBoundingClientRect();gx=x-r.left;gy=y-r.top;lx=x;ly=y;
+      nav.classList.add("dragon");t.classList.add("dragging");try{nav.setPointerCapture(pid);}catch(_){}place();};
     nav.addEventListener("pointerdown",e=>{
-      const t=e.target.closest(".tile");if(!t)return;sx=e.clientX;sy=e.clientY;
-      if(nav.classList.contains("editing")){drag=t;t.classList.add("dragging");try{t.setPointerCapture(e.pointerId);}catch(_){}return;}
-      clearTimeout(lp);lp=setTimeout(()=>{lp=null;nav.dataset.justLp="1";setTimeout(()=>{delete nav.dataset.justLp;},600);enter();drag=t;t.classList.add("dragging");try{t.setPointerCapture(e.pointerId);}catch(_){}},480);
+      const t=e.target.closest(".tile");if(!t)return;sx=e.clientX;sy=e.clientY;pid=e.pointerId;lx=sx;ly=sy;
+      if(nav.classList.contains("editing")){start(t,sx,sy);return;}
+      clearTimeout(lp);lp=setTimeout(()=>{lp=null;nav.dataset.justLp="1";setTimeout(()=>{delete nav.dataset.justLp;},600);enter();start(t,lx,ly);},480);
     });
     nav.addEventListener("pointermove",e=>{
-      if(lp&&Math.hypot(e.clientX-sx,e.clientY-sy)>10){clearTimeout(lp);lp=null;}
+      lx=e.clientX;ly=e.clientY;
+      if(lp&&Math.hypot(lx-sx,ly-sy)>10){clearTimeout(lp);lp=null;}
       if(!drag)return;e.preventDefault();
-      const under=document.elementFromPoint(e.clientX,e.clientY),o=under&&under.closest("#homeTiles > .tile");
-      if(!o||o===drag)return;
-      const T=[...nav.children],di=T.indexOf(drag),oi=T.indexOf(o);
-      if(di<oi)o.after(drag);else o.before(drag);
+      const under=document.elementFromPoint(lx,ly),o=under&&under.closest("#homeTiles > .tile");
+      if(o&&o!==drag){
+        // smooth swap: remember where the other tiles were, move, then slide them from there
+        const O=others(),before=new Map(O.map(t=>[t,t.getBoundingClientRect()]));
+        const T=[...nav.children],di=T.indexOf(drag),oi=T.indexOf(o);
+        if(di<oi)o.after(drag);else o.before(drag);
+        O.forEach(t=>{const a=before.get(t),b=t.getBoundingClientRect(),dx=a.left-b.left,dy=a.top-b.top;
+          if(!dx&&!dy)return;t.style.transition="none";t.style.transform="translate("+dx+"px,"+dy+"px)";
+          t.getBoundingClientRect();t.style.transition="transform .22s ease";t.style.transform="";});
+      }
+      place();
     });
-    const up=()=>{clearTimeout(lp);lp=null;if(drag){drag.classList.remove("dragging");drag=null;}};
+    const up=()=>{clearTimeout(lp);lp=null;
+      if(drag){const d=drag;drag=null;d.style.transition="transform .18s ease";d.style.transform="";
+        setTimeout(()=>{d.classList.remove("dragging");d.style.transition="";nav.classList.remove("dragon");exit();},190);}};
     nav.addEventListener("pointerup",up);nav.addEventListener("pointercancel",up);
     nav.addEventListener("dragstart",e=>e.preventDefault());
     nav.addEventListener("touchmove",e=>{if(drag||nav.classList.contains("editing"))e.preventDefault();},{passive:false});
-    document.addEventListener("pointerdown",e=>{if(nav.classList.contains("editing")&&!e.target.closest("#homeTiles,#tileBar"))exit();});
+    document.addEventListener("pointerdown",e=>{if(nav.classList.contains("editing")&&!e.target.closest("#homeTiles"))exit();});
     addEventListener("hashchange",exit);
   }
   const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"]];
