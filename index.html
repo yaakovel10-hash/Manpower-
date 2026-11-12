@@ -481,7 +481,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <button class="pencil homegear" id="setBtn" type="button" aria-expanded="false" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </div>
     </header>
-    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr"> נמ"ר</label></div>
+    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <nav class="tiles">
@@ -522,6 +522,10 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <a class="tile t-olive" href="#nmr" id="tileNmr">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 36h52l-4-10H40l-4-6H18l-4 6H8z" fill="var(--accent)" fill-opacity=".25"/><path d="M30 20v-6h14"/><rect x="4" y="36" width="56" height="12" rx="6"/><circle cx="14" cy="42" r="3"/><circle cx="25" cy="42" r="3"/><circle cx="36" cy="42" r="3"/><circle cx="48" cy="42" r="3"/></svg>
         <span class="t">נמ"ר</span><span class="c" id="cntNm">—</span>
+      </a>
+      <a class="tile t-steel" href="#veh" id="tileVeh">
+        <svg aria-hidden="true" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 44v-9l5-3 7-11h26l8 11 6 3v9z" fill="var(--accent)" fill-opacity=".25"/><path d="M20 23l-4 9h14v-9zM34 23v9h14l-6-9z"/><circle cx="18" cy="44" r="6" fill="var(--bg)"/><circle cx="46" cy="44" r="6" fill="var(--bg)"/><path d="M6 37h4M54 37h4"/></svg>
+        <span class="t">רכב</span><span class="c" id="cntVh">—</span>
       </a>
     </nav>
     <a class="approvals mine" id="openMine" href="#mine">הצל"מ שלי <span id="cntMine"></span></a>
@@ -646,10 +650,10 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 
   <!-- NMR (vehicle kit) -->
   <section id="v-nmr" hidden>
-    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>נמ"ר</h1><span class="count" id="nmCount"></span></div>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1 id="nmH1">נמ"ר</h1><span class="count" id="nmCount"></span></div>
     <button class="primary" type="button" id="openNM">+ הוספת נמ"ר</button>
     <form class="add" id="formNM" hidden>
-      <label class="f">מספר כלי<input type="text" id="nmNum" class="ltr" maxlength="20" required placeholder="למשל: 817345"></label>
+      <label class="f"><span id="nmNumL">מספר כלי</span><input type="text" id="nmNum" class="ltr" maxlength="20" required placeholder="למשל: 817345"></label>
       <div class="f">אחראי<div class="picker" id="nmPick"></div></div>
       <p class="err" id="nmErr" hidden></p>
       <div class="row2"><button class="primary" type="submit" id="nmSave">שמירה</button><button class="ghost" type="button" id="cancelNM">ביטול</button></div>
@@ -660,17 +664,17 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 
   <!-- NMR detail -->
   <section id="v-nmrd" hidden>
-    <div class="bar"><button class="back" type="button" data-go="nmr">→ נמ"ר</button><h1 id="ndTitle">נמ"ר</h1><span class="count" id="ndCount"></span></div>
+    <div class="bar"><button class="back" type="button" data-go="nmr" id="ndBack">→ נמ"ר</button><h1 id="ndTitle">נמ"ר</h1><span class="count" id="ndCount"></span></div>
     <div class="rollhead">
       <div class="nmhead"><div class="nmicon" id="ndIcon"></div><div class="info"><div class="n1" id="ndNum"></div><div class="n3" id="ndResp"></div></div></div>
       <div class="rolldate" id="ndDate"></div>
       <div class="progress"><span id="ndBar"></span></div>
-      <p class="mini">מחליקים ימינה כל פריט שנמצא בכלי. שמאלה מבטל.</p>
+      <p class="mini">לוחצים על כל פריט שנמצא. לחיצה נוספת מבטלת.</p>
     </div>
     <ul class="list roll" id="ndList"></ul>
     <div class="empty" id="ndEmpty" hidden>עוד אין פריטים בנמ"ר. הוסיפו את הציוד שאמור להיות בכלי.</div>
     <form class="add" id="formNI">
-      <strong>הוספת פריט לנמ"ר</strong>
+      <strong id="niTitle">הוספת פריט לנמ"ר</strong>
       <label class="f">שם הפריט<input type="text" id="niName" list="niNames" maxlength="60" required placeholder="למשל: מעיל רוח, פטיש 5"></label>
       <datalist id="niNames"><option value="מעיל רוח"><option value="פטיש 5"><option value="מטף"><option value="ערכת עזרה ראשונה"><option value="אלונקה"><option value="ג'ריקן מים"><option value="ג'ריקן דלק"><option value="כבל גרירה"><option value="מפתח גלגלים"><option value="ג'ק"><option value="פנס"><option value="רשת הסוואה"><option value="מכשיר קשר"></datalist>
       <label class="allday"><input type="checkbox" id="niHasNum"> לפריט יש מספר</label>
@@ -1141,8 +1145,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(h==="attend"){show(["v-attend"]);renderAttend();return;}
     if(h==="sched"){show(["v-sched"]);renderSched();return;}
     if(h==="wear"){show(["v-wear"]);renderWear();return;}
-    if(h==="nmr"){show(["v-nmr"]);renderNmr();return;}
-    {const nm=h.match(/^nmr-([A-Za-z0-9]+)$/);if(nm){curNmr=nm[1];show(["v-nmrd"]);renderNmrD();return;}}
+    if(h==="nmr"||h==="veh"){setVk(h);show(["v-nmr"]);renderNmr();return;}
+    {const nm=h.match(/^(nmr|veh)-([A-Za-z0-9]+)$/);if(nm){setVk(nm[1]);curNmr=nm[2];show(["v-nmrd"]);renderNmrD();return;}}
     if(h==="absent"){show(["v-absent"]);renderAbsent();return;}
     {const am=h==="alerts";if(am!==alertMode){alertMode=am;document.body.classList.toggle("alertmode",am);$("wTitle").textContent=am?"התראות אמל\"ח":"ניהול אמל\"ח";if(am&&bulk.k)setBulk(null);}
      if(am){$("vfMenu").hidden=true;show(["v-weapons"]);renderW();return;}}
@@ -1248,7 +1252,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     closeCard&&closeCard();renderAll();};
   function renderMe(){
     if(!me&&!mgr())return;
-    {const hid=(me&&me.hide)||[];$("tileNmr").hidden=hid.includes("nmr");$("setShowNmr").checked=!hid.includes("nmr");}
+    {const hid=(me&&me.hide)||[];[["nmr","tileNmr","setShowNmr"],["veh","tileVeh","setShowVeh"]].forEach(([k,t,c])=>{$(t).hidden=hid.includes(k);$(c).checked=!hid.includes(k);});}
     $("meName").textContent=(me&&me.name)||"משתמש";$("meId").textContent=(me&&me.pid)||"—";
     const badge=isAdmin?"מנהל":isMaster?"מפתח":(me&&me.title)||"";
     $("meRole").hidden=!badge;$("meRole").textContent=badge;
@@ -2480,10 +2484,10 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   const hapOn=()=>{try{return localStorage.getItem("haptic")!=="off";}catch(_){return true;}};
   $("setHaptic").checked=hapOn();
   $("setHaptic").onchange=()=>{try{localStorage.setItem("haptic",$("setHaptic").checked?"on":"off");}catch(_){}if($("setHaptic").checked)haptic(true);};
-  $("setShowNmr").onchange=()=>{if(!me)return;const show=$("setShowNmr").checked;
-    const hid=(me.hide||[]).filter(x=>x!=="nmr");if(!show)hid.push("nmr");
-    me.hide=hid;$("tileNmr").hidden=!show;
-    qc(fs.doc("members/"+uid).update({hide:hid})).catch(e=>toast(errMsg(e)));};
+  [["setShowNmr","tileNmr"],["setShowVeh","tileVeh"]].forEach(([c,t])=>{$(c).onchange=()=>{if(!me)return;const k=$(c).dataset.k,show=$(c).checked;
+    const hid=(me.hide||[]).filter(x=>x!==k);if(!show)hid.push(k);
+    me.hide=hid;$(t).hidden=!show;
+    qc(fs.doc("members/"+uid).update({hide:hid})).catch(e=>toast(errMsg(e)));};});
   $("setBtn").onclick=()=>{const p=$("setPanel");p.hidden=!p.hidden;$("setBtn").setAttribute("aria-expanded",String(!p.hidden));};
   function haptic(on){
     if(!hapOn())return;
@@ -2901,7 +2905,20 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   }
 
   /* ---------- נמ"ר (vehicle kit check) ---------- */
-  const nmrEv=()=>vis(events).filter(x=>x.kind==="nmr").sort((a,b)=>String(a.num).localeCompare(String(b.num)));
+  const CAR_SVG='<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 44v-9l5-3 7-11h26l8 11 6 3v9z" fill="var(--accent)" fill-opacity=".25"/><path d="M20 23l-4 9h14v-9zM34 23v9h14l-6-9z"/><circle cx="18" cy="44" r="6" fill="var(--bg)"/><circle cx="46" cy="44" r="6" fill="var(--bg)"/><path d="M6 37h4M54 37h4"/></svg>';
+  const VK={nmr:{name:'נמ"ר',plural:'נמ"רים',numL:"מספר כלי",ph:"למשל: 817345",icon:()=>APC_SVG,
+      items:["מעיל רוח","פטיש 5","מטף","ערכת עזרה ראשונה","אלונקה","ג'ריקן מים","ג'ריקן דלק","כבל גרירה","מפתח גלגלים","ג'ק","פנס","רשת הסוואה","מכשיר קשר"]},
+    veh:{name:"רכב",plural:"רכבים",numL:"מספר רכב",ph:"למשל: 12-345-67",icon:()=>CAR_SVG,
+      items:["מטף","ערכת עזרה ראשונה","משולש אזהרה","אפוד זוהר","גלגל רזרבי","ג'ק","מפתח גלגלים","כבל גרירה","כבלי הנעה","פנס","רישיון רכב","ביטוח","יומן רכב","מכשיר קשר"]}};
+  let vk="nmr";
+  function setVk(k){if(vk===k&&$("nmH1").dataset.k===k)return;vk=k;const c=VK[k];$("nmH1").dataset.k=k;
+    $("nmH1").textContent=c.name;$("openNM").textContent="+ הוספת "+c.name;$("nmEmpty").textContent="עוד אין "+c.plural+'. לחצו "הוספת '+c.name+'" כדי להתחיל.';
+    $("nmNumL").textContent=c.numL;$("nmNum").placeholder=c.ph;$("ndBack").dataset.go=k;$("ndBack").textContent="→ "+c.name;
+    $("niTitle").textContent="הוספת פריט ל"+c.name;$("ndEmpty").textContent="עוד אין פריטים ב"+c.name+". הוסיפו את הציוד שאמור להיות בו.";
+    const dl=$("niNames");dl.textContent="";c.items.forEach(v=>{const o=document.createElement("option");o.value=v;dl.append(o);});
+    if(!$("formNM").hidden){$("formNM").reset();$("formNM").hidden=true;$("openNM").hidden=false;}}
+  const kindEv=k=>vis(events).filter(x=>x.kind===k).sort((a,b)=>String(a.num).localeCompare(String(b.num)));
+  const nmrEv=()=>kindEv(vk);
   let curNmr=null;
   const respName=x=>{if(x.respId){const s=soldiers.find(z=>z.id===x.respId);if(s)return s.name;}return x.respName||"";};
   $("openNM").onclick=()=>{makePicker("nmPick","חיפוש מפקד או חייל…");$("formNM").hidden=false;$("openNM").hidden=true;showErr("nmErr","");$("nmNum").focus();};
@@ -2910,23 +2927,24 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   $("formNM").onsubmit=async e=>{
     e.preventDefault();
     const num=$("nmNum").value.trim();if(!num)return;
-    if(nmrEv().some(x=>String(x.num)===num))return showErr("nmErr","כבר קיים נמ\"ר לכלי הזה.");
-    const pp=pickedPerson(pickers.nmPick&&pickers.nmPick.value);if(!pp)return showErr("nmErr","חפשו ובחרו מי אחראי על הנמ\"ר.");
+    if(nmrEv().some(x=>String(x.num)===num))return showErr("nmErr","כבר קיים "+VK[vk].name+" עם המספר הזה.");
+    const pp=pickedPerson(pickers.nmPick&&pickers.nmPick.value);if(!pp)return showErr("nmErr","חפשו ובחרו מי אחראי על ה"+VK[vk].name+".");
     const s=pp.soldier;
     const unit=writeUnit();if(!unit)return showErr("nmErr","אין מסגרת פתוחה.");
     const id=newId(),b=$("nmSave");b.disabled=true;
-    const ok=await write("events/"+id,{kind:"nmr",soldierId:"",unit,num,respId:s?s.id:"",respName:pp.name,respMember:pp.memberId||"",items:[],date:"",at:Date.now(),addedBy:uid},"nmErr");
-    b.disabled=false;if(ok){resetNM();location.hash="nmr-"+id;}
+    const ok=await write("events/"+id,{kind:vk,soldierId:"",unit,num,respId:s?s.id:"",respName:pp.name,respMember:pp.memberId||"",items:[],date:"",at:Date.now(),addedBy:uid},"nmErr");
+    b.disabled=false;if(ok){resetNM();location.hash=vk+"-"+id;}
   };
   function renderNmr(){
-    const L=nmrEv();$("cntNm").textContent=L.length?L.length+" כלים":"אין כלים";
+    {const a=kindEv("nmr").length,v=kindEv("veh").length;$("cntNm").textContent=a?a+" כלים":"אין כלים";$("cntVh").textContent=v?v+" רכבים":"אין רכבים";}
+    const L=nmrEv();
     if($("v-nmr").hidden)return;
     $("nmCount").textContent=L.length||"";
     const ul=$("nmList");ul.textContent="";
     L.forEach(x=>{
-      const items=x.items||[],m=getMarks(rollKey("nmr",x.id)),ok=items.filter(i=>m.has(i.id)).length;
-      const li=el("li","tap nmrow");li.onclick=()=>{location.hash="nmr-"+x.id;};
-      const ic=el("div","nmicon");ic.innerHTML=APC_SVG;
+      const items=x.items||[],m=getMarks(rollKey(vk,x.id)),ok=items.filter(i=>m.has(i.id)).length;
+      const li=el("li","tap nmrow");li.onclick=()=>{location.hash=vk+"-"+x.id;};
+      const ic=el("div","nmicon");ic.innerHTML=VK[vk].icon();
       const info=el("div","info");info.append(el("div","n1 ltrnum","⁦"+x.num+"⁩"));
       const n3=el("div","n3");const rn=respName(x);n3.append("אחראי: ");n3.append(x.respId&&soldiers.some(z=>z.id===x.respId)?sLink(rn,x.respId):(rn||"—"));n3.append(" · "+items.length+" פריטים");info.append(n3);
       const pg=el("div","minibar");const sp=el("span");sp.style.width=(items.length?Math.round(ok/items.length*100):0)+"%";pg.append(sp);
@@ -2946,16 +2964,16 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const b=$("niSave");b.disabled=true;const ok=await patch("events/"+x.id,{items},"niErr");b.disabled=false;
     if(ok){$("niName").value="";$("niNum").value="";$("niQty").value=1;showErr("niErr","");$("niName").focus();}
   };
-  $("ndReset").onclick=()=>{if(!curNmr)return;setMarks(rollKey("nmr",curNmr),new Set());renderNmrD();toast("הבדיקה אופסה");};
+  $("ndReset").onclick=()=>{if(!curNmr)return;setMarks(rollKey(vk,curNmr),new Set());renderNmrD();toast("הבדיקה אופסה");};
   function renderNmrD(){
     if($("v-nmrd").hidden||!curNmr)return;
-    const x=vis(events).find(z=>z.id===curNmr&&z.kind==="nmr");
-    if(!x){$("ndTitle").textContent='נמ"ר לא נמצא';$("ndList").textContent="";return;}
-    $("ndTitle").textContent='נמ"ר '+"⁦"+x.num+"⁩";
-    $("ndIcon").innerHTML=APC_SVG;$("ndNum").textContent="⁦"+x.num+"⁩";
+    const x=vis(events).find(z=>z.id===curNmr&&z.kind===vk);
+    if(!x){$("ndTitle").textContent=VK[vk].name+" לא נמצא";$("ndList").textContent="";return;}
+    $("ndTitle").textContent=VK[vk].name+" "+"⁦"+x.num+"⁩";
+    $("ndIcon").innerHTML=VK[vk].icon();$("ndNum").textContent="⁦"+x.num+"⁩";
     const rn=respName(x),r=$("ndResp");r.textContent="אחראי: ";r.append(x.respId&&soldiers.some(z=>z.id===x.respId)?sLink(rn,x.respId):(rn||"—"));
     $("ndDate").textContent=fmtToday();
-    const mk=rollKey("nmr",x.id),marks=getMarks(mk),items=x.items||[];
+    const mk=rollKey(vk,x.id),marks=getMarks(mk),items=x.items||[];
     const ul=$("ndList");ul.textContent="";
     items.forEach(it=>ul.append(rollRow(it.id,marks,mk,renderNmrD,inner=>{
       const info=el("div","info");info.append(el("div","n1",it.name+(it.qty>1?" ×"+it.qty:"")));
@@ -2968,7 +2986,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     })));
     progress($("ndBar"),$("ndCount"),items.filter(i=>marks.has(i.id)).length,items.length);
     $("ndEmpty").hidden=items.length>0;
-    const dd=$("ndDel");dd.textContent="";dd.append(delBtn(async()=>{await remove("events/"+x.id);location.hash="nmr";},'מחיקת הנמ"ר'));
+    const dd=$("ndDel");dd.textContent="";dd.append(delBtn(async()=>{await remove("events/"+x.id);location.hash=vk;},"מחיקת ה"+VK[vk].name));
   }
 
   function renderAll(){
