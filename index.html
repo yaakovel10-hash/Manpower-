@@ -193,6 +193,7 @@ a.approvals.mine{margin-top:14px;font-size:17px}
 .wchead .n1{font-family:var(--display);font-weight:400;font-size:22px}
 .wcfoot{display:flex;justify-content:space-between;align-items:center}
 .linkbtn.muted{color:var(--muted)}
+.setpanel{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
 .fault .approve{width:100%}
 .ubtns.end{justify-content:flex-end}
 #wType::-webkit-calendar-picker-indicator,#twType::-webkit-calendar-picker-indicator,#mwType::-webkit-calendar-picker-indicator{display:none!important;opacity:0}
@@ -469,7 +470,8 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <span class="lbl">שם משתמש</span>
         <div class="name"><span id="meName">…</span><span class="role" id="meRole" hidden></span></div>
         <div class="mini" id="meUnit"></div>
-        <div class="hdr-actions"><button class="linkbtn" id="editMe" type="button">עריכת פרטים</button><button class="linkbtn" id="logout" type="button">התנתקות</button></div>
+        <div class="hdr-actions"><button class="linkbtn" id="editMe" type="button">עריכת פרטים</button><button class="linkbtn" id="setBtn" type="button" aria-expanded="false">הגדרות</button><button class="linkbtn" id="logout" type="button">התנתקות</button></div>
+        <div class="setpanel" id="setPanel" hidden><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label></div>
       </div>
       <div class="pid">
         <span class="lbl">מספר אישי</span>
@@ -2448,7 +2450,12 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   // one row = a slide switch: drag the knob to the right to mark, back to the left to unmark
   // a short "click" like flipping a physical switch (Android: vibrate; iPhone 18+: native switch haptic)
   let hapLabel=null;
+  const hapOn=()=>{try{return localStorage.getItem("haptic")!=="off";}catch(_){return true;}};
+  $("setHaptic").checked=hapOn();
+  $("setHaptic").onchange=()=>{try{localStorage.setItem("haptic",$("setHaptic").checked?"on":"off");}catch(_){}if($("setHaptic").checked)haptic(true);};
+  $("setBtn").onclick=()=>{const p=$("setPanel");p.hidden=!p.hidden;$("setBtn").setAttribute("aria-expanded",String(!p.hidden));};
   function haptic(on){
+    if(!hapOn())return;
     try{if(navigator.vibrate){navigator.vibrate(on?[14]:[8]);return;}}catch(_){}
     try{if(!hapLabel){const i=document.createElement("input");i.type="checkbox";i.setAttribute("switch","");i.id="hapSw";
         hapLabel=document.createElement("label");hapLabel.htmlFor="hapSw";
