@@ -259,9 +259,12 @@ body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
 #v-verify .bar h1{white-space:nowrap;overflow-wrap:normal}
 .searchbox{position:sticky;top:8px;z-index:6;display:flex;align-items:center;gap:10px;margin:10px 0 6px;padding:0 14px;height:52px;border-radius:999px;background:var(--surface);border:1.5px solid var(--line);box-shadow:0 8px 20px -14px var(--shadow);transition:border-color .2s,box-shadow .2s}
 .searchbox:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 22%,transparent),0 8px 20px -14px var(--shadow)}
+.searchbox.pksearch{position:relative;top:auto;margin:0;height:50px}
+.searchbox[hidden]{display:none}
+.pkchip{min-height:50px;border-radius:999px!important;padding:6px 16px!important}
 .searchbox svg{width:20px;height:20px;flex:none;color:var(--muted)}
 .searchbox:focus-within svg{color:var(--accent)}
-.searchbox input{flex:1;min-width:0;height:100%;border:0!important;background:transparent!important;box-shadow:none!important;outline:none;padding:0;font:inherit;font-size:16px;color:var(--fg)}
+.searchbox input{flex:1;min-width:0;height:100%!important;min-height:0!important;border:0!important;background:transparent!important;box-shadow:none!important;outline:none;padding:0!important;font:inherit;font-size:16px;color:var(--fg)}
 .searchbox input::-webkit-search-cancel-button{-webkit-appearance:none;display:none}
 .searchbox input::placeholder{color:var(--muted)}
 .sbclear{flex:none;width:30px;height:30px;border-radius:50%;border:0;background:var(--tile);color:var(--fg);font-size:14px;padding:0;cursor:pointer}
@@ -1068,7 +1071,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <button class="primary" id="openAF" type="button">+ הוספת תקלה</button>
       <form class="add" id="formAF" hidden>
         <strong>תקלה חדשה</strong>
-        <div class="f">איזה פריט<div class="picker" id="afPick"><input type="search" id="afSearch" placeholder="חיפוש לפי מספר, סוג או שם החייל…" autocomplete="off"><ul class="pklist" id="afList" hidden></ul><div class="pkchip" id="afChip" hidden></div></div></div>
+        <div class="f">איזה פריט<div class="picker" id="afPick"><label class="searchbox pksearch" id="afWrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="afSearch" placeholder="חיפוש לפי מספר, סוג או שם החייל" autocomplete="off"></label><ul class="pklist" id="afList" hidden></ul><div class="pkchip" id="afChip" hidden></div></div></div>
         <label class="f">מה התקלה<input type="text" id="afDesc" maxlength="120" required placeholder="למשל: כוונת רופפת, חסר רצועה"></label>
         <p class="err" id="afErr" hidden></p>
         <div class="row2"><button class="primary" type="submit" id="afSave">שמירה</button><button class="ghost" type="button" id="afCancel">ביטול</button></div>
@@ -2548,11 +2551,11 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const R=vis(weapons).filter(w=>(wType(w.type)+" "+(w.num||"")+" "+own(w)).toLowerCase().includes(q)).slice(0,30);
       if(!R.length){ul.append(el("li","pkhead","לא נמצא"));}
       R.forEach(w=>{const li=el("li","pkitem");li.append(el("span",null,wType(w.type)+" "),el("b",null,"\u2066"+(w.num||"")+"\u2069"),el("span","mini"," "+(own(w)||"לא חתום")));
-        li.onclick=()=>{afW=w.id;ul.hidden=true;$("afSearch").hidden=true;const c=$("afChip");c.textContent="";c.append(wType(w.type)+" "+(w.num||"")+(own(w)?" · "+own(w):""));
-          const ch=el("button","linkbtn","שינוי");ch.type="button";ch.onclick=()=>{afW=null;c.hidden=true;$("afSearch").hidden=false;$("afSearch").value="";$("afSearch").focus();};c.append(" ",ch);c.hidden=false;$("afDesc").focus();};
+        li.onclick=()=>{afW=w.id;ul.hidden=true;$("afWrap").hidden=true;const c=$("afChip");c.textContent="";c.append(wType(w.type)+" "+(w.num||"")+(own(w)?" · "+own(w):""));
+          const ch=el("button","linkbtn","שינוי");ch.type="button";ch.onclick=()=>{afW=null;c.hidden=true;$("afWrap").hidden=false;$("afSearch").value="";$("afSearch").focus();};c.append(" ",ch);c.hidden=false;$("afDesc").focus();};
         ul.append(li);});
       ul.hidden=false;};
-    const afReset=()=>{afW=null;$("formAF").reset();$("formAF").hidden=true;$("openAF").hidden=false;$("afChip").hidden=true;$("afSearch").hidden=false;$("afList").hidden=true;showErr("afErr","");};
+    const afReset=()=>{afW=null;$("formAF").reset();$("formAF").hidden=true;$("openAF").hidden=false;$("afChip").hidden=true;$("afWrap").hidden=false;$("afList").hidden=true;showErr("afErr","");};
     $("afSearch").oninput=afRender;
     $("openAF").onclick=()=>{afReset();$("formAF").hidden=false;$("openAF").hidden=true;$("afSearch").focus();};
     $("afCancel").onclick=afReset;
@@ -3201,7 +3204,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const inp=el("input");inp.type="search";inp.id=id+"In";inp.placeholder=ph||"חיפוש שם…";inp.autocomplete="off";inp.setAttribute("role","combobox");
     const list=el("ul","pklist");list.hidden=true;
     const chip=el("div","pkchip");chip.hidden=true;
-    box.append(chip,inp,list);
+    const wrap=el("label","searchbox pksearch");wrap.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';wrap.append(inp);
+    box.append(chip,wrap,list);
     const draw=()=>{
       const q=nameToks(inp.value).join(" ");const raw=inp.value.trim();
       const all=peopleList();
@@ -3214,15 +3218,15 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
         const li=el("li","pkitem");li.append(el("b",null,p.name));if(p.sub)li.append(el("span","mini",p.sub));
         li.addEventListener("pointerdown",e=>e.preventDefault());
         li.onclick=()=>{st.value=p.v;st.label=p.name;chip.textContent="";chip.append(el("b",null,p.name));
-          const x=el("button","linkbtn muted","שינוי");x.type="button";x.onclick=()=>{st.value="";chip.hidden=true;inp.hidden=false;inp.value="";inp.focus();draw();list.hidden=false;};
-          chip.append(x);chip.hidden=false;inp.hidden=true;list.hidden=true;};
+          const x=el("button","linkbtn muted","שינוי");x.type="button";x.onclick=()=>{st.value="";chip.hidden=true;wrap.hidden=false;inp.value="";inp.focus();draw();list.hidden=false;};
+          chip.append(x);chip.hidden=false;wrap.hidden=true;list.hidden=true;};
         list.append(li);
       });
     };
     inp.onfocus=()=>{draw();list.hidden=false;};
     inp.oninput=()=>{draw();list.hidden=false;};
     inp.onblur=()=>setTimeout(()=>{list.hidden=true;},150);
-    const api={get value(){return st.value;},get label(){return st.label;},reset(){st.value="";st.label="";chip.hidden=true;inp.hidden=false;inp.value="";list.hidden=true;}};
+    const api={get value(){return st.value;},get label(){return st.label;},reset(){st.value="";st.label="";chip.hidden=true;wrap.hidden=false;inp.value="";list.hidden=true;}};
     pickers[id]=api;return api;
   }
   function pickedPerson(v){
