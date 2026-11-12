@@ -2961,7 +2961,10 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       .sort((a,b)=>((ownerOf(a)||{}).name||"ת").localeCompare((ownerOf(b)||{}).name||"ת","he")||String(a.num).localeCompare(String(b.num)));
     const here=[],away=[];list.forEach(w=>{const r=w.owner&&!w.ownerMember?awayInfo(w.owner):null;r?away.push({w,r}):here.push(w);});
     const row=(w,inner)=>{const ic=el("div","wicon");ic.innerHTML=weaponIcon(w.type);const o=ownerOf(w);
-      const info=el("div","info");info.append(el("div","n1",o?o.name:"לא חתום"),el("div","n3",[ty==="*"?wType(w.type):"",w.num,o&&o.squad?"כיתה "+o.squad:""].filter(Boolean).join(" · ")));
+      const info=el("div","info"),who=o?o.name:"לא חתום";
+      // all items: the type is the big line and the name is small; one type: the name is big
+      if(ty==="*")info.append(el("div","n1",wType(w.type)),el("div","n3",[who,w.num,o&&o.squad?"כיתה "+o.squad:""].filter(Boolean).join(" · ")));
+      else info.append(el("div","n1",who),el("div","n3",[w.num,o&&o.squad?"כיתה "+o.squad:""].filter(Boolean).join(" · ")));
       {const of=openFaults(w);if(of.length){const d=el("div","faultline","⚠ "+of.map(f=>f.desc).join(" · "));d.title=d.textContent;info.append(d);}}inner.append(ic,info);
     };
     here.forEach(w=>ul.append(rollRow(w.id,marks,mk,renderVerify,inner=>row(w,inner))));
