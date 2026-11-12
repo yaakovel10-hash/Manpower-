@@ -1384,6 +1384,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
         const ul=el("ul","list");
         mem.forEach(m=>{const li=el("li","tap");const info=el("div","info");
           info.append(el("div","n1",(m.name||"ללא שם")+(m.title?" · "+m.title:"")),el("div","n2",m.pid||""),el("div","n3",m.email||""));
+          if(isAdmin)info.append(el("div","n3 seen","🕒 "+seenText(m.lastSeen)));
           li.onclick=()=>openMemberPage(m,u);
           li.append(info,delBtn(()=>remove("members/"+m.id),"הסרה"),el("span","mini","‹"));ul.append(li);});
         if(!mem.length)ul.append(el("li","mini","אין משתמשים במסגרת."));
@@ -1391,6 +1392,26 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       }
       box.append(c);
     });
+  }
+
+  // last time each account opened the app (shown only to the admin)
+  let seenAt=0;
+  function markSeen(){
+    if(!fs||!uid||!me||!navigator.onLine)return;
+    const now=Date.now();if(now-seenAt<5*60*1000)return;seenAt=now;
+    fs.doc("members/"+uid).update({lastSeen:firebase.firestore.FieldValue.serverTimestamp()}).catch(e=>{seenAt=0;console.warn("seen",e);});
+  }
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)markSeen();});
+  addEventListener("online",markSeen);
+  function seenText(ts){
+    if(!ts||!ts.toDate)return "עוד לא נכנס מאז שהתחלנו לעקוב";
+    const d=ts.toDate(),m=Math.floor((Date.now()-d)/60000);
+    if(m<5)return "נכנס עכשיו";
+    if(m<60)return "נכנס לפני "+m+" דק'";
+    const h=Math.floor(m/60);if(h<24)return "נכנס לפני "+h+" שע'";
+    const dd=Math.floor(h/24);
+    const p=n=>String(n).padStart(2,"0");
+    return "נכנס לאחרונה "+p(d.getDate())+"."+p(d.getMonth()+1)+"."+d.getFullYear()+" "+p(d.getHours())+":"+p(d.getMinutes())+(dd<30?" (לפני "+dd+" ימים)":"");
   }
 
   /* ---------- soldiers ---------- */
@@ -3004,7 +3025,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       if(!mgmtUnsubs.length)startMgmt();
       startData();renderAll();route();};
     unitsUnsub=fs.collection("units").onSnapshot(s=>{units=s.docs.map(d=>({id:d.id,...d.data()}));gotUnits=true;step();},e=>{console.warn("units",e);gotUnits=true;step();});
-    meUnsub=fs.doc("members/"+uid).onSnapshot(s=>{me=s.exists?{id:uid,...s.data()}:null;gotMe=true;step();},e=>{gotMe=true;step();});
+    meUnsub=fs.doc("members/"+uid).onSnapshot(s=>{me=s.exists?{id:uid,...s.data()}:null;gotMe=true;step();markSeen();},e=>{gotMe=true;step();});
   });
 })();
 
