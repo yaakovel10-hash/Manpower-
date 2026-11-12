@@ -349,6 +349,12 @@ li.rollrow.ok .rolltrack{box-shadow:inset 0 2px 6px rgba(0,0,0,.2),0 0 0 3px col
 .cfgdays input{width:72px;text-align:center}
 .awaytag{flex:none;font-size:13px;font-weight:700;border-radius:8px;padding:3px 9px;background:var(--teal);color:#fff;margin-inline-start:auto}
 .statusbox{margin-top:14px;padding:12px 14px;border-radius:16px;border:1px solid color-mix(in srgb,var(--ok) 40%,var(--line));background:linear-gradient(160deg,color-mix(in srgb,var(--ok) 14%,var(--surface)),var(--surface));display:grid;gap:8px;box-shadow:inset 0 1px 0 var(--hi),0 10px 22px -16px var(--shadow)}
+.notebox{margin-top:12px;padding:10px 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);display:grid;gap:8px}
+.notebox.has{border-color:color-mix(in srgb,var(--danger) 55%,var(--line));background:color-mix(in srgb,var(--danger) 8%,var(--surface))}
+.notebox textarea{min-height:56px}
+.ndot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 25%,transparent);vertical-align:middle;margin-inline-start:8px;flex:none}
+button.ndot{border:0;padding:0;cursor:pointer;width:12px;height:12px}
+.n1 .ndot{position:relative;top:-1px}
 .statusbox.away{border-color:color-mix(in srgb,var(--teal) 50%,var(--line));background:linear-gradient(160deg,color-mix(in srgb,var(--teal) 16%,var(--surface)),var(--surface))}
 .sthead{display:flex;align-items:center;gap:8px}
 .stdot{width:12px;height:12px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
@@ -813,6 +819,10 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <div class="info"><div class="n1" id="dName"></div><div class="n2" id="dNum"></div><div id="dPhone" class="phone"></div><label class="sqpick">כיתה<select id="dSquad"><option value="">ללא כיתה</option><option value="א">כיתה א</option><option value="ב">כיתה ב</option><option value="ג">כיתה ג</option></select></label></div>
     </div>
     <div class="statusbox" id="dStatus"></div>
+    <div class="notebox" id="dNoteBox">
+      <label class="f"><span><span class="ndot" aria-hidden="true"></span> הערה</span><textarea id="dNote" rows="2" maxlength="300" placeholder="למשל: אלרגיה, בעיה ברכב, צריך לדבר איתו…"></textarea></label>
+      <div class="row2"><button class="primary sm" type="button" id="dNoteSave">שמירת הערה</button><button class="ghost sm" type="button" id="dNoteClr">מחיקת הערה</button></div>
+    </div>
     <div class="tiles three" role="tablist">
       <button class="tile" type="button" data-tab="tzalam" aria-pressed="true">
         <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><path d="M4 24h40l6-4h10v8H48l-4 4H30l-4 14h-9l3-14H4z" fill="var(--accent)" fill-opacity=".25"/></svg>
@@ -1556,7 +1566,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       li.onclick=()=>{if(bulk.k==="s"){toggleSel(s.id);return;}location.hash="soldier-"+s.id;};
       if(bulk.k==="s"){const cb=el("span","pick");cb.textContent=bulk.sel.has(s.id)?"✓":"";li.append(cb);}
       bulk.vis.push(s.id);
-      const info=el("div","info");info.append(el("div","n1",s.name),el("div","n2",s.num));
+      const info=el("div","info");info.append(nameWithNote(s),el("div","n2",s.num));
       const W=vis(weapons).filter(w=>w.owner===s.id).length,P=vis(requests).filter(r=>r.soldierId===s.id&&r.status==="pending").length;
       const meta=[];if(len<5&&s.unit){const t=LV.slice(Math.max(len,0)).filter(k=>s.unit[k]).map(k=>LVC[k]+" "+s.unit[k]).join(" · ");if(t)meta.push(t);}
       if(s.squad)meta.unshift("כיתה "+s.squad);
@@ -1998,6 +2008,17 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     $("t-tzalam").hidden=t!=="tzalam";$("t-cal").hidden=t!=="cal";$("t-req").hidden=t!=="req";
   }
   document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{setTab(b.dataset.tab);if(b.dataset.tab==="cal")renderCal();});
+  // red dot next to a soldier's name when he has a note; tapping it shows the note
+  function nameWithNote(s,cls){
+    const d=el("div",cls||"n1");d.append(s.name||"");
+    if(s.note){const b=el("button","ndot");b.type="button";b.title=s.note;b.setAttribute("aria-label","הערה: "+s.note);
+      b.addEventListener("pointerdown",e=>e.stopPropagation());
+      b.onclick=e=>{e.stopPropagation();toast("📝 "+s.name+": "+s.note);};d.append(b);}
+    return d;
+  }
+  $("dNoteSave").onclick=async()=>{if(!curSoldier)return;const v=$("dNote").value.trim();const b=$("dNoteSave");b.disabled=true;
+    const ok=await patch("soldiers/"+curSoldier,{note:v});b.disabled=false;if(ok){toast(v?"ההערה נשמרה":"ההערה נמחקה");$("dNote").blur();}};
+  $("dNoteClr").onclick=async()=>{if(!curSoldier)return;$("dNote").value="";const ok=await patch("soldiers/"+curSoldier,{note:""});if(ok)toast("ההערה נמחקה");};
   function renderDetail(){
     if(!curSoldier)return;
     const s=soldierById(curSoldier);
@@ -2008,6 +2029,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const av=avatar(s.photo,"lg");av.id="dAv";$("dAv").replaceWith(av);
     renderPhone(s);
     renderStatus(s);
+    {const nt=$("dNote");if(document.activeElement!==nt)nt.value=s.note||"";$("dNoteBox").classList.toggle("has",!!s.note);$("dNoteClr").hidden=!s.note;}
     const dsq=$("dSquad");if(document.activeElement!==dsq)dsq.value=s.squad||"";
     dsq.onchange=()=>patch("soldiers/"+s.id,{squad:dsq.value});
     const dd=$("dDel");dd.textContent="";dd.append(delBtn(async()=>{
@@ -2562,7 +2584,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const here=[],away=[];S.forEach(s=>{const r=awayInfo(s.id);r?away.push({s,r}):here.push(s);});
     const ul=$("atList");ul.textContent="";
     here.forEach(s=>ul.append(rollRow(s.id,marks,mk,renderAttend,inner=>{
-      const info=el("div","info");info.append(el("div","n1",s.name));
+      const info=el("div","info");info.append(nameWithNote(s));
       info.append(el("div","n3",[s.squad?"כיתה "+s.squad:"",s.num||""].filter(Boolean).join(" · ")));
       inner.append(info,profBtn(s.id));
     })));
@@ -2571,7 +2593,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     $("atEmpty").hidden=S.length>0;
     const ua=$("atAway");ua.textContent="";$("atAwayH").hidden=!away.length;
     away.forEach(({s,r})=>{const li=el("li","rollrow off");const inner=el("div","rolltrack");const body=el("div","rollbody");
-      const info=el("div","info");info.append(el("div","n1",s.name),el("div","n3",r.text));
+      const info=el("div","info");info.append(nameWithNote(s),el("div","n3",r.text));
       body.append(info,el("span","awaytag",r.tag),el("span","mini","‹"));inner.append(body);li.append(inner);
       li.classList.add("tap");li.onclick=()=>{location.hash="soldier-"+s.id;};ua.append(li);});
   }
