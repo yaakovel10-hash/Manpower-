@@ -2675,10 +2675,21 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const c=S.filter(x=>{if(x.memberId)return false;const st=nameToks(x.name||"");return st.length>=2&&st.length===mt.length&&mt.every(w=>st.includes(w));});
     return c.length===1?c[0]:null;
   }
-  let linkDone=false;
+  let linkDone=false,creatingMe=false,soldiersLoaded=false;
   async function ensureLink(){
-    if(linkDone||!me||!soldiers.length)return;
-    const s=mySoldier();if(!s){return;}
+    if(linkDone||!me||!soldiersLoaded)return;
+    const s=mySoldier();
+    if(!s){
+      // a commander who joined with the unit link and isn't on the list yet: add him (as a commander)
+      if(creatingMe||!me.unitId||!memberOk())return;
+      const mt=nameToks(me.name||"");
+      if(soldiers.some(x=>x.id==="m-"+uid||x.memberId===uid||(me.pid&&x.num===me.pid)||(mt.length>=2&&!x.memberId&&(()=>{const st=nameToks(x.name||"");return st.length===mt.length&&mt.every(w=>st.includes(w));})())))return;
+      const u=myUnit();if(!u||!u.path)return;
+      creatingMe=true;
+      const ok=await write("soldiers/m-"+uid,{name:me.name||"מפקד",num:me.pid||"",phone:me.phone||"",squad:"",role:me.title||"מפקד",photo:"",unit:Object.assign({},u.path),memberId:uid,addedBy:uid,at:Date.now()});
+      creatingMe=false;if(!ok)console.warn("could not add me to the list");
+      return;
+    }
     linkDone=true;
     if(s.memberId===uid&&dupsOf(s).length===1){await autoMerge(s);return;}
     const ops=[];
@@ -3530,11 +3541,11 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const n=myLen();const k=n<0?"none":n+"|"+(n?LV.slice(0,n).map(x=>myUnit().path[x]).join("|"):"all");
     if(k===scopeKey)return;
     unsubs.forEach(u=>{try{u();}catch(_){}});unsubs=[];scopeKey=k;
-    soldiers=[];weapons=[];events=[];requests=[];
+    soldiers=[];weapons=[];events=[];requests=[];soldiersLoaded=false;
     if(n<0)return;
     let got=0;$("status").textContent="טוען נתונים…";
     const sub=(col,set,label)=>unsubs.push(scoped(col).onSnapshot(s=>{set(s.docs.map(d=>({id:d.id,...d.data()})));renderAll();if(++got===4)$("status").textContent=navigator.onLine?"מסונכרן בזמן אמת":"אופליין · מוצגים נתונים שמורים";},e=>{console.warn(col,e);$("status").textContent="שגיאה בטעינת "+label+(e.code==="permission-denied"?" (אין הרשאה)":"")+".";}));
-    sub("soldiers",v=>soldiers=v.sort((a,b)=>(b.at||0)-(a.at||0)),"החיילים");
+    sub("soldiers",v=>{soldiers=v.sort((a,b)=>(b.at||0)-(a.at||0));soldiersLoaded=true;},"החיילים");
     sub("weapons",v=>weapons=v.sort((a,b)=>(b.at||0)-(a.at||0)),'האמל"ח');
     sub("events",v=>events=v,"האירועים");
     sub("requests",v=>requests=v,'הבקש"צים');
