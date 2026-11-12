@@ -3438,7 +3438,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
         const n=el("input","ironin");n.type="number";n.inputMode="numeric";n.min="1";n.value=s.iron||"";n.placeholder="#";n.setAttribute("aria-label","מספר ברזל של "+s.name);
         n.onchange=async()=>{const v=parseInt(n.value,10)||0;
           if(v&&P.some(o=>o.id!==s.id&&o.iron===v)){const o=P.find(o=>o.id!==s.id&&o.iron===v);toast("מספר "+v+" כבר שייך ל"+o.name);n.value=s.iron||"";return;}
+          s.iron=v||0;n.blur();renderOrbat(); // move him to his place in the list right away
           await patch("soldiers/"+s.id,{iron:v||0},"obErr");};
+        n.onkeydown=e=>{if(e.key==="Enter")n.blur();};
         const info=el("div","info");info.append(el("div","n1",s.name||""),el("div","n3",[s.squad?"כיתה "+s.squad:"",s.role&&s.role!=="חייל"?s.role:""].filter(Boolean).join(" · ")||" "));
         const k=el("input","pakin");k.type="text";k.setAttribute("list","pakalList");k.maxLength=20;k.value=s.pakal||"";k.placeholder='פק"ל';k.setAttribute("aria-label",'פק"ל של '+s.name);
         k.onchange=()=>patch("soldiers/"+s.id,{pakal:k.value.trim()},"obErr");
