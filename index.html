@@ -256,6 +256,7 @@ body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
 .cmdhead .sec{margin:0}
 .vfacts{display:flex;justify-content:flex-end;margin:-6px 0 10px}
 #v-verify .bar h1{white-space:nowrap;overflow-wrap:normal}
+.zrq{width:100%;margin-top:8px}
 .zrsum{font-weight:700;margin:4px 0 6px;color:var(--muted)}
 .zrrow{align-items:center}
 .zrrow .info{flex:1;min-width:0}
@@ -753,6 +754,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
   <section id="v-zr" hidden>
     <div class="bar"><button class="back" type="button" data-go="verify">→ אמל"ח</button><h1>דו"ח צל"מ</h1><span class="count" id="zrCount"></span><button class="pencil wa" type="button" id="vfWa" aria-label="שליחת דוח צ בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
     <p class="mini">לכל פריט: עליו או מאופסן. לוחצים על המתג כדי לשנות. הכפתור הירוק שולח את הדו"ח בוואטסאפ.</p>
+    <input type="search" id="zrQ" class="zrq" placeholder="חיפוש לפי שם, מספר או סוג…" autocomplete="off" aria-label="חיפוש בדו&quot;ח צל&quot;מ">
     <div class="zrsum" id="zrSum"></div>
     <div id="zrBox"></div>
     <div class="empty" id="zrEmpty" hidden>אין אמל"ח במסגרת המוצגת.</div>
@@ -3381,15 +3383,17 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     });
     sendWA(L.join("\n"));
   };
-  $("openZR").onclick=()=>{location.hash="zreport";};
+  $("openZR").onclick=()=>{$("zrQ").value="";location.hash="zreport";};
+  $("zrQ").oninput=()=>renderZR();
   function renderZR(){
     if($("v-zr").hidden)return;
-    const W=vis(weapons);
     const own=w=>{if(w.ownerMember)return w.ownerMember===uid?((me&&me.name)||""):(w.ownerName||"");const o=w.owner&&soldiers.find(z=>z.id===w.owner);return o?o.name:"";};
+    const q=$("zrQ").value.trim().toLowerCase();
+    const W=vis(weapons).filter(w=>!q||(wType(w.type)+" "+(w.num||"")+" "+(own(w)||"לא חתום")).toLowerCase().includes(q));
     const G={};W.forEach(w=>{const t=wType(w.type)||"אחר";(G[t]=G[t]||[]).push(w);});
     const types=Object.keys(G).sort((a,b)=>(G[b].length-G[a].length)||a.localeCompare(b,"he"));
     const st=W.filter(w=>w.stored).length;
-    $("zrCount").textContent=W.length||"";$("zrEmpty").hidden=W.length>0;
+    $("zrCount").textContent=W.length||"";$("zrEmpty").hidden=W.length>0;$("zrEmpty").textContent=q?"לא נמצא פריט שמתאים לחיפוש.":'אין אמל"ח במסגרת המוצגת.';
     $("zrSum").textContent=W.length?"עליו "+(W.length-st)+" · מאופסן "+st:"";
     const box=$("zrBox");box.textContent="";
     types.forEach(t=>{
