@@ -218,7 +218,7 @@ html,body{overflow-x:clip}
 .wmenu button{background:none;border:0;text-align:right;font:inherit;font-size:17px;color:var(--fg);padding:12px;border-radius:8px;cursor:pointer}
 .gearmenu{top:62px;left:0}
 #v-verify{position:relative}
-/* ---- מבנה הארגון לקרב ---- */
+/* ---- מבנה וארגון לקרב ---- */
 .seg{display:flex;gap:4px;padding:4px;margin-top:12px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
 .seg button{flex:1;min-height:42px;border:0;border-radius:10px;background:transparent;color:var(--fg);font:inherit;font-weight:700;font-size:15px}
 .seg button.on{background:var(--accent);color:var(--on-accent,#1b1d16)}
@@ -545,7 +545,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <button class="pencil homegear" id="setBtn" type="button" aria-expanded="false" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </div>
     </header>
-    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה הארגון לקרב</label></div>
+    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה וארגון לקרב</label></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <nav class="tiles" id="homeTiles">
@@ -589,7 +589,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       </a>
       <a class="tile t-navy" href="#orbat" id="tileOrbat">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><rect x="22" y="6" width="20" height="13" rx="3" fill="var(--accent)" fill-opacity=".25"/><rect x="5" y="41" width="16" height="13" rx="3" fill="var(--accent)" fill-opacity=".25"/><rect x="24" y="41" width="16" height="13" rx="3" fill="var(--accent)" fill-opacity=".25"/><rect x="43" y="41" width="16" height="13" rx="3" fill="var(--accent)" fill-opacity=".25"/><path d="M32 19v11M13 41v-6h38v6M32 30v11"/></svg>
-        <span class="t">מבנה הארגון לקרב</span><span class="c" id="cntOb">—</span>
+        <span class="t">מבנה וארגון לקרב</span><span class="c" id="cntOb">—</span>
       </a>
       <a class="tile t-sand" href="#gaps" id="tileGaps">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M14 8h28l10 10v38H14z" fill="var(--accent)" fill-opacity=".25"/><path d="M42 8v10h10"/><path d="M22 28h20M22 36h20M22 44h12"/><circle cx="48" cy="48" r="9" fill="var(--bg)"/><path d="M48 43v6M48 53v.5"/></svg>
@@ -612,7 +612,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <span class="mini">ממלאים מלמעלה למטה, עד הרמה של המסגרת. למשל לפלוגה: חטיבה, גדוד ופלוגה, בלי מחלקה וכיתה. מי שנכנס בקישור של מסגרת רואה את כל מה שמתחתיה.</span>
       <div class="unitf" id="uNew"></div>
       <div class="f">רובריקות שיופיעו במסגרת<span class="mini">ברירת מחדל לכל המפקדים במסגרת. כל מפקד יכול לשנות לעצמו בהגדרות.</span>
-        <div class="tilechk"><label class="allday"><input type="checkbox" id="nuT-nmr" checked> נמ"ר</label><label class="allday"><input type="checkbox" id="nuT-veh" checked> רכב</label><label class="allday"><input type="checkbox" id="nuT-gaps" checked> פערים</label><label class="allday"><input type="checkbox" id="nuT-orbat" checked> מבנה הארגון לקרב</label></div></div>
+        <div class="tilechk"><label class="allday"><input type="checkbox" id="nuT-nmr" checked> נמ"ר</label><label class="allday"><input type="checkbox" id="nuT-veh" checked> רכב</label><label class="allday"><input type="checkbox" id="nuT-gaps" checked> פערים</label><label class="allday"><input type="checkbox" id="nuT-orbat" checked> מבנה וארגון לקרב</label></div></div>
       <p class="err" id="unErr" hidden></p>
       <div class="row2"><button class="primary" type="submit">פתיחה</button><button class="ghost" type="button" id="cancelU">ביטול</button></div>
     </form>
@@ -703,7 +703,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 
   <!-- WEAR (בלאי) -->
   <section id="v-orbat" hidden>
-    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>מבנה הארגון לקרב</h1></div>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>מבנה וארגון לקרב</h1></div>
     <div class="seg" role="tablist" id="obTabs">
       <button type="button" role="tab" data-t="iron">מספרי ברזל</button>
       <button type="button" role="tab" data-t="front">2 לפנים</button>
@@ -1495,7 +1495,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     document.addEventListener("pointerdown",e=>{if(nav.classList.contains("editing")&&!e.target.closest("#homeTiles"))exit();});
     addEventListener("hashchange",exit);
   }
-  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"],["orbat","מבנה הארגון לקרב","tileOrbat","setShowOrbat"]];
+  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"],["orbat","מבנה וארגון לקרב","tileOrbat","setShowOrbat"]];
   // default for a tile: the closest unit (own unit, then its parents) that set it; otherwise shown
   function unitTileDefault(k){
     let u=me&&me.unitId?unitById(me.unitId):null;
@@ -3368,7 +3368,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     $("gpSH").hidden=!S.length;$("gpWH").hidden=!W.length;$("gpEmpty").hidden=n>0;
   }
 
-  /* ---------- מבנה הארגון לקרב ---------- */
+  /* ---------- מבנה וארגון לקרב ---------- */
   const FIG='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a7 6 0 0 1 14 0z" fill="currentColor" fill-opacity=".25"/><path d="M7 11h18"/><circle cx="16" cy="14" r="4"/><path d="M8 29c0-5 3.5-8 8-8s8 3 8 8"/><path d="M22 20l6-5"/></svg>';
   let obTab="iron",obSel=null,obSaveT=null;
   try{obTab=localStorage.getItem("obTab")||"iron";}catch(_){}
