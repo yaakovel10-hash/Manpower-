@@ -195,6 +195,7 @@ a.approvals.mine{margin-top:14px;font-size:17px}
 .linkbtn.muted{color:var(--muted)}
 .tiles .tile[hidden]{display:none}
 html,body{overflow-x:clip}
+#homeTiles{position:relative}
 #homeTiles .tile{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 #homeTiles.editing .tile{touch-action:none;animation:wiggle .35s ease-in-out infinite alternate;cursor:grab}
 #homeTiles.editing .tile:nth-child(2n){animation-delay:.17s}
@@ -1374,11 +1375,19 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const now=Date.now();if(now-lastSwap<150)return;
       // swap only when the finger is well inside another tile (avoids flicker on the edges)
       const T=[...nav.querySelectorAll(":scope > .tile")].filter(t=>!t.hidden);
-      const o=T.find(t=>{if(t===drag)return false;const r=t.getBoundingClientRect(),mx=r.width*.2,my=r.height*.2;
-        return lx>r.left+mx&&lx<r.right-mx&&ly>r.top+my&&ly<r.bottom-my;});
+      // layout position (ignores the sliding/wiggle animation, so tiles don't flicker back and forth)
+      const nr=nav.getBoundingClientRect(),box=t=>({l:nr.left+t.offsetLeft,t:nr.top+t.offsetTop,w:t.offsetWidth,h:t.offsetHeight});
+      const o=T.find(t=>{if(t===drag)return false;const r=box(t),mx=r.w*.2,my=r.h*.2;
+        return lx>r.l+mx&&lx<r.l+r.w-mx&&ly>r.t+my&&ly<r.t+r.h-my;});
       if(!o)return;
+      const before=new Map(T.map(t=>[t,[t.offsetLeft,t.offsetTop]]));
       const A=[...nav.children],di=A.indexOf(drag),oi=A.indexOf(o);
       if(di<oi)o.after(drag);else o.before(drag);
+      // slide every tile that moved from its old spot to the new one
+      T.forEach(t=>{const [x0,y0]=before.get(t),dx=x0-t.offsetLeft,dy=y0-t.offsetTop;if(!dx&&!dy)return;
+        t.style.transition="none";t.style.translate=dx+"px "+dy+"px";t.offsetWidth;
+        t.style.transition="translate .24s cubic-bezier(.2,.8,.2,1)";t.style.translate="0px 0px";
+        clearTimeout(t._sl);t._sl=setTimeout(()=>{t.style.transition="";t.style.translate="";},260);});
       lastSwap=now;haptic(false);
     });
     const up=()=>{clearTimeout(lp);lp=null;
