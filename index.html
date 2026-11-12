@@ -335,17 +335,19 @@ body.bulking #openS,body.bulking #openImp,body.bulking #openW,body.bulking #open
 .progress{height:8px;border-radius:99px;background:var(--tile);overflow:hidden}
 .progress span{display:block;height:100%;width:0;background:var(--ok);transition:width .2s}
 ul.roll li.rollrow{display:block;padding:0;border-bottom:0;margin-bottom:10px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
-.rolltrack{position:relative;display:flex;align-items:center;width:100%;min-height:64px;border-radius:999px;background:var(--tile);border:2px solid var(--line);box-shadow:inset 0 2px 6px rgba(0,0,0,.25);padding:6px 16px 6px calc(25% + 74px);transition:background .2s,border-color .2s}
-.rolltrack::before{content:"";position:absolute;left:0;top:0;bottom:0;width:calc(25% + 64px);border-radius:999px 0 0 999px;background:color-mix(in srgb,var(--fg) 7%,transparent);clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%);transition:background .2s;pointer-events:none}
+.rolltrack{position:relative;display:flex;align-items:center;width:100%;min-height:64px;border-radius:999px;background:var(--tile);border:2px solid var(--line);box-shadow:inset 0 2px 6px rgba(0,0,0,.25);padding:6px 14px 6px calc(20% + 70px);transition:background .2s,border-color .2s}
+.rolltrack::before{content:"";position:absolute;left:0;top:0;bottom:0;width:calc(20% + 62px);border-radius:999px 0 0 999px;background:color-mix(in srgb,var(--fg) 7%,transparent);clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%);transition:background .2s;pointer-events:none}
 li.rollrow.ok .rolltrack::before{background:color-mix(in srgb,var(--ok) 30%,transparent)}
 li.rollrow.off .rolltrack::before{display:none}
 .rollbody{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
-.rollbody .info{min-width:0}.rollbody .n1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rollbody .info{min-width:0;flex:1}.rollbody .n1,.rollbody .n3{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rollbody .faultline{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+.rollbody .profbtn{width:36px;height:36px;flex:none}.rollbody .profbtn svg{width:18px;height:18px}
 .rollbody .wicon{width:40px;height:40px;flex:none}.rollbody .wicon svg{width:30px;height:30px}
 .knob{position:absolute;left:6px;top:50%;margin-top:-26px;width:52px;height:52px;border-radius:50%;border:0;padding:0;cursor:grab;background:radial-gradient(circle at 35% 30%,#ffffff,#d9d9d4 70%,#bdbdb6);box-shadow:0 3px 8px rgba(0,0,0,.35),inset 0 -2px 3px rgba(0,0,0,.12);display:grid;place-items:center;transition:transform .2s ease,left .2s ease;z-index:2}
 .knob .ring{width:24px;height:24px;border-radius:50%;border:3px solid #e2574c;transition:border-color .2s}
 li.rollrow.dragging .knob{transition:none;cursor:grabbing}
-li.rollrow.ok .knob{left:calc(25% + 6px)}
+li.rollrow.ok .knob{left:calc(20% + 6px)}
 li.rollrow.ok .knob .ring,li.rollrow.near .knob .ring{border-color:#5d8a1f}
 li.rollrow.ok .rolltrack{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 22%,var(--tile))}
 li.rollrow.ok.dragging .knob{left:6px}
@@ -2877,7 +2879,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     knob.append(el("span","ring"));
     track.append(body,knob);li.append(track);
     const set=v=>{v?marks.add(id):marks.delete(id);setMarks(mk,marks);haptic(v);onChange();};
-    const span=()=>Math.round(track.clientWidth*0.25);
+    const span=()=>Math.round(track.clientWidth*0.2);
     let x0=null,y0=null,drag=false,moved=0,lastMx=0,justDragged=false;
     const pos=()=>marks.has(id)?span():0;
     li.addEventListener("pointerdown",e=>{x0=e.clientX;y0=e.clientY;drag=false;moved=0;lastMx=0;});
@@ -2960,8 +2962,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const here=[],away=[];list.forEach(w=>{const r=w.owner&&!w.ownerMember?awayInfo(w.owner):null;r?away.push({w,r}):here.push(w);});
     const row=(w,inner)=>{const ic=el("div","wicon");ic.innerHTML=weaponIcon(w.type);const o=ownerOf(w);
       const info=el("div","info");info.append(el("div","n1",o?o.name:"לא חתום"),el("div","n3",[ty==="*"?wType(w.type):"",w.num,o&&o.squad?"כיתה "+o.squad:""].filter(Boolean).join(" · ")));
-      const fl=faultLine(w);if(fl)info.append(fl);inner.append(ic,info);
-      const so=w.owner&&!w.ownerMember?soldiers.find(x=>x.id===w.owner):null;if(so)inner.append(profBtn(so.id));};
+      {const of=openFaults(w);if(of.length){const d=el("div","faultline","⚠ "+of.map(f=>f.desc).join(" · "));d.title=d.textContent;info.append(d);}}inner.append(ic,info);
+    };
     here.forEach(w=>ul.append(rollRow(w.id,marks,mk,renderVerify,inner=>row(w,inner))));
     away.forEach(({w,r})=>ua.append(rollRow(w.id,marks,mk,renderVerify,inner=>{row(w,inner);
       const inf=inner.querySelector(".info");inf.append(el("div","n3 awaynote","⚠ החותם לא נוכח · "+r.text));})));
