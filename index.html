@@ -218,6 +218,9 @@ html,body{overflow-x:clip}
 .wmenu button{background:none;border:0;text-align:right;font:inherit;font-size:17px;color:var(--fg);padding:12px;border-radius:8px;cursor:pointer}
 .gearmenu{top:62px;left:0}
 #v-verify{position:relative}
+.cmdhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:22px}
+.cmdhead .sec{margin:0}
+.alertonly{display:none;margin-bottom:12px}body.alertmode .alertonly{display:block}
 body.alertmode #v-weapons .wadd,body.alertmode #formW,body.alertmode #editW,body.alertmode #v-weapons .wfilter{display:none}
 .wmenu button:active,.wmenu button:hover{background:var(--tile)}
 .wcsec{display:grid;gap:10px}
@@ -738,9 +741,11 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <p class="mini">מקריאים שם ולוחצים על השורה כשהחייל נמצא. לחיצה נוספת מבטלת.</p>
     </div>
     <ul class="list roll" id="atList"></ul>
-    <div class="empty" id="atEmpty" hidden>אין חיילים במסגרת המוצגת. מפקדים לא מופיעים ברשימת הנוכחות.</div>
+    <div class="empty" id="atEmpty" hidden>אין חיילים במסגרת המוצגת. מפקדים מופיעים בנפרד למטה.</div>
     <h2 class="sec" id="atAwayH" hidden>לא בנוכחות היום · בקש"צים, תורנויות והיעדרויות</h2>
     <ul class="list roll away" id="atAway"></ul>
+    <div class="cmdhead" id="atCmdH" hidden><h2 class="sec">מפקדים <span class="mini" id="atCmdN"></span></h2><button class="linkbtn" type="button" id="atCmdT"></button></div>
+    <ul class="list roll" id="atCmd"></ul>
   </section>
 
   <!-- VERIFY TZALAM -->
@@ -939,6 +944,16 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
   <!-- WEAPONS -->
   <section id="v-weapons" hidden>
     <div class="bar"><button class="back" type="button" data-go="verify">→ חזרה</button><h1 id="wTitle">ניהול אמל"ח</h1><span class="count" id="cntW2"></span><button class="pencil" type="button" id="editW" aria-label="בחירה ומחיקה" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button></div>
+    <div class="alertonly">
+      <button class="primary" id="openAF" type="button">+ הוספת תקלה</button>
+      <form class="add" id="formAF" hidden>
+        <strong>תקלה חדשה</strong>
+        <div class="f">איזה פריט<div class="picker" id="afPick"><input type="search" id="afSearch" placeholder="חיפוש לפי מספר, סוג או שם החייל…" autocomplete="off"><ul class="pklist" id="afList" hidden></ul><div class="pkchip" id="afChip" hidden></div></div></div>
+        <label class="f">מה התקלה<input type="text" id="afDesc" maxlength="120" required placeholder="למשל: כוונת רופפת, חסר רצועה"></label>
+        <p class="err" id="afErr" hidden></p>
+        <div class="row2"><button class="primary" type="submit" id="afSave">שמירה</button><button class="ghost" type="button" id="afCancel">ביטול</button></div>
+      </form>
+    </div>
     <div class="row2 wadd">
       <button class="primary" id="openW" type="button">+ הוספת נשק</button>
       <button class="ghost" id="openImpW" type="button">ייבוא מ-PDF</button>
@@ -2396,6 +2411,28 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   }
   let cardW=null;
   async function saveFaults(id,arr){return patch("weapons/"+id,{faults:arr},"wcErr");}
+  {let afW=null;
+    const afRender=()=>{const q=$("afSearch").value.trim().toLowerCase(),ul=$("afList");ul.textContent="";
+      if(!q){ul.hidden=true;return;}
+      const own=w=>{const o=w.owner&&soldiers.find(z=>z.id===w.owner);return o?o.name:(w.ownerName||"");};
+      const R=vis(weapons).filter(w=>(wType(w.type)+" "+(w.num||"")+" "+own(w)).toLowerCase().includes(q)).slice(0,30);
+      if(!R.length){ul.append(el("li","pkhead","לא נמצא"));}
+      R.forEach(w=>{const li=el("li","pkitem");li.append(el("span",null,wType(w.type)+" "),el("b",null,"\u2066"+(w.num||"")+"\u2069"),el("span","mini"," "+(own(w)||"לא חתום")));
+        li.onclick=()=>{afW=w.id;ul.hidden=true;$("afSearch").hidden=true;const c=$("afChip");c.textContent="";c.append(wType(w.type)+" "+(w.num||"")+(own(w)?" · "+own(w):""));
+          const ch=el("button","linkbtn","שינוי");ch.type="button";ch.onclick=()=>{afW=null;c.hidden=true;$("afSearch").hidden=false;$("afSearch").value="";$("afSearch").focus();};c.append(" ",ch);c.hidden=false;$("afDesc").focus();};
+        ul.append(li);});
+      ul.hidden=false;};
+    const afReset=()=>{afW=null;$("formAF").reset();$("formAF").hidden=true;$("openAF").hidden=false;$("afChip").hidden=true;$("afSearch").hidden=false;$("afList").hidden=true;showErr("afErr","");};
+    $("afSearch").oninput=afRender;
+    $("openAF").onclick=()=>{afReset();$("formAF").hidden=false;$("openAF").hidden=true;$("afSearch").focus();};
+    $("afCancel").onclick=afReset;
+    $("formAF").onsubmit=async e=>{e.preventDefault();
+      const w=afW&&weapons.find(x=>x.id===afW);if(!w)return showErr("afErr","חפשו ובחרו את הפריט.");
+      const d=$("afDesc").value.trim();if(!d)return;
+      const arr=(w.faults||[]).concat([{id:newId(),desc:d,fixed:false,note:"",at:Date.now(),by:uid,byName:(me&&me.name)||""}]);
+      const b=$("afSave");b.disabled=true;const ok=await patch("weapons/"+w.id,{faults:arr},"afErr");b.disabled=false;
+      if(ok){afReset();toast("התקלה נוספה");}};
+  }
   let cardMode="faults";
   function openCard(w,mode){
     resetW();cardW=w.id;cardMode=mode||"faults";$("wCard").hidden=false;$("openW").hidden=true;$("wcNew").value="";showErr("wcErr","");
@@ -2719,6 +2756,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
 
   // commanders (a role other than חייל, or a linked app user) are not part of the roll call
   const isMe=s=>!!me&&(s.memberId===uid||(!!me.pid&&s.num===me.pid)||sameName(s.name,me.name||""));
+  const CMD_ORDER=['מג"ד','סמג"ד','מ"פ','סמ"פ','מ"מ','סמל','מ"כ','כללי'],rankIx=r=>{const i=CMD_ORDER.indexOf(r);return i<0?99:i;};
   const isCmdSoldier=s=>!!s.memberId||(!!s.role&&s.role!=="חייל")||isMe(s);
   function renderAttend(){
     if($("v-attend").hidden)return;
@@ -2727,6 +2765,18 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const mk=rollKey("att"),marks=getMarks(mk);
     const S=vis(soldiers).filter(s=>!isCmdSoldier(s)&&(sq==="*"||(s.squad||"")===sq)).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));
     const here=[],away=[];S.forEach(s=>{const r=awayInfo(s.id);r?away.push({s,r}):here.push(s);});
+    // commanders: separate list at the bottom (never yourself), can be hidden
+    const C=vis(soldiers).filter(s=>isCmdSoldier(s)&&!isMe(s)&&(sq==="*"||!s.squad||s.squad===sq)).sort((a,b)=>rankIx(a.role)-rankIx(b.role)||(a.name||"").localeCompare(b.name||"","he"));
+    const cHere=[];C.forEach(s=>{const r=awayInfo(s.id);r?away.push({s,r}):cHere.push(s);});
+    let showC=true;try{showC=localStorage.getItem("showCmds")!=="off";}catch(_){}
+    $("atCmdH").hidden=!cHere.length;$("atCmdT").textContent=showC?"הסתרה":"הצגה";
+    $("atCmdN").textContent=cHere.length?cHere.filter(s=>marks.has(s.id)).length+"/"+cHere.length:"";
+    const uc=$("atCmd");uc.textContent="";uc.hidden=!showC;
+    if(showC)cHere.forEach(s=>uc.append(rollRow(s.id,marks,mk,renderAttend,inner=>{
+      const info=el("div","info");info.append(nameWithNote(s));
+      info.append(el("div","n3",[s.role&&s.role!=="חייל"?s.role:"מפקד",s.squad?"כיתה "+s.squad:""].filter(Boolean).join(" · ")));
+      inner.append(info,profBtn(s.id));
+    })));
     const ul=$("atList");ul.textContent="";
     here.forEach(s=>ul.append(rollRow(s.id,marks,mk,renderAttend,inner=>{
       const info=el("div","info");info.append(nameWithNote(s));
@@ -2743,6 +2793,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       li.classList.add("tap");li.onclick=()=>{location.hash="soldier-"+s.id;};ua.append(li);});
   }
   $("atSquad").onchange=renderAttend;
+  $("atCmdT").onclick=()=>{let v="off";try{v=localStorage.getItem("showCmds")==="off"?"on":"off";localStorage.setItem("showCmds",v);}catch(_){}renderAttend();};
   $("atReset").onclick=()=>{setMarks(rollKey("att"),new Set());renderAttend();toast("הנוכחות אופסה");};
 
   function renderVerify(){
