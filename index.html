@@ -193,6 +193,7 @@ a.approvals.mine{margin-top:14px;font-size:17px}
 .wchead .n1{font-family:var(--display);font-weight:400;font-size:22px}
 .wcfoot{display:flex;justify-content:space-between;align-items:center}
 .linkbtn.muted{color:var(--muted)}
+.tiles .tile[hidden]{display:none}
 .setpanel{display:grid;gap:8px;margin-top:10px;padding:12px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
 .pid{display:flex;flex-direction:column;align-items:flex-start}
 .homegear{margin-top:10px;margin-inline-start:0}
@@ -480,7 +481,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <button class="pencil homegear" id="setBtn" type="button" aria-expanded="false" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </div>
     </header>
-    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label></div>
+    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr"> נמ"ר</label></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <nav class="tiles">
@@ -518,7 +519,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M22 8l-14 8 5 12 6-3v31h26V25l6 3 5-12-14-8c-2 4-6 6-10 6s-8-2-10-6z" fill="var(--accent)" fill-opacity=".25"/><path d="M30 30l4 6-5 4 6 7M40 44l-3 6"/></svg>
         <span class="t">בלאי</span><span class="c" id="cntWr">—</span>
       </a>
-      <a class="tile t-olive" href="#nmr">
+      <a class="tile t-olive" href="#nmr" id="tileNmr">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 36h52l-4-10H40l-4-6H18l-4 6H8z" fill="var(--accent)" fill-opacity=".25"/><path d="M30 20v-6h14"/><rect x="4" y="36" width="56" height="12" rx="6"/><circle cx="14" cy="42" r="3"/><circle cx="25" cy="42" r="3"/><circle cx="36" cy="42" r="3"/><circle cx="48" cy="42" r="3"/></svg>
         <span class="t">נמ"ר</span><span class="c" id="cntNm">—</span>
       </a>
@@ -1247,6 +1248,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     closeCard&&closeCard();renderAll();};
   function renderMe(){
     if(!me&&!mgr())return;
+    {const hid=(me&&me.hide)||[];$("tileNmr").hidden=hid.includes("nmr");$("setShowNmr").checked=!hid.includes("nmr");}
     $("meName").textContent=(me&&me.name)||"משתמש";$("meId").textContent=(me&&me.pid)||"—";
     const badge=isAdmin?"מנהל":isMaster?"מפתח":(me&&me.title)||"";
     $("meRole").hidden=!badge;$("meRole").textContent=badge;
@@ -2478,6 +2480,10 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   const hapOn=()=>{try{return localStorage.getItem("haptic")!=="off";}catch(_){return true;}};
   $("setHaptic").checked=hapOn();
   $("setHaptic").onchange=()=>{try{localStorage.setItem("haptic",$("setHaptic").checked?"on":"off");}catch(_){}if($("setHaptic").checked)haptic(true);};
+  $("setShowNmr").onchange=()=>{if(!me)return;const show=$("setShowNmr").checked;
+    const hid=(me.hide||[]).filter(x=>x!=="nmr");if(!show)hid.push("nmr");
+    me.hide=hid;$("tileNmr").hidden=!show;
+    qc(fs.doc("members/"+uid).update({hide:hid})).catch(e=>toast(errMsg(e)));};
   $("setBtn").onclick=()=>{const p=$("setPanel");p.hidden=!p.hidden;$("setBtn").setAttribute("aria-expanded",String(!p.hidden));};
   function haptic(on){
     if(!hapOn())return;
