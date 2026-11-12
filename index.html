@@ -1384,7 +1384,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
         const ul=el("ul","list");
         mem.forEach(m=>{const li=el("li","tap");const info=el("div","info");
           info.append(el("div","n1",(m.name||"ללא שם")+(m.title?" · "+m.title:"")),el("div","n2",m.pid||""),el("div","n3",m.email||""));
-          if(mgr())info.append(el("div","n3 seen","🕒 "+seenText(m.lastSeen)));
+          if(mgr())info.append(el("div","n3 seen","🕒 "+seenText(m.lastSeen)+(m.lastSeen&&m.lastMode?(m.lastMode==="app"?" · 📱 מהאפליקציה":" · 🌐 מהאתר"):"")));
           li.onclick=()=>openMemberPage(m,u);
           li.append(info,delBtn(()=>remove("members/"+m.id),"הסרה"),el("span","mini","‹"));ul.append(li);});
         if(!mem.length)ul.append(el("li","mini","אין משתמשים במסגרת."));
@@ -1398,8 +1398,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   let seenAt=0;
   function markSeen(){
     if(!fs||!uid||!me||!navigator.onLine)return;
-    const now=Date.now();if(now-seenAt<5*60*1000)return;seenAt=now;
-    fs.doc("members/"+uid).update({lastSeen:firebase.firestore.FieldValue.serverTimestamp()}).catch(e=>{seenAt=0;console.warn("seen",e);});
+    const mode=(matchMedia("(display-mode: standalone)").matches||navigator.standalone===true)?"app":"site";
+    const now=Date.now();if(now-seenAt<5*60*1000&&me.lastMode===mode)return;seenAt=now;
+    fs.doc("members/"+uid).update({lastSeen:firebase.firestore.FieldValue.serverTimestamp(),lastMode:mode}).catch(e=>{seenAt=0;console.warn("seen",e);});
   }
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)markSeen();});
   addEventListener("online",markSeen);
