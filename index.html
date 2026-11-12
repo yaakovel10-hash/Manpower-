@@ -254,6 +254,18 @@ body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
 .ocolh{font-weight:800;text-align:center;font-size:14px;color:var(--muted)}
 .cmdhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:22px}
 .cmdhead .sec{margin:0}
+.vfacts{display:flex;justify-content:flex-end;margin:-6px 0 10px}
+#v-verify .bar h1{white-space:nowrap;overflow-wrap:normal}
+.zrsum{font-weight:700;margin:4px 0 6px;color:var(--muted)}
+.zrrow{align-items:center}
+.zrrow .info{flex:1;min-width:0}
+.stsw{position:relative;flex:none;display:grid;grid-template-columns:1fr 1fr;align-items:center;width:150px;height:40px;padding:0;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.stsw span.a,.stsw span.b{position:relative;z-index:1;text-align:center;transition:color .2s}
+.stsw .k{position:absolute;top:3px;bottom:3px;right:3px;width:calc(50% - 3px);border-radius:999px;background:var(--ok);transition:right .22s cubic-bezier(.2,.8,.2,1),background .2s}
+.stsw span.a{color:#fff}
+.stsw[aria-pressed="true"] .k{right:50%;background:var(--warn)}
+.stsw[aria-pressed="true"] span.a{color:var(--muted)}
+.stsw[aria-pressed="true"] span.b{color:#1b1d16}
 .pencil.wa-al{display:none}body.alertmode .pencil.wa-al{display:grid}
 .alertonly{display:none;margin-bottom:12px}body.alertmode .alertonly{display:block}
 body.alertmode #v-weapons .wadd,body.alertmode #formW,body.alertmode #editW,body.alertmode #v-weapons .wfilter{display:none}
@@ -738,6 +750,14 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     <datalist id="pakalList"><option value="מפקד"><option value="קלע"><option value="מאג"><option value="נגב"><option value="מטול"><option value="מקלען"><option value="חובש"><option value="קשר"><option value="צלף"><option value="רחפן"><option value="לאו"><option value="מטאדור"><option value="נוהג"><option value="חוד"><option value="פורץ"><option value="סמל"></datalist>
   </section>
 
+  <section id="v-zr" hidden>
+    <div class="bar"><button class="back" type="button" data-go="verify">→ אמל"ח</button><h1>דו"ח צל"מ</h1><span class="count" id="zrCount"></span><button class="pencil wa" type="button" id="vfWa" aria-label="שליחת דוח צ בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
+    <p class="mini">לכל פריט: עליו או מאופסן. לוחצים על המתג כדי לשנות. הכפתור הירוק שולח את הדו"ח בוואטסאפ.</p>
+    <div class="zrsum" id="zrSum"></div>
+    <div id="zrBox"></div>
+    <div class="empty" id="zrEmpty" hidden>אין אמל"ח במסגרת המוצגת.</div>
+  </section>
+
   <section id="v-gaps" hidden>
     <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>פערים</h1><span class="count" id="gpCount"></span><button class="pencil wa" type="button" id="gpWa" aria-label="שליחת רשימת הפערים בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
     <p class="mini">כל ההערות שנרשמו על חיילים ועל אמל"ח. מוסיפים הערה מדף החייל, או מתפריט ⋮ של הנשק.</p>
@@ -825,11 +845,12 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 
   <!-- VERIFY TZALAM -->
   <section id="v-verify" hidden>
-    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>אמל"ח</h1><span class="count" id="vfCount"></span><button class="pencil wa" type="button" id="vfWa" aria-label="שליחת דוח צ בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button><button class="pencil bell" type="button" id="vfBell" aria-label="התראות: אמל&quot;ח לא תקין"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="belln" id="vfBellN" hidden></span></button><button class="pencil" type="button" id="vfGear" aria-haspopup="menu" aria-label="הגדרות: הוספת נשק וייבוא מ-PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>אמל"ח</h1><span class="count" id="vfCount"></span><button class="pencil bell" type="button" id="vfBell" aria-label="התראות: אמל&quot;ח לא תקין"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="belln" id="vfBellN" hidden></span></button><button class="pencil" type="button" id="vfGear" aria-haspopup="menu" aria-label="הגדרות: הוספת נשק וייבוא מ-PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
     <div class="wmenu gearmenu" id="vfMenu" hidden role="menu">
       <button type="button" role="menuitem" data-act="add">+ הוספת נשק</button>
       <button type="button" role="menuitem" data-act="pdf">📄 ייבוא מ-PDF</button>
     </div>
+    <div class="vfacts"><button class="ghost sm" type="button" id="openZR">📋 דו"ח צל"מ</button></div>
     <div class="rollhead">
       <div class="rolldate" id="vfDate"></div>
       <label class="f">איזה צל"מ בודקים?<select id="vfType"></select></label>
@@ -1264,7 +1285,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   function pathOf(unitId){const u=unitById(unitId);return u?Object.assign({},u.path):null;}
 
   /* ---------- screens ---------- */
-  const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat"];
+  const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat","v-zr"];
   function show(ids){ALL.forEach(i=>$(i).hidden=!ids.includes(i));$("bootStatus").hidden=true;}
   function route(){
     if(!ready)return;
@@ -1289,6 +1310,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(h==="sched"){show(["v-sched"]);renderSched();return;}
     if(h==="wear"){show(["v-wear"]);renderWear();return;}
     if(h==="gaps"){show(["v-gaps"]);renderGaps();return;}
+    if(h==="zreport"){show(["v-zr"]);renderZR();return;}
     if(h==="orbat"){show(["v-orbat"]);renderOrbat();return;}
     if(h==="nmr"||h==="veh"){setVk(h);show(["v-nmr"]);renderNmr();return;}
     {const nm=h.match(/^(nmr|veh)-([A-Za-z0-9]+)$/);if(nm){setVk(nm[1]);curNmr=nm[2];show(["v-nmrd"]);renderNmrD();return;}}
@@ -3359,6 +3381,34 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     });
     sendWA(L.join("\n"));
   };
+  $("openZR").onclick=()=>{location.hash="zreport";};
+  function renderZR(){
+    if($("v-zr").hidden)return;
+    const W=vis(weapons);
+    const own=w=>{if(w.ownerMember)return w.ownerMember===uid?((me&&me.name)||""):(w.ownerName||"");const o=w.owner&&soldiers.find(z=>z.id===w.owner);return o?o.name:"";};
+    const G={};W.forEach(w=>{const t=wType(w.type)||"אחר";(G[t]=G[t]||[]).push(w);});
+    const types=Object.keys(G).sort((a,b)=>(G[b].length-G[a].length)||a.localeCompare(b,"he"));
+    const st=W.filter(w=>w.stored).length;
+    $("zrCount").textContent=W.length||"";$("zrEmpty").hidden=W.length>0;
+    $("zrSum").textContent=W.length?"עליו "+(W.length-st)+" · מאופסן "+st:"";
+    const box=$("zrBox");box.textContent="";
+    types.forEach(t=>{
+      box.append(el("h2","sec",t+" ("+G[t].length+")"));
+      const ul=el("ul","list");
+      G[t].sort((a,b)=>(own(a)||"ת").localeCompare(own(b)||"ת","he")).forEach(w=>{
+        const li=el("li","zrrow");const ic=el("div","wicon");ic.innerHTML=weaponIcon(w.type);
+        const info=el("div","info");const o=own(w);
+        info.append(el("div","n1",o||"לא חתום"),el("div","n2","\u2066"+(w.num||"ללא מספר")+"\u2069"+(openFaults(w).length?" · ⚠ תקלה":"")));
+        const sw=el("button","stsw");sw.type="button";sw.setAttribute("aria-pressed",String(!!w.stored));
+        sw.setAttribute("aria-label",(w.stored?"מאופסן":"עליו")+" – לחצו לשינוי");
+        sw.append(el("span","a","עליו"),el("span","b","מאופסן"),el("span","k"));
+        sw.onclick=()=>{const v=!w.stored;w.stored=v;sw.setAttribute("aria-pressed",String(v));haptic(v);
+          patch("weapons/"+w.id,v?{stored:true,storedAt:Date.now()}:{stored:false,storedAt:0});
+          const s2=W.filter(x=>x.stored).length;$("zrSum").textContent="עליו "+(W.length-s2)+" · מאופסן "+s2;};
+        li.append(ic,info,sw);ul.append(li);});
+      box.append(ul);
+    });
+  }
   $("alWa").onclick=()=>{
     const W=vis(weapons),F=W.filter(w=>openFaults(w).length),U=W.filter(w=>isFree(w));
     if(!F.length&&!U.length){toast("אין התראות לשליחה");return;}
@@ -3549,7 +3599,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     renderMe();renderS();renderW();
     if(curSoldier)renderDetail();
     if(!$("v-units").hidden)renderUnits();
-    renderMine();renderAttend();renderVerify();renderSched();renderAbsent();renderWear();renderNmr();renderNmrD();renderGaps();renderOrbat();
+    renderMine();renderAttend();renderVerify();renderSched();renderAbsent();renderWear();renderNmr();renderNmrD();renderGaps();renderOrbat();renderZR();
     {const t=key(new Date()),ue=unitEv().filter(x=>onDay(x,t)).length,ab=absEv().filter(x=>onDay(x,t)).length+vis(requests).filter(r=>r.status==="approved"&&r.from&&r.from<=t&&(r.to||r.from)>=t).length;
      $("cntSc").textContent=ue?ue+" אירועים היום":"אין אירועים היום";$("cntAb").textContent=ab?ab+" היום":"אין היום";}
     {const S=vis(soldiers).filter(s=>!isCmdSoldier(s)),here=S.filter(s=>!awayInfo(s.id)),m=getMarks(rollKey("att"));
