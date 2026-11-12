@@ -821,6 +821,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <input type="file" id="sPhoto" accept="image/*" hidden>
       </div>
       <label class="f">שם מלא<input type="text" id="sName" maxlength="50" required></label>
+      <label class="f">תפקיד<select id="sRole"><option value='חייל'>חייל</option><option value='מ"כ'>מ"כ</option><option value='סמל'>סמל</option><option value='מ"מ'>מ"מ</option><option value='סמ"פ'>סמ"פ</option><option value='מ"פ'>מ"פ</option><option value='סמג"ד'>סמג"ד</option><option value='מג"ד'>מג"ד</option></select></label>
       <label class="f">מספר אישי<input type="tel" id="sNum" class="ltr" inputmode="numeric" maxlength="12" required></label>
       <label class="f">כיתה<select id="sSquad"><option value="">ללא כיתה</option><option value="א">כיתה א</option><option value="ב">כיתה ב</option><option value="ג">כיתה ג</option></select></label>
       <label class="f">מספר טלפון (לא חובה)<input type="tel" id="sPhone" class="ltr" inputmode="tel" maxlength="20" placeholder="050-0000000" autocomplete="off"></label>
@@ -2134,7 +2135,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(vis(soldiers).some(s=>s.num===num))return showErr("sErr","כבר קיים חייל עם המספר האישי הזה.");
     const btn=e.submitter;if(btn)btn.disabled=true;
     const phone=$("sPhone").value.trim();
-    if(await write("soldiers/"+newId(),{name,num,phone,squad:$("sSquad").value,photo:photoData,unit,addedBy:uid,at:Date.now()},"sErr"))resetS();
+    if(await write("soldiers/"+newId(),{name,num,phone,squad:$("sSquad").value,role:$("sRole").value||"חייל",photo:photoData,unit,addedBy:uid,at:Date.now()},"sErr"))resetS();
     if(btn)btn.disabled=false;
   };
 
