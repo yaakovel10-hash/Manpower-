@@ -706,7 +706,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     </div>
     <button class="primary" type="button" id="openAB">+ הוספת היעדרות</button>
     <form class="add" id="formAB" hidden>
-      <label class="f">חייל<select id="abSoldier" required></select></label>
+      <div class="f">חייל<div class="picker" id="abPick"></div></div>
       <div class="f">סוג<div class="chips" id="abTypes" role="radiogroup" aria-label="סוג ההיעדרות"></div></div>
       <label class="f" id="abOtherWrap" hidden>פירוט<input type="text" id="abOther" maxlength="60" placeholder="כתבו את סוג ההיעדרות"></label>
       <div class="row2">
@@ -2431,7 +2431,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       r.append(go);box.append(r);
     });
     const add=el("button","ghost sm stadd","+ תורנות / היעדרות");add.type="button";
-    add.onclick=()=>{location.hash="absent";setTimeout(()=>{$("openAB").click();const sel=$("abSoldier");if([...sel.options].some(o=>o.value===s.id))sel.value=s.id;},60);};
+    add.onclick=()=>{location.hash="absent";setTimeout(()=>{$("openAB").click();pickers.abPick&&pickers.abPick.set("s:"+s.id);},60);};
     box.append(add);
   }
   $("assignBtn").onclick=async()=>{
@@ -3093,15 +3093,15 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   $("abFrom").onchange=()=>setDays($("abDays").value);
   $("abTo").onchange=syncDays;
   $("openAB").onclick=()=>{
-    const sel=$("abSoldier");sel.textContent="";const o0=el("option",null,"בחרו חייל");o0.value="";sel.append(o0);
-    vis(soldiers).slice().sort((a,b)=>(a.name||"").localeCompare(b.name||"","he")).forEach(s=>{const o=el("option",null,s.name+(s.squad?" · כיתה "+s.squad:""));o.value=s.id;sel.append(o);});
+    makePicker("abPick","חיפוש חייל או מפקד…",true);
     loadCfg();$("formAB").hidden=false;$("openAB").hidden=true;$("abCfg").hidden=true;$("abFrom").value=abDay;$("abTo").value="";showErr("abErr","");renderTypes();applyCfg();
   };
   const resetAB=()=>{$("formAB").reset();$("formAB").hidden=true;$("openAB").hidden=false;};
   $("cancelAB").onclick=resetAB;
   $("formAB").onsubmit=async e=>{
     e.preventDefault();
-    const s=soldierById($("abSoldier").value);if(!s)return showErr("abErr","בחרו חייל.");
+    const pv=pickers.abPick&&pickers.abPick.value,s=pv&&pv.startsWith("s:")?soldierById(pv.slice(2)):null;
+    if(!s)return showErr("abErr",pv?"למפקד הזה עוד אין רשומה ברשימת החיילים. הוא יתווסף כשייכנס לאפליקציה.":"חפשו ובחרו חייל.");
     const type=abType==="אחר"?$("abOther").value.trim():abType;if(!type)return showErr("abErr","כתבו את סוג ההיעדרות.");
     const date=$("abFrom").value,to=$("abTo").value||date;if(to<date)return showErr("abErr","תאריך הסיום מוקדם מההתחלה.");
     const allDay=$("abAllDay").checked,start=allDay?"":$("abStart").value,end=allDay?"":$("abEnd").value;
@@ -3187,8 +3187,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   const wearEv=()=>vis(events).filter(x=>x.kind==="wear");
   let wrOpen=null,wrHist=false;
   /* searchable person picker: soldiers of the unit + commanders */
-  function peopleList(){
-    const S=vis(soldiers);
+  function peopleList(soldiersOnly){
+    let S=vis(soldiers);if(!S.length)S=soldiers.slice(); // nothing in the displayed unit: show everyone you can see
     const out=S.map(x=>({v:"s:"+x.id,name:x.name||"",sub:[x.role&&x.role!=="חייל"?x.role:"",x.squad?"כיתה "+x.squad:"",x.memberId?"📱":""].filter(Boolean).join(" · "),cmd:isCmdSoldier(x)}));
     const linked=new Set(soldiers.map(x=>x.memberId).filter(Boolean));
     const cv=curView(),vu=cv!=="*"?unitById(cv):(!mgr()&&me?unitById(me.unitId):null);
@@ -3198,7 +3198,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     return out.sort((a,b)=>(b.cmd-a.cmd)||a.name.localeCompare(b.name,"he"));
   }
   const pickers={};
-  function makePicker(id,ph){
+  function makePicker(id,ph,soldiersOnly){
     const box=$(id);box.textContent="";
     const st={value:"",label:""};
     const inp=el("input");inp.type="search";inp.id=id+"In";inp.placeholder=ph||"חיפוש שם…";inp.autocomplete="off";inp.setAttribute("role","combobox");
@@ -3206,9 +3206,12 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const chip=el("div","pkchip");chip.hidden=true;
     const wrap=el("label","searchbox pksearch");wrap.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';wrap.append(inp);
     box.append(chip,wrap,list);
+    const choose=p=>{st.value=p.v;st.label=p.name;chip.textContent="";chip.append(el("b",null,p.name));
+      const x=el("button","linkbtn muted","שינוי");x.type="button";x.onclick=()=>{st.value="";chip.hidden=true;wrap.hidden=false;inp.value="";inp.focus();draw();list.hidden=false;};
+      chip.append(x);chip.hidden=false;wrap.hidden=true;list.hidden=true;};
     const draw=()=>{
       const q=nameToks(inp.value).join(" ");const raw=inp.value.trim();
-      const all=peopleList();
+      const all=peopleList().filter(p=>!soldiersOnly||p.v.startsWith("s:"));
       const m=all.filter(p=>!raw||p.name.includes(raw)||nameToks(p.name).join(" ").includes(q)).slice(0,40);
       list.textContent="";
       if(!m.length)list.append(el("li","mini","לא נמצא שם כזה"));
@@ -3217,16 +3220,15 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
         if(p.cmd!==lastCmd){lastCmd=p.cmd;list.append(el("li","pkhead",p.cmd?"מפקדים":"חיילים"));}
         const li=el("li","pkitem");li.append(el("b",null,p.name));if(p.sub)li.append(el("span","mini",p.sub));
         li.addEventListener("pointerdown",e=>e.preventDefault());
-        li.onclick=()=>{st.value=p.v;st.label=p.name;chip.textContent="";chip.append(el("b",null,p.name));
-          const x=el("button","linkbtn muted","שינוי");x.type="button";x.onclick=()=>{st.value="";chip.hidden=true;wrap.hidden=false;inp.value="";inp.focus();draw();list.hidden=false;};
-          chip.append(x);chip.hidden=false;wrap.hidden=true;list.hidden=true;};
+        li.onclick=()=>choose(p);
         list.append(li);
       });
     };
     inp.onfocus=()=>{draw();list.hidden=false;};
     inp.oninput=()=>{draw();list.hidden=false;};
     inp.onblur=()=>setTimeout(()=>{list.hidden=true;},150);
-    const api={get value(){return st.value;},get label(){return st.label;},reset(){st.value="";st.label="";chip.hidden=true;wrap.hidden=false;inp.value="";list.hidden=true;}};
+    const api={get value(){return st.value;},get label(){return st.label;},reset(){st.value="";st.label="";chip.hidden=true;wrap.hidden=false;inp.value="";list.hidden=true;},
+      set(v){const p=peopleList().find(x=>x.v===v);if(p)choose(p);}};
     pickers[id]=api;return api;
   }
   function pickedPerson(v){
