@@ -395,7 +395,7 @@ header.top .pid .num{text-shadow:0 1px 0 var(--hi)}
 ul.ablist li.abrow{align-items:flex-start}
 .abside{display:grid;gap:4px;justify-items:center;flex:none;width:92px}
 .abtag{font-size:13px;font-weight:700;border-radius:8px;padding:4px 8px;text-align:center;width:100%;color:#fff;background:var(--teal)}
-.abtag[data-t="0"]{background:#2f7fc1}.abtag[data-t="1"]{background:#c86b1e}.abtag[data-t="2"]{background:#8e44ad}.abtag[data-t="3"]{background:#16806f}.abtag[data-t="req"]{background:#6b7a8f}.abtag[data-t="o"]{background:#7a6a3a}
+.abtag[data-t="0"]{background:#2f7fc1}.abtag[data-t="1"]{background:#c86b1e}.abtag[data-t="2"]{background:#8e44ad}.abtag[data-t="3"]{background:#16806f}.abtag[data-t="4"]{background:#b23a48}.abtag[data-t="req"]{background:#6b7a8f}.abtag[data-t="o"]{background:#7a6a3a}
 .abst{font-size:12px;color:var(--muted)}
 li.abrow.st-now .abst{color:var(--ok);font-weight:700}
 li.abrow.st-done{opacity:.55}
@@ -2984,8 +2984,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
 
   /* ---------- schedule (unit events) & absences / duties ---------- */
   const EV_COLORS=["#2f9e5b","#2f7fc1","#c0392b","#d4a017","#8e44ad","#16a085","#e67e22","#6b7a8f"];
-  const AB_TYPES=["תורן מפלג","מטבח","גימלים","מסופח"];
-  const AB_DEF={"תורן מפלג":{allDay:true,days:1},"מטבח":{allDay:false,start:"06:00",end:"21:00",days:1},"גימלים":{allDay:true,days:2},"מסופח":{allDay:true,days:7}};
+  const AB_TYPES=["תורן מפלג","מטבח","גימלים","מסופח","שמירות בבסיס"];
+  const AB_DEF={"שמירות בבסיס":{allDay:true,days:1},"תורן מפלג":{allDay:true,days:1},"מטבח":{allDay:false,start:"06:00",end:"21:00",days:1},"גימלים":{allDay:true,days:2},"מסופח":{allDay:true,days:7}};
   const daysOf=(from,to)=>{const out=[];if(!from)return out;let d=parseKey(from);const e=parseKey(to&&to>=from?to:from);for(let i=0;d<=e&&i<120;i++){out.push(key(d));d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);}return out;};
   const onDay=(x,k)=>x.date&&x.date<=k&&(x.to||x.date)>=k;
   const unitEv=()=>vis(events).filter(x=>x.kind==="unit");
