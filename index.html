@@ -253,6 +253,9 @@ body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
 .ocol .ocard.colcard{grid-template-columns:auto 1fr;grid-template-rows:auto auto;min-height:56px}
 .ocol .ocard .cir{grid-row:1/3;min-width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--fg);color:var(--bg);font-weight:800;font-size:17px;padding:0 4px}
 .ocol .ocard.colcard .nm{font-size:14px;font-weight:700}
+.ocol .ocard.missing{background:transparent;border:2px dashed color-mix(in srgb,var(--danger) 55%,var(--line));cursor:default}
+.ocol .ocard.missing .cir{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.ocol .ocard.missing .nm{color:var(--danger)}
 .ocol .ocard.colcard .pk{font-size:12px;font-weight:600;color:var(--muted)}
 .ocol .ocard .x{position:absolute;top:4px;left:6px;border:0;background:transparent;color:var(--muted);font-size:14px;padding:2px}
 .ocol .oslot{width:100%;min-height:44px}
@@ -3627,9 +3630,12 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const m=d.cols.mode==="staggered"?"staggered":"regular";
       document.querySelectorAll("#obColMode button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
       $("obColsBox").classList.toggle("staggered",m==="staggered");
+      ["right","left"].forEach(key=>{d.cols[key]=d.cols[key].filter(id=>byId.has(id)&&!placed.has(id));d.cols[key].forEach(id=>placed.add(id));});
+      const longest=Math.max(d.cols.right.length,d.cols.left.length);
       [["R","right",$("obColR"),"טור ימין"],["L","left",$("obColL"),"טור שמאל"]].forEach(([pl,key,col,lab])=>{
-        d.cols[key]=d.cols[key].filter(id=>byId.has(id)&&!placed.has(id));d.cols[key].forEach(id=>placed.add(id));
         col.textContent="";col.append(el("div","ocolh",lab));
+        // shorter column: empty "חסר" boxes on top so both columns end on the same row
+        for(let k=d.cols[key].length;k<longest;k++){const m=el("div","ocard colcard missing");m.append(el("span","cir","—"),el("span","nm","חסר"));col.append(m);}
         d.cols[key].forEach((id,i)=>{const c=oCard(byId.get(id),pl);const s=byId.get(id);
           c.textContent="";c.classList.add("colcard");c.append(el("span","cir",s.iron?String(s.iron):"—"),el("span","nm",s.name||""),el("span","pk",s.pakal||""));
           const x=el("span","x","✕");x.onclick=e=>{e.stopPropagation();obPull(d,id);obSel=null;obSave();renderOrbat();};c.append(x);col.append(c);});
