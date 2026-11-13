@@ -3122,8 +3122,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   $("cancelAB").onclick=resetAB;
   $("formAB").onsubmit=async e=>{
     e.preventDefault();
-    const pv=pickers.abPick&&pickers.abPick.value,s=pv&&pv.startsWith("s:")?soldierById(pv.slice(2)):null;
-    if(!s)return showErr("abErr",pv?"למפקד הזה עוד אין רשומה ברשימת החיילים. הוא יתווסף כשייכנס לאפליקציה.":"חפשו ובחרו חייל.");
+    const pv=pickers.abPick&&pickers.abPick.value,s=pv&&pv.startsWith("s:")?soldiers.find(x=>x.id===pv.slice(2)):null;
+    if(!s)return showErr("abErr",pv&&pv.startsWith("m:")?"למפקד הזה עוד אין רשומה ברשימת החיילים. הוא יתווסף כשייכנס לאפליקציה.":"חפשו ובחרו חייל.");
     const type=abType==="אחר"?$("abOther").value.trim():abType;if(!type)return showErr("abErr","כתבו את סוג ההיעדרות.");
     const date=$("abFrom").value,to=$("abTo").value||date;if(to<date)return showErr("abErr","תאריך הסיום מוקדם מההתחלה.");
     const allDay=$("abAllDay").checked,start=allDay?"":$("abStart").value,end=allDay?"":$("abEnd").value;
