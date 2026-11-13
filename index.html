@@ -13,6 +13,9 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>מעקב כוח אדם</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Assistant:wght@400;600;700&display=swap">
 <style>
 /* Layout: one-column phone app, header band with name/ID, large tile entries, sub-screens routed by hash */
@@ -1714,16 +1717,18 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)markSeen();});
   /* ---------- refresh whenever the app is opened again ---------- */
   // 1) redraw everything (times, who is out now, today's date); 2) if a newer version was uploaded, load it
-  let verHash=null,hiddenAt=0;
-  const hashText=t=>{let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return h;};
-  async function latestHash(){try{const r=await fetch("index.html",{cache:"no-store"});if(!r.ok)return null;return hashText(await r.text());}catch(_){return null;}}
-  if(location.protocol.startsWith("http"))latestHash().then(h=>{verHash=h;});
-  const busy=()=>!!document.querySelector("form.add:not([hidden])")||document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
-  async function onReturn(){
+  // The app opens instantly from the saved copy; the service worker checks for a newer version in the background
+  // and tells us when there is one, then we reload (unless you're in the middle of typing).
+  let hiddenAt=0,newVersion=false;
+  // "busy" = typing, or a pop-up form is open on the screen you're looking at (don't refresh under you)
+  const busy=()=>(document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||
+    [...document.querySelectorAll("form.add:not([hidden])")].some(f=>!["setupForm","formNI","formE"].includes(f.id)&&f.offsetParent!==null);
+  const applyUpdate=()=>{if(!newVersion||busy())return;newVersion=false;toast("מעדכן לגרסה החדשה…");setTimeout(()=>location.reload(),300);};
+  if("serviceWorker" in navigator){navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.type==="new-version"){newVersion=true;applyUpdate();}});}
+  const askForUpdate=()=>{try{const c=navigator.serviceWorker&&navigator.serviceWorker.controller;if(c&&navigator.onLine)c.postMessage({type:"check"});}catch(_){}};
+  function onReturn(){
     try{if(ready&&uid&&me)renderAll();}catch(e){console.warn(e);}
-    if(!navigator.onLine||verHash==null||busy())return;
-    const h=await latestHash();
-    if(h!=null&&h!==verHash){toast("מעדכן לגרסה החדשה…");setTimeout(()=>location.reload(),400);}
+    if(newVersion)applyUpdate();else askForUpdate();
   }
   document.addEventListener("visibilitychange",()=>{if(document.hidden){hiddenAt=Date.now();return;}if(Date.now()-hiddenAt>1500)onReturn();});
   addEventListener("pageshow",e=>{if(e.persisted)onReturn();});
