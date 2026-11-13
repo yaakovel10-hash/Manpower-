@@ -288,6 +288,27 @@ body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
 .lstitems input{grid-column:2;padding:6px 10px;font-size:14px;border-radius:10px}
 body.listmode #atBar,body.listmode #atReset{visibility:hidden}
 body.listmode #lstBar{display:none}
+/* ---- 2 לפנים board (turned 90°) ---- */
+.bdintro{margin-top:14px;display:grid;gap:12px;padding:16px;border:1px dashed var(--line);border-radius:16px;text-align:center}
+.bdover{position:fixed;inset:0;z-index:80;background:var(--bg);overflow:hidden;touch-action:none;overscroll-behavior:none}
+.bdover[hidden]{display:none}
+body.bdopen{overflow:hidden}
+.bdrot{position:absolute;top:50%;left:50%;width:100vh;width:100dvh;height:100vw;transform:translate(-50%,-50%) rotate(90deg);display:flex;flex-direction:column;gap:8px;padding:10px 14px;box-sizing:border-box}
+.bdtop{display:flex;align-items:center;gap:8px}
+.bdtitle{flex:1;min-width:0;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bdboard{position:relative;flex:1;min-height:0;border-radius:16px;border:2px dashed color-mix(in srgb,var(--fg) 30%,transparent);background:repeating-linear-gradient(0deg,transparent 0 39px,color-mix(in srgb,var(--fg) 5%,transparent) 39px 40px),repeating-linear-gradient(90deg,transparent 0 39px,color-mix(in srgb,var(--fg) 5%,transparent) 39px 40px)}
+.bdhint{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:15px;pointer-events:none}
+.bdhint[hidden]{display:none}
+.bdpool{display:flex;gap:6px;overflow-x:auto;min-height:62px;padding:4px 2px;align-items:center;border-radius:12px;transition:background .15s}
+.bdpool.drop{background:color-mix(in srgb,var(--danger) 18%,transparent)}
+.bdcard{position:relative;flex:none;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:6px;align-items:center;min-width:84px;max-width:120px;padding:5px 8px;border-radius:10px;background:var(--tile);border:1px solid var(--line);font-size:12px;-webkit-user-select:none;user-select:none;touch-action:none;cursor:grab}
+.bdcard .bir{grid-row:1/3;min-width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:var(--fg);color:var(--bg);font-weight:800;font-size:13px;padding:0 3px}
+.bdcard .bnm{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bdcard .bpk{color:var(--muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bdboard .bdcard{position:absolute;transform:translate(-50%,-50%)}
+.bdcard.bddrag{z-index:5;box-shadow:0 14px 24px -10px var(--shadow);outline:2px solid var(--accent)}
+.bdcard.bdgone{opacity:.3}
+#bdClear.armed{background:var(--danger);border-color:var(--danger);color:#fff}
 .cmdhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:22px}
 .cmdhead .sec{margin:0}
 .vfacts{display:flex;justify-content:flex-end;margin:-6px 0 10px}
@@ -811,9 +832,22 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     </div>
 
     <div id="obFront" hidden>
-      <p class="mini">לוחצים על חייל ואז על המקום החדש (חייל אחר להחלפה, או "+" בחוליה). לחיצה נוספת מבטלת.</p>
-      <div class="row2"><button class="ghost sm" type="button" id="obFrontAuto">סידור לפי כיתות</button><button class="ghost sm" type="button" id="obAddGrp">+ חוליה</button></div>
-      <div class="ogrid" id="obGroups"></div>
+      <div class="bdintro">
+        <p>לוח ריק שמסובב לרוחב. מחזיקים את הטלפון על הצד, גוררים חיילים מהשורה למטה ומניחים איפה שרוצים על הלוח.</p>
+        <button class="primary" type="button" id="bdOpen">פתיחת הלוח ↻</button>
+      </div>
+    </div>
+    <div class="bdover" id="bdOver" hidden>
+      <div class="bdrot" id="bdRot">
+        <div class="bdtop">
+          <button class="ghost sm" type="button" id="bdClose">→ סגירה</button>
+          <b class="bdtitle" id="bdTitle">2 לפנים</b>
+          <button class="ghost sm" type="button" id="bdClear">ניקוי</button>
+          <button class="ghost sm" type="button" id="bdImg">🖼 תמונה</button>
+        </div>
+        <div class="bdboard" id="bdBoard"><div class="bdhint" id="bdHint">גררו לכאן חיילים מהשורה למטה</div></div>
+        <div class="bdpool" id="bdPool"></div>
+      </div>
     </div>
 
     <div id="obCols" hidden>
@@ -3833,19 +3867,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     }
     const d=obData(),placed=new Set();
     if(obTab==="front"){
-      const box=$("obGroups");box.textContent="";
-      d.front.groups.forEach((g,gi)=>{
-        g.ids=g.ids.filter(id=>byId.has(id)&&!placed.has(id));g.ids.forEach(id=>placed.add(id));
-        const gr=el("div","ogroup"+(g.wide?" wide":""));
-        const hd=el("div","ghead");
-        const ti=el("input","gtitle");ti.value=g.title||"";ti.maxLength=30;ti.onchange=()=>{g.title=ti.value.trim()||"חוליה";obSave();};
-        const up=el("button","gbtn","▲");up.type="button";up.title="הזזה למעלה";up.disabled=gi===0;up.onclick=()=>{d.front.groups.splice(gi-1,0,d.front.groups.splice(gi,1)[0]);obSave();renderOrbat();};
-        const wd=el("button","gbtn",g.wide?"⇥":"⇔");wd.type="button";wd.title=g.wide?"חצי רוחב":"רוחב מלא";wd.onclick=()=>{g.wide=!g.wide;obSave();renderOrbat();};
-        const rm=el("button","gbtn","✕");rm.type="button";rm.title="מחיקת החוליה";rm.onclick=()=>{if(g.ids.length&&!rm.dataset.arm){rm.dataset.arm="1";rm.textContent="?";setTimeout(()=>{delete rm.dataset.arm;rm.textContent="✕";},2500);return;}d.front.groups.splice(gi,1);obSave();renderOrbat();};
-        hd.append(up,ti,wd,rm);
-        const cards=el("div","ocards");g.ids.forEach(id=>cards.append(oCard(byId.get(id),g.id)));
-        const sl=el("button","oslot","+");sl.type="button";sl.setAttribute("aria-label","העברה ל"+(g.title||"חוליה"));sl.onclick=()=>{if(obSel)obTap({slot:g.id});else toast("קודם לוחצים על חייל");};cards.append(sl);
-        gr.append(hd,cards);box.append(gr);});
+      $("obPoolWrap").hidden=true;
+      if(!$("bdOver").hidden)renderBoard();
+      return;
     }else{
       const m="regular"; // "staggered" is locked for now
       document.querySelectorAll("#obColMode button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
@@ -3875,6 +3899,78 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(b.classList.contains("locked")){toast("2 טורים רגיל – בקרוב...");return;}
     const d=obData();d.cols.mode=b.dataset.m;obSave();renderOrbat();});
   // destructive buttons need a second tap within 3 seconds
+
+  /* ---------- "2 לפנים": an empty board turned 90°; drag soldiers anywhere on it ---------- */
+  // positions are saved as fractions of the board (0..1), so they look the same on every phone
+  function bdPos(){const d=obData();d.front=d.front||{};d.front.pos=d.front.pos||{};return d.front.pos;}
+  function bdCard(s){const c=el("div","bdcard");c.dataset.sid=s.id;
+    c.append(el("span","bir",s.iron?String(s.iron):"—"),el("span","bnm",s.name||""));
+    if(s.pakal)c.append(el("span","bpk",s.pakal));return c;}
+  function renderBoard(){
+    const P=obPeople(),pos=bdPos(),byId=new Map(P.map(s=>[s.id,s]));
+    Object.keys(pos).forEach(id=>{if(!byId.has(id))delete pos[id];});
+    $("bdTitle").textContent="2 לפנים"+(viewName()?" · "+viewName():"");
+    const B=$("bdBoard");B.querySelectorAll(".bdcard").forEach(x=>x.remove());
+    Object.entries(pos).forEach(([id,p])=>{const c=bdCard(byId.get(id));c.style.left=(p.x*100)+"%";c.style.top=(p.y*100)+"%";B.append(c);});
+    $("bdHint").hidden=Object.keys(pos).length>0;
+    const pool=$("bdPool");pool.textContent="";
+    const rest=P.filter(s=>!pos[s.id]);
+    if(!rest.length)pool.append(el("span","mini","כולם על הלוח · גוררים חייל לכאן כדי להוריד אותו"));
+    rest.forEach(s=>pool.append(bdCard(s)));
+  }
+  {
+    // the inner frame is rotated 90° clockwise: board-x runs down the screen, board-y runs right-to-left
+    const toBoard=(cx,cy)=>{const r=$("bdBoard").getBoundingClientRect();return {u:cy-r.top,v:r.right-cx,W:r.height,H:r.width};};
+    let drag=null,ghost=null,off={u:0,v:0},lp=null,sx=0,sy=0;
+    const over=$("bdOver");
+    const begin=(c,cx,cy)=>{
+      const fromBoard=c.parentNode===$("bdBoard");
+      ghost=fromBoard?c:bdCard(byIdNow(c.dataset.sid));
+      if(!fromBoard){ghost.classList.add("bdghost");$("bdBoard").append(ghost);c.classList.add("bdgone");}
+      const b=toBoard(cx,cy);off={u:0,v:0};drag={c,fromBoard,sid:c.dataset.sid};ghost.classList.add("bddrag");move(cx,cy);haptic(true);};
+    const byIdNow=id=>soldiers.find(x=>x.id===id);
+    const move=(cx,cy)=>{if(!ghost)return;const b=toBoard(cx,cy);
+      ghost.style.left=Math.max(0,Math.min(100,b.u/b.W*100))+"%";ghost.style.top=Math.max(0,Math.min(100,b.v/b.H*100))+"%";
+      $("bdPool").classList.toggle("drop",b.v>b.H);};
+    over.addEventListener("pointerdown",e=>{const c=e.target.closest(".bdcard");if(!c||!over.contains(c))return;
+      sx=e.clientX;sy=e.clientY;
+      if(c.parentNode===$("bdBoard")){e.preventDefault();begin(c,sx,sy);return;}
+      clearTimeout(lp);lp=setTimeout(()=>{lp=null;begin(c,sx,sy);},180);});
+    over.addEventListener("pointermove",e=>{
+      if(lp&&Math.hypot(e.clientX-sx,e.clientY-sy)>10){clearTimeout(lp);lp=null;}
+      if(drag){e.preventDefault();move(e.clientX,e.clientY);}});
+    const end=e=>{clearTimeout(lp);lp=null;if(!drag)return;
+      const b=toBoard(e.clientX,e.clientY),pos=bdPos(),inBoard=b.u>=0&&b.u<=b.W&&b.v>=0&&b.v<=b.H;
+      if(inBoard)pos[drag.sid]={x:+(b.u/b.W).toFixed(4),y:+(b.v/b.H).toFixed(4)};else delete pos[drag.sid];
+      $("bdPool").classList.remove("drop");drag=null;ghost=null;obSave();renderBoard();};
+    over.addEventListener("pointerup",end);over.addEventListener("pointercancel",end);
+    over.addEventListener("touchmove",e=>{e.preventDefault();},{passive:false});
+    over.addEventListener("contextmenu",e=>e.preventDefault());
+  }
+  $("bdOpen").onclick=()=>{$("bdOver").hidden=false;document.body.classList.add("bdopen");renderBoard();};
+  $("bdClose").onclick=()=>{$("bdOver").hidden=true;document.body.classList.remove("bdopen");};
+  addEventListener("hashchange",()=>{$("bdOver").hidden=true;document.body.classList.remove("bdopen");});
+  {let t=null;const b=$("bdClear");b.onclick=()=>{if(!t){b.textContent="לחצו שוב לניקוי";b.classList.add("armed");t=setTimeout(()=>{t=null;b.textContent="ניקוי";b.classList.remove("armed");},3000);return;}
+    clearTimeout(t);t=null;b.textContent="ניקוי";b.classList.remove("armed");const d=obData();d.front.pos={};obSave();renderBoard();};}
+  $("bdImg").onclick=()=>{
+    const P=obPeople(),pos=bdPos(),byId=new Map(P.map(s=>[s.id,s]));const ids=Object.keys(pos).filter(id=>byId.has(id));
+    if(!ids.length){toast("הלוח ריק");return;}
+    const W=1600,H=1000,c=document.createElement("canvas");c.width=W;c.height=H+110;const x=c.getContext("2d");x.direction="rtl";x.textBaseline="middle";
+    x.fillStyle="#f4f3ec";x.fillRect(0,0,W,H+110);x.fillStyle="#3d4a1e";x.fillRect(0,0,W,90);
+    x.fillStyle="#fff";x.textAlign="right";x.font='44px "Secular One", sans-serif';x.fillText($("bdTitle").textContent,W-30,46);
+    x.font='600 26px "Assistant", sans-serif';x.fillStyle="#dfe6c8";x.textAlign="left";x.fillText(waDate(Date.now()),30,48);
+    const rr=(X,Y,w,h,r)=>{x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();};
+    ids.forEach(id=>{const s=byId.get(id),p=pos[id];
+      // board-x runs along the long side; on the picture the long side is horizontal (right → left like Hebrew)
+      const cx=W-30-p.x*(W-60),cy=110+p.y*(H-40),w=170,h=s.pakal?88:66;
+      x.fillStyle="#fff";rr(cx-w/2,cy-h/2,w,h,14);x.fill();x.strokeStyle="#c9c7b6";x.lineWidth=2;x.stroke();
+      x.fillStyle="#2b3216";rr(cx+w/2-48,cy-h/2+8,40,40,10);x.fill();x.fillStyle="#fff";x.textAlign="center";x.font='700 22px "Assistant", sans-serif';x.fillText(s.iron?String(s.iron):"—",cx+w/2-28,cy-h/2+29);
+      x.textAlign="right";x.fillStyle="#1d2110";x.font='700 22px "Assistant", sans-serif';x.fillText((s.name||"").slice(0,14),cx+w/2-56,cy-h/2+29);
+      if(s.pakal){x.fillStyle="#6b705c";x.font='600 19px "Assistant", sans-serif';x.fillText(s.pakal.slice(0,16),cx+w/2-12,cy+h/2-18);}});
+    c.toBlob(async blob=>{if(!blob)return;const f=new File([blob],"2-lefanim.png",{type:"image/png"});
+      try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"2 לפנים"});return;}}catch(e){if(e&&e.name==="AbortError")return;}
+      const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="2-lefanim.png";document.body.append(a);a.click();a.remove();toast("התמונה נשמרה בהורדות");},"image/png");
+  };
   $("obWa").onclick=()=>{
     const d=obData(),byId=new Map(vis(soldiers).map(s=>[s.id,s]));
     const R=d.cols.right.filter(id=>byId.has(id)),L=d.cols.left.filter(id=>byId.has(id));
@@ -3945,15 +4041,6 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!ops){toast("לכולם כבר יש מספר");return;}
     try{await qc(b.commit());toast("מוספרו "+ops);}catch(e){showErr("obErr",errMsg(e));}
   };
-  $("obAddGrp").onclick=()=>{const d=obData();d.front.groups.push({id:newId(),title:"חוליה חדשה",ids:[]});obSave();renderOrbat();};
-  const frontAuto=()=>{
-    const d=obData(),P=obPeople();
-    const find=t=>{let g=d.front.groups.find(x=>x.title===t);if(!g){g={id:newId(),title:t,ids:[]};d.front.groups.push(g);}return g;};
-    d.front.groups.forEach(g=>g.ids=[]);
-    P.forEach(s=>{const g=s.squad?find("כיתה "+s.squad+"'"):find("חוליית פיקוד");g.ids.push(s.id);});
-    obSel=null;obSave();renderOrbat();toast("סודר לפי כיתות");
-  };
-  armTwice($("obFrontAuto"),"סידור לפי כיתות","לחצו שוב – הסידור הנוכחי יוחלף",frontAuto);
   const colsAuto=()=>{
     const d=obData(),P=obPeople().filter(s=>s.iron);
     if(!P.length){toast("קודם תנו מספרי ברזל");return;}
