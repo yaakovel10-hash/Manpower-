@@ -1359,6 +1359,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
      if(am){$("vfMenu").hidden=true;show(["v-weapons"]);renderW();return;}}
     if(h==="verify"){show(["v-verify"]);renderVerify();return;}
     show([h==="soldiers"?"v-soldiers":h==="weapons"?"v-weapons":"v-home"]);
+    if(h==="soldiers")renderS();else if(h==="weapons")renderW();
   }
   addEventListener("hashchange",()=>{readJoin();route();window.scrollTo(0,0);});
   document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{location.hash=b.dataset.go;});
@@ -1837,6 +1838,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   };
   addEventListener("hashchange",()=>{if(bulk.k)setBulk(null);});
   function renderS(){
+    if($("v-soldiers").hidden){counts();return;}
     const q=$("qS").value.trim().toLowerCase(),ul=$("listS");ul.textContent="";if(bulk.k==="s")bulk.vis=[];
     const S=vis(soldiers),len=myLen();
     const fsel=$("fS"),fv=fsel.value||"*";fsel.textContent="";
@@ -2308,7 +2310,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const ok=await patch("soldiers/"+s.id,{gaps:(s.gaps||[]).concat([{id:newId(),text:v,at:Date.now(),by:(me&&me.name)||""}])});
     b.disabled=false;if(ok){$("dNote").value="";toast("ההערה נוספה");}};
   function renderDetail(){
-    if(!curSoldier)return;
+    if(!curSoldier||$("v-soldier").hidden)return;
     const s=soldierById(curSoldier);
     if(!s){$("dStatus").textContent="";$("dName").textContent="החייל לא נמצא";$("dNum").textContent="";$("dDel").textContent="";["t-tzalam","t-cal","t-req"].forEach(i=>$(i).hidden=true);return;}
     setTab(curTab);
@@ -2671,6 +2673,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   $("openImpW").onclick=()=>{location.hash="soldiers";setTimeout(()=>$("openImp").click(),80);};
   $("fFault").onclick=()=>{faultOnly=!faultOnly;$("fFault").setAttribute("aria-pressed",String(faultOnly));renderW();};
   function renderW(){
+    if($("v-weapons").hidden){counts();return;}
     const q=$("qW").value.trim().toLowerCase(),ul=$("listW");ul.textContent="";if(bulk.k==="w")bulk.vis=[];
     const W=vis(weapons);
     // type filter options
@@ -3852,7 +3855,19 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       await qc(b.commit());}catch(e){console.warn("wear sync",e);}
     wearSyncBusy=false;
   }
+  // updates from the server often come in bursts: redraw once per burst instead of once per update
+  let renderQueued=false,touching=0,renderLater=false;
+  // while a finger is on the screen (swiping a switch, dragging) don't redraw under it; catch up when it lifts
+  addEventListener("pointerdown",()=>{touching++;},true);
+  const lift=()=>{touching=Math.max(0,touching-1);if(!touching&&renderLater){renderLater=false;renderAll();}};
+  addEventListener("pointerup",lift,true);addEventListener("pointercancel",lift,true);
   function renderAll(){
+    if(!ready||renderQueued)return;
+    if(touching){renderLater=true;setTimeout(()=>{if(renderLater&&touching){touching=0;lift();}},4000);return;}
+    renderQueued=true;
+    requestAnimationFrame(()=>{renderQueued=false;try{renderAllNow();}catch(e){console.warn("render",e);}});
+  }
+  function renderAllNow(){
     if(!ready)return;
     setTimeout(syncWearNotes,0);
     ensureLink();mergeSweep();
@@ -3913,9 +3928,13 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     ALL.forEach(i=>$(i).hidden=true);
     await probeMaster();
     let gotMe=false,gotUnits=false;
+    let routedKey=null;
     const step=()=>{if(!gotMe||!gotUnits)return;ready=true;
       if(!mgmtUnsubs.length)startMgmt();
-      startData();renderAll();route();};
+      startData();renderAll();
+      // only re-route when something that changes the screen changed (first load, joined/changed unit, profile created)
+      const k=[!!me,me&&me.unitId,me&&me.name,pendingJoin&&pendingJoin.id,editingMe].join("|");
+      if(k!==routedKey){routedKey=k;route();}};
     unitsUnsub=fs.collection("units").onSnapshot(s=>{units=s.docs.map(d=>({id:d.id,...d.data()}));gotUnits=true;step();},e=>{console.warn("units",e);gotUnits=true;step();});
     meUnsub=fs.doc("members/"+uid).onSnapshot(s=>{me=s.exists?{id:uid,...s.data()}:null;gotMe=true;step();markSeen();},e=>{gotMe=true;step();});
   });
