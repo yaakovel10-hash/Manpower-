@@ -471,7 +471,15 @@ li.rollrow.ok .rolltrack{box-shadow:inset 0 2px 6px rgba(0,0,0,.2),0 0 0 3px col
 .notebox textarea{min-height:56px}
 .gaprow{align-items:center}
 .pencil.wa{color:#25d366;border-color:color-mix(in srgb,#25d366 45%,var(--line))}
-.notelist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.notelist{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.notebox{gap:6px!important;padding:8px 12px!important}
+.nbhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nbhead .ghost.sm{min-height:32px;padding:0 12px;font-size:14px}
+.notelist li .nltext{flex:1;min-width:0;font-size:15px;line-height:1.35;padding:3px 0 3px 4px;border-inline-start:3px solid var(--danger);padding-inline-start:8px}
+.notelist li .nlmeta{font-size:12px;color:var(--muted)}
+.nlx{flex:none;min-width:30px;height:28px;border:0;border-radius:8px;background:transparent;color:var(--muted);font:inherit;font-size:13px;padding:0 6px}
+.nlx.armed{background:var(--danger);color:#fff}
+.nbadd{display:flex;gap:6px;align-items:center}.nbadd input{flex:1;min-width:0}
 .notelist li{display:flex;gap:10px;align-items:center}
 .notelist .info{flex:1;min-width:0}
 /* a dot with a number: the number sits inside the dot (no badge sticking out that gets cut off) */
@@ -1042,10 +1050,12 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     </div>
     <div class="statusbox" id="dStatus"></div>
     <div class="notebox" id="dNoteBox">
-      <strong><span class="ndot" aria-hidden="true"></span> הערות <span class="mini" id="dNoteN"></span></strong>
+      <div class="nbhead"><strong><span class="ndot" aria-hidden="true"></span> הערות <span class="mini" id="dNoteN"></span></strong><button class="ghost sm" type="button" id="dNoteOpen">+ הערה</button></div>
       <ul class="notelist" id="dNotes"></ul>
-      <label class="f"><textarea id="dNote" rows="2" maxlength="300" placeholder="הערה חדשה. למשל: אלרגיה, חסר ציוד, צריך לדבר איתו…"></textarea></label>
-      <button class="primary sm" type="button" id="dNoteSave">+ הוספת הערה</button>
+      <div class="nbadd" id="dNoteAdd" hidden>
+        <input type="text" id="dNote" maxlength="300" placeholder="הערה חדשה…" enterkeyhint="done">
+        <button class="primary sm" type="button" id="dNoteSave">הוספה</button>
+      </div>
     </div>
     <div class="tiles three" role="tablist">
       <button class="tile" type="button" data-tab="tzalam" aria-pressed="true">
@@ -2367,10 +2377,12 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       b.onclick=e=>{e.stopPropagation();toast('⏳ בקש"צ ממתין – '+s.name+": "+t);};d.append(b);}
     return d;
   }
+  $("dNoteOpen").onclick=()=>{const a=$("dNoteAdd");a.hidden=!a.hidden;if(!a.hidden)$("dNote").focus();};
+  $("dNote").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();$("dNoteSave").click();}};
   $("dNoteSave").onclick=async()=>{const s=curSoldier&&soldierById(curSoldier);if(!s)return;const v=$("dNote").value.trim();if(!v){$("dNote").focus();return;}
     const b=$("dNoteSave");b.disabled=true;
     const ok=await patch("soldiers/"+s.id,{gaps:(s.gaps||[]).concat([{id:newId(),text:v,at:Date.now(),by:(me&&me.name)||""}])});
-    b.disabled=false;if(ok){$("dNote").value="";toast("ההערה נוספה");}};
+    b.disabled=false;if(ok){$("dNote").value="";$("dNoteAdd").hidden=true;toast("ההערה נוספה");}};
   function renderDetail(){
     if(!curSoldier||$("v-soldier").hidden)return;
     const s=soldierById(curSoldier);
@@ -2382,9 +2394,12 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     renderPhone(s);
     renderStatus(s);
     {const N=sNotes(s),ul=$("dNotes");ul.textContent="";$("dNoteBox").classList.toggle("has",N.length>0);$("dNoteN").textContent=N.length?"("+N.length+")":"";
-     N.forEach(g=>{const li=el("li");const t=el("div","gapnote",g.text);const meta=el("div","n3",[g.by||"",g.at?new Date(g.at).toLocaleDateString("he-IL"):""].filter(Boolean).join(" · "));
-       const box=el("div","info");box.append(t);if(meta.textContent)box.append(meta);
-       li.append(box,delBtn(()=>delNote(s,g.id),"מחיקה"));ul.append(li);});}
+     N.forEach(g=>{const li=el("li");const t=el("div","nltext",g.text);const meta=[g.by||"",g.at?new Date(g.at).toLocaleDateString("he-IL"):""].filter(Boolean).join(" · ");
+       if(meta)t.append(el("span","nlmeta"," · "+meta));
+       const x=el("button","nlx","✕");x.type="button";x.setAttribute("aria-label","מחיקת ההערה");
+       x.onclick=()=>{if(!x.classList.contains("armed")){x.classList.add("armed");x.textContent="למחוק?";setTimeout(()=>{x.classList.remove("armed");x.textContent="✕";},3000);return;}delNote(s,g.id);};
+       li.append(t,x);ul.append(li);});
+     if(!N.length)ul.append(el("li","mini","אין הערות."));}
     const dsq=$("dSquad");if(document.activeElement!==dsq)dsq.value=s.squad||"";
     dsq.onchange=()=>patch("soldiers/"+s.id,{squad:dsq.value});
     const dd=$("dDel");dd.textContent="";dd.append(delBtn(async()=>{
