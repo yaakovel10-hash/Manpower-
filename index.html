@@ -750,7 +750,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 
   <!-- WEAR (בלאי) -->
   <section id="v-orbat" hidden>
-    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>מבנה וארגון לקרב</h1></div>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>מבנה וארגון לקרב</h1><button class="pencil wa" type="button" id="obWa" hidden aria-label="שליחת 2 הטורים בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
     <div class="seg" role="tablist" id="obTabs">
       <button type="button" role="tab" data-t="iron">מספרי ברזל</button>
       <button type="button" role="tab" data-t="front">2 לפנים</button>
@@ -3595,6 +3595,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     {const P=vis(soldiers),n=P.filter(s=>s.iron).length;$("cntOb").textContent=P.length?n+"/"+P.length+" ממוספרים":"—";}
     if($("v-orbat").hidden)return;
     document.querySelectorAll("#obTabs button").forEach(b=>{const on=b.dataset.t===obTab;b.classList.toggle("on",on);b.setAttribute("aria-selected",String(on));});
+    $("obWa").hidden=obTab!=="cols";
     $("obIron").hidden=obTab!=="iron";$("obFront").hidden=obTab!=="front";$("obCols").hidden=obTab!=="cols";
     document.body.classList.toggle("obsel",!!obSel);
     const P=obPeople(),byId=new Map(P.map(s=>[s.id,s]));
@@ -3659,6 +3660,18 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(b.classList.contains("locked")){toast("2 טורים רגיל – בקרוב...");return;}
     const d=obData();d.cols.mode=b.dataset.m;obSave();renderOrbat();});
   // destructive buttons need a second tap within 3 seconds
+  $("obWa").onclick=()=>{
+    const d=obData(),byId=new Map(vis(soldiers).map(s=>[s.id,s]));
+    const R=d.cols.right.filter(id=>byId.has(id)),L=d.cols.left.filter(id=>byId.has(id));
+    if(!R.length&&!L.length){toast("הטורים ריקים");return;}
+    const n=Math.max(R.length,L.length),pad=a=>{const g=n-a.length;if(!g)return a;if(!a.length)return Array(g).fill(null);return [...a.slice(0,-1),...Array(g).fill(null),a[a.length-1]];};
+    const r=pad(R),l=pad(L);
+    const cell=id=>{if(!id)return "— חסרה —";const s=byId.get(id);return (s.iron?s.iron+". ":"")+s.name+(s.pakal?" ("+s.pakal+")":"");};
+    const L2=["*2 טורים מדורג"+(viewName()?" – "+viewName():"")+"*",waDate(Date.now()),"","*ימין  ┃  שמאל*"];
+    for(let i=0;i<n;i++)L2.push(cell(r[i])+"  ┃  "+cell(l[i]));
+    L2.push("","סה\"כ "+(R.length+L.length));
+    sendWA(L2.join("\n"));
+  };
   const armTwice=(btn,label,ask,act)=>{let t;btn.onclick=()=>{
     if(!btn.classList.contains("armed")){btn.classList.add("armed");btn.textContent=ask;haptic(true);t=setTimeout(()=>{btn.classList.remove("armed");btn.textContent=label;},3000);return;}
     clearTimeout(t);btn.classList.remove("armed");btn.textContent=label;act();};};
