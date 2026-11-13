@@ -3666,10 +3666,14 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!R.length&&!L.length){toast("הטורים ריקים");return;}
     const n=Math.max(R.length,L.length),pad=a=>{const g=n-a.length;if(!g)return a;if(!a.length)return Array(g).fill(null);return [...a.slice(0,-1),...Array(g).fill(null),a[a.length-1]];};
     const r=pad(R),l=pad(L);
-    const cell=id=>{if(!id)return "— חסרה —";const s=byId.get(id);return (s.iron?s.iron+". ":"")+s.name+(s.pakal?" ("+s.pakal+")":"");};
-    const L2=["*2 טורים מדורג"+(viewName()?" – "+viewName():"")+"*",waDate(Date.now()),"","*ימין  ┃  שמאל*"];
-    for(let i=0;i<n;i++)L2.push(cell(r[i])+"  ┃  "+cell(l[i]));
-    L2.push("","סה\"כ "+(R.length+L.length));
+    // one person per line, each column as its own list (side-by-side text breaks in WhatsApp)
+    const RLM="\u200f";
+    const line=id=>{if(!id)return RLM+"▫️ חסרה";const s=byId.get(id);return RLM+(s.iron?"*"+s.iron+"*":"–")+" "+s.name+(s.pakal?" · "+s.pakal:"");};
+    const L2=["*2 טורים מדורג"+(viewName()?" – "+viewName():"")+"*",waDate(Date.now()),"","*טור ימין* ⬇️"];
+    r.forEach(id=>L2.push(line(id)));
+    L2.push("","*טור שמאל* ⬇️");
+    l.forEach(id=>L2.push(line(id)));
+    L2.push("","סה\"כ "+(R.length+L.length)+" · 1 למטה מימין");
     sendWA(L2.join("\n"));
   };
   const armTwice=(btn,label,ask,act)=>{let t;btn.onclick=()=>{
