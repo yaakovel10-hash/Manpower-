@@ -473,6 +473,12 @@ li.rollrow.ok .rolltrack{box-shadow:inset 0 2px 6px rgba(0,0,0,.2),0 0 0 3px col
 .pencil.wa{color:#25d366;border-color:color-mix(in srgb,#25d366 45%,var(--line))}
 .notelist{list-style:none;margin:0;padding:0;display:grid;gap:4px}
 .notebox{gap:6px!important;padding:8px 12px!important}
+.dlbox{margin-top:12px}
+.dlhead{width:100%;display:flex;align-items:center;gap:10px;min-height:48px;padding:0 14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+.dlhead .mini{flex:1;text-align:start}
+.dlhead .chev{transition:transform .2s;color:var(--muted)}
+.dlbox.open .dlhead .chev{transform:rotate(-90deg)}
+#dLists{margin-top:8px}
 .nbhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .nbhead .ghost.sm{min-height:32px;padding:0 12px;font-size:14px}
 .notelist li .nltext{flex:1;min-width:0;font-size:15px;line-height:1.35;padding:3px 0 3px 4px;border-inline-start:3px solid var(--danger);padding-inline-start:8px}
@@ -1056,6 +1062,10 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <input type="text" id="dNote" maxlength="300" placeholder="הערה חדשה…" enterkeyhint="done">
         <button class="primary sm" type="button" id="dNoteSave">הוספה</button>
       </div>
+    </div>
+    <div class="dlbox" id="dListBox">
+      <button class="dlhead" type="button" id="dListT" aria-expanded="false"><span>📝 רשימות</span><span class="mini" id="dListN"></span><span class="chev">‹</span></button>
+      <ul class="list roll" id="dLists" hidden></ul>
     </div>
     <div class="tiles three" role="tablist">
       <button class="tile" type="button" data-tab="tzalam" aria-pressed="true">
@@ -2377,6 +2387,23 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       b.onclick=e=>{e.stopPropagation();toast('⏳ בקש"צ ממתין – '+s.name+": "+t);};d.append(b);}
     return d;
   }
+  /* lists on the soldier's page: one switch per list, to put him on several lists quickly */
+  function renderSoldierLists(s){
+    const L=listsEv(),inN=L.filter(x=>listItems(x).some(i=>i.sid===s.id)).length;
+    $("dListN").textContent=L.length?inN+"/"+L.length:"אין רשימות";
+    const ul=$("dLists");if(ul.hidden)return;ul.textContent="";
+    if(!L.length){ul.append(el("li","mini",'עוד אין רשימות. יוצרים רשימה במסך "חיילים".'));return;}
+    const mk="dl:"+s.id,marks=new Set(L.filter(x=>listItems(x).some(i=>i.sid===s.id)).map(x=>x.id));setMarks(mk,marks);
+    L.forEach(x=>{let row=null;row=rollRow(x.id,marks,mk,()=>{
+      const on=getMarks(mk).has(x.id),was=listItems(x).some(i=>i.sid===s.id);
+      row.classList.toggle("ok",on); // show the change right away; the shared data follows
+      if(on&&!was)listUpdate(x,{["sel."+s.id]:{note:"",t:Date.now()}});
+      if(!on&&was)listUpdate(x,{["sel."+s.id]:firebase.firestore.FieldValue.delete()});
+      const n=[...getMarks(mk)].length;$("dListN").textContent=n+"/"+L.length;
+    },inner=>{const info=el("div","info");info.append(el("div","n1",x.title||"רשימה"),el("div","n3",listItems(x).length+" · "+waDate(x.at||0)+(x.byName?" · "+x.byName:"")));inner.append(info);});ul.append(row);});
+  }
+  $("dListT").onclick=()=>{const ul=$("dLists");ul.hidden=!ul.hidden;$("dListT").setAttribute("aria-expanded",String(!ul.hidden));$("dListBox").classList.toggle("open",!ul.hidden);
+    const s=curSoldier&&soldiers.find(x=>x.id===curSoldier);if(s)renderSoldierLists(s);};
   $("dNoteOpen").onclick=()=>{const a=$("dNoteAdd");a.hidden=!a.hidden;if(!a.hidden)$("dNote").focus();};
   $("dNote").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();$("dNoteSave").click();}};
   $("dNoteSave").onclick=async()=>{const s=curSoldier&&soldierById(curSoldier);if(!s)return;const v=$("dNote").value.trim();if(!v){$("dNote").focus();return;}
@@ -2393,6 +2420,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const av=avatar(s.photo,"lg");av.id="dAv";$("dAv").replaceWith(av);
     renderPhone(s);
     renderStatus(s);
+    renderSoldierLists(s);
     {const N=sNotes(s),ul=$("dNotes");ul.textContent="";$("dNoteBox").classList.toggle("has",N.length>0);$("dNoteN").textContent=N.length?"("+N.length+")":"";
      N.forEach(g=>{const li=el("li");const t=el("div","nltext",g.text);const meta=[g.by||"",g.at?new Date(g.at).toLocaleDateString("he-IL"):""].filter(Boolean).join(" · ");
        if(meta)t.append(el("span","nlmeta"," · "+meta));
