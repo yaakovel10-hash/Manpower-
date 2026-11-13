@@ -3878,8 +3878,17 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     renderQueued=true;
     requestAnimationFrame(()=>{renderQueued=false;try{renderAllNow();}catch(e){console.warn("render",e);}});
   }
+  const SNAP_IDS=["meName","meRole","meUnit","meId","cntAt","cntVf","cntSc","cntAb","cntWr","cntNm","cntOb","cntGp","cntVh","cntMine","pendBadge","gapBadge","faultBadge","openUnits","viewWrap"];
+  let lastSnap="";
+  function saveHomeSnap(){
+    try{const t={};SNAP_IDS.forEach(id=>{const e=$(id);if(e)t[id]=[id==="openUnits"||id==="viewWrap"?null:e.textContent,e.hidden];});
+      const tiles=[...$("homeTiles").querySelectorAll(":scope > .tile")].map(x=>[x.getAttribute("href"),x.hidden]);
+      const vs=$("viewUnit"),vo=vs&&vs.selectedOptions&&vs.selectedOptions[0];
+      const j=JSON.stringify({t,tiles,view:vo?vo.textContent:""});if(j!==lastSnap){lastSnap=j;localStorage.setItem("homeSnap",j);}}catch(_){}
+  }
   function renderAllNow(){
     if(!ready)return;
+    setTimeout(saveHomeSnap,0);
     setTimeout(syncWearNotes,0);
     ensureLink();mergeSweep();
     renderMe();renderS();renderW();
@@ -3921,6 +3930,17 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   function stopAll(){[...unsubs,...mgmtUnsubs].forEach(u=>{try{u();}catch(_){}});unsubs=[];mgmtUnsubs=[];scopeKey=null;soldiers=[];weapons=[];events=[];requests=[];tokens={};allMembers=[];}
 
   /* ---------- boot ---------- */
+  /* ---------- instant start: show the home screen as it was last time, while the data loads ---------- */
+  var painted=false;
+  try{
+    const snap=JSON.parse(localStorage.getItem("homeSnap")||"null");
+    if(snap&&localStorage.getItem("signedIn")==="1"&&(!location.hash||location.hash==="#")){
+      Object.entries(snap.t||{}).forEach(([id,[t,h]])=>{const e=$(id);if(e){if(t!=null)e.textContent=t;e.hidden=h;}});
+      (snap.tiles||[]).forEach(([href,h])=>{const t=$("homeTiles").querySelector('a[href="'+href+'"]');if(t){t.hidden=h;$("homeTiles").append(t);}});
+      if(snap.view){const o=document.createElement("option");o.textContent=snap.view;$("viewUnit").append(o);}
+      show(["v-home"]);painted=true;
+    }
+  }catch(_){}
   if(String(FIREBASE_CONFIG.apiKey).includes("PASTE")){show(["v-config"]);return;}
   if(!window.firebase){$("bootStatus").textContent="לא ניתן לטעון את Firebase. בדקו חיבור לאינטרנט.";return;}
   firebase.initializeApp(FIREBASE_CONFIG);
@@ -3934,10 +3954,14 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(meUnsub){meUnsub();meUnsub=null;}if(unitsUnsub){unitsUnsub();unitsUnsub=null;}
     stopAll();me=null;units=[];editingMe=false;isMaster=false;linkDone=false;
     isAdmin=!!u&&u.emailVerified&&ADMIN_EMAILS.map(x=>x.toLowerCase()).includes((u.email||"").toLowerCase());
-    if(!u){ready=true;route();return;}
-    ready=false;$("bootStatus").hidden=false;$("bootStatus").textContent="טוען…";
-    ALL.forEach(i=>$(i).hidden=true);
-    await probeMaster();
+    if(!u){try{localStorage.removeItem("signedIn");localStorage.removeItem("homeSnap");}catch(_){}painted=false;ready=true;route();return;}
+    try{localStorage.setItem("signedIn","1");}catch(_){}
+    ready=false;
+    if(!painted){$("bootStatus").hidden=false;$("bootStatus").textContent="טוען…";ALL.forEach(i=>$(i).hidden=true);}
+    // "key holder" check: use the answer remembered on this phone now, and confirm with the server in the background
+    {const k="isMaster:"+uid;let cached=isAdmin;try{cached=isAdmin||localStorage.getItem(k)==="1";}catch(_){}
+     isMaster=cached;
+     if(!isAdmin)probeMaster().then(()=>{if(isMaster!==cached&&uid===(u&&u.uid)){scopeKey=null;mgmtUnsubs.forEach(x=>{try{x();}catch(_){}});mgmtUnsubs=[];if(ready){startMgmt();startData();renderAll();route();}}});}
     let gotMe=false,gotUnits=false;
     let routedKey=null;
     const step=()=>{if(!gotMe||!gotUnits)return;ready=true;
