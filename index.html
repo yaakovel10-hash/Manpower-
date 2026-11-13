@@ -256,7 +256,6 @@ body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
 #obColsBox .ocard,#obPool .ocard{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .ocard.odragging{opacity:.25;outline:2px dashed var(--accent);outline-offset:-2px}
 .ocard.oghost{position:fixed;left:0;top:0;margin:0;z-index:60;pointer-events:none;box-shadow:0 20px 30px -10px var(--shadow);transition:none}
-#obColsBox.dragon .ocard.missing{display:none}
 .ocol .ocard.missing{background:transparent;border:2px dashed color-mix(in srgb,var(--danger) 55%,var(--line));cursor:default}
 .ocol .ocard.missing .cir{background:transparent;color:var(--muted);border:1px dashed var(--line)}
 .ocol .ocard.missing .nm{color:var(--danger)}
@@ -3703,12 +3702,32 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   /* long-press a soldier in "2 טורים" and drag him: to another spot, the other column, or back to the list */
   {
     const root=$("v-orbat");let lp=null,drag=null,ghost=null,gx=0,gy=0,lx=0,ly=0,sx=0,sy=0,last=0,justDragged=false;
+    let snap=null,cur=null,rects=null,els=null;
     const cardsIn=sel=>[...document.querySelectorAll(sel.split(",").map(x=>x.trim()+" .ocard[data-sid]").join(","))];
     const inside=(r,mx,my)=>lx>r.left+mx&&lx<r.right-mx&&ly>r.top+my&&ly<r.bottom-my;
     const place=()=>{if(ghost)ghost.style.transform="translate("+(lx-gx)+"px,"+(ly-gy)+"px) scale(1.04)";};
+    const clone=o=>({R:o.R.slice(),L:o.L.slice(),P:o.P.slice()});
+    const where=(o,id)=>{for(const k of ["R","L","P"]){const i=o[k].indexOf(id);if(i>=0)return [k,i];}return [null,-1];};
+    const missEl=()=>{const m=el("div","ocard colcard missing");m.append(el("span","cir","—"),el("span","nm","חסרה"));return m;};
+    // lay the cards out in this order (the "חסרה" box stays one before the last of the shorter column)
+    function arrange(o){
+      const n=Math.max(o.R.length,o.L.length);
+      [["R",$("obColR")],["L",$("obColL")]].forEach(([k,col])=>{
+        col.querySelectorAll(".ocard").forEach(x=>{if(x.classList.contains("missing"))x.remove();});
+        const slot=col.querySelector(".oslot"),put=x=>slot?col.insertBefore(x,slot):col.append(x);
+        const a=o[k],gap=n-a.length;
+        if(gap&&!a.length)for(let g=0;g<gap;g++)put(missEl());
+        a.forEach((id,i)=>{if(gap&&i===a.length-1)for(let g=0;g<gap;g++)put(missEl());put(els.get(id));});});
+      o.P.forEach(id=>$("obPool").append(els.get(id)));
+      cur=o;
+    }
     const start=c=>{drag=c;const r=c.getBoundingClientRect();gx=sx-r.left;gy=sy-r.top;
+      const ids=sel=>cardsIn(sel).map(x=>x.dataset.sid);
+      snap={R:ids("#obColR"),L:ids("#obColL"),P:ids("#obPool")};cur=clone(snap);
+      els=new Map(cardsIn("#obColR, #obColL, #obPool").map(x=>[x.dataset.sid,x]));
+      rects=new Map([...els].map(([id,x])=>[id,x.getBoundingClientRect()]));
       ghost=c.cloneNode(true);ghost.classList.add("oghost");ghost.style.width=r.width+"px";ghost.style.height=r.height+"px";document.body.append(ghost);
-      c.classList.add("odragging");$("obColsBox").classList.add("dragon");obSel=null;document.body.classList.remove("obsel");
+      c.classList.add("odragging");obSel=null;document.body.classList.remove("obsel");
       root.querySelectorAll(".ocard.sel").forEach(x=>x.classList.remove("sel"));haptic(true);place();};
     root.addEventListener("pointerdown",e=>{
       if(obTab!=="cols")return;const c=e.target.closest(".ocard[data-sid]");
@@ -3719,19 +3738,27 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       if(lp&&Math.hypot(lx-sx,ly-sy)>8){clearTimeout(lp);lp=null;}
       if(!drag)return;e.preventDefault();place();
       const now=Date.now();if(now-last<120)return;
+      const me_=drag.dataset.sid,[dk,di]=where(snap,me_);
       const t=cardsIn("#obColR, #obColL, #obPool").filter(x=>x!==drag).find(x=>{const r=x.getBoundingClientRect();return inside(r,r.width*.15,r.height*.2);});
-      if(t){const sib=[...t.parentNode.children];
-        if(t.parentNode===drag.parentNode&&sib.indexOf(drag)<sib.indexOf(t))t.after(drag);else t.before(drag);last=now;haptic(false);return;}
-      // over an empty part of a column (or its "+") → to the end of that column; over the list → back to the list
-      for(const col of [$("obColR"),$("obColL")]){const r=col.getBoundingClientRect();
-        if(inside(r,0,0)&&drag.parentNode!==col){const slot=col.querySelector(".oslot");if(slot)col.insertBefore(drag,slot);else col.append(drag);last=now;haptic(false);return;}}
+      if(t){
+        const tid=t.dataset.sid,[tk,ti]=where(snap,tid),o=clone(snap);
+        const rd=rects.get(me_),rt=rects.get(tid),h=rd.height,dy=Math.abs(rt.top-rd.top);
+        // right next to where he stood (above/below, or beside him): just swap the two
+        const near=dk!=="P"&&tk!=="P"&&((tk===dk&&dy<h*1.7)||(tk!==dk&&dy<h*.5));
+        if(near){o[dk][di]=tid;o[tk][ti]=me_;}
+        else{o[dk].splice(di,1);const idx=o[tk].indexOf(tid);o[tk].splice(tk===dk&&di<=ti?idx+1:idx,0,me_);}
+        if(JSON.stringify(o)!==JSON.stringify(cur)){arrange(o);last=now;haptic(false);}
+        return;}
+      // over an empty part of a column → to its end; over the list → back to the list
+      for(const [k,col] of [["R",$("obColR")],["L",$("obColL")]]){const r=col.getBoundingClientRect();
+        if(inside(r,0,0)&&where(cur,me_)[0]!==k&&!t){const o=clone(snap);o[dk].splice(di,1);o[k].push(me_);arrange(o);last=now;haptic(false);return;}}
       const pr=$("obPoolWrap").getBoundingClientRect();
-      if(inside(pr,0,0)&&drag.parentNode!==$("obPool")){$("obPool").append(drag);last=now;haptic(false);}
+      if(inside(pr,0,0)&&where(cur,me_)[0]!=="P"){const o=clone(snap);o[dk].splice(di,1);o.P.push(me_);arrange(o);last=now;haptic(false);}
     });
     const end=()=>{clearTimeout(lp);lp=null;if(!drag)return;
-      const c=drag;drag=null;if(ghost){ghost.remove();ghost=null;}c.classList.remove("odragging");$("obColsBox").classList.remove("dragon");
+      const c=drag;drag=null;if(ghost){ghost.remove();ghost=null;}c.classList.remove("odragging");
       justDragged=true;setTimeout(()=>{justDragged=false;},350);
-      const d=obData();d.cols.right=cardsIn("#obColR").map(x=>x.dataset.sid);d.cols.left=cardsIn("#obColL").map(x=>x.dataset.sid);
+      const d=obData(),o=cur||snap;d.cols.right=o.R.slice();d.cols.left=o.L.slice();
       obRenumber(d);obSave();renderOrbat();};
     root.addEventListener("pointerup",end);root.addEventListener("pointercancel",end);
     root.addEventListener("touchmove",e=>{if(drag)e.preventDefault();},{passive:false});
