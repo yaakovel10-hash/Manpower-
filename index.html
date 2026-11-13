@@ -750,7 +750,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 
   <!-- WEAR (בלאי) -->
   <section id="v-orbat" hidden>
-    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>מבנה וארגון לקרב</h1><button class="pencil wa" type="button" id="obWa" hidden aria-label="שליחת 2 הטורים בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>מבנה וארגון לקרב</h1><button class="pencil" type="button" id="obImg" hidden aria-label="שליחת 2 הטורים כתמונה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-5-9 8"/></svg></button><button class="pencil wa" type="button" id="obWa" hidden aria-label="שליחת 2 הטורים בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
     <div class="seg" role="tablist" id="obTabs">
       <button type="button" role="tab" data-t="iron">מספרי ברזל</button>
       <button type="button" role="tab" data-t="front">2 לפנים</button>
@@ -3595,7 +3595,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     {const P=vis(soldiers),n=P.filter(s=>s.iron).length;$("cntOb").textContent=P.length?n+"/"+P.length+" ממוספרים":"—";}
     if($("v-orbat").hidden)return;
     document.querySelectorAll("#obTabs button").forEach(b=>{const on=b.dataset.t===obTab;b.classList.toggle("on",on);b.setAttribute("aria-selected",String(on));});
-    $("obWa").hidden=obTab!=="cols";
+    $("obWa").hidden=obTab!=="cols";$("obImg").hidden=obTab!=="cols";
     $("obIron").hidden=obTab!=="iron";$("obFront").hidden=obTab!=="front";$("obCols").hidden=obTab!=="cols";
     document.body.classList.toggle("obsel",!!obSel);
     const P=obPeople(),byId=new Map(P.map(s=>[s.id,s]));
@@ -3675,6 +3675,50 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     l.forEach(id=>L2.push(line(id)));
     L2.push("","סה\"כ "+(R.length+L.length)+" · 1 למטה מימין");
     sendWA(L2.join("\n"));
+  };
+  // the two columns as a picture (a table you can send in WhatsApp)
+  $("obImg").onclick=async()=>{
+    const d=obData(),byId=new Map(vis(soldiers).map(s=>[s.id,s]));
+    const R=d.cols.right.filter(id=>byId.has(id)),L=d.cols.left.filter(id=>byId.has(id));
+    if(!R.length&&!L.length){toast("הטורים ריקים");return;}
+    const n=Math.max(R.length,L.length),pad=a=>{const g=n-a.length;if(!g)return a;if(!a.length)return Array(g).fill(null);return [...a.slice(0,-1),...Array(g).fill(null),a[a.length-1]];};
+    const r=pad(R),l=pad(L);
+    try{await document.fonts.load('700 30px "Assistant"');await document.fonts.load('30px "Secular One"');}catch(_){}
+    const W=1080,M=36,G=24,CW=(W-2*M-G)/2,RH=104,TOP=230,H=TOP+n*(RH+14)+110;
+    const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");
+    x.direction="rtl";x.textBaseline="middle";
+    x.fillStyle="#f4f3ec";x.fillRect(0,0,W,H);
+    x.fillStyle="#3d4a1e";x.fillRect(0,0,W,150);
+    x.fillStyle="#fff";x.textAlign="right";x.font='54px "Secular One", sans-serif';
+    x.fillText("2 טורים מדורג",W-M,62);
+    x.font='600 30px "Assistant", sans-serif';x.fillStyle="#dfe6c8";
+    x.fillText([viewName(),waDate(Date.now())].filter(Boolean).join("  ·  "),W-M,116);
+    x.fillStyle="#5b6440";x.font='700 30px "Assistant", sans-serif';x.textAlign="center";
+    x.fillText("טור ימין",W-M-CW/2,195);x.fillText("טור שמאל",M+CW/2,195);
+    const rr=(X,Y,w,h,rad)=>{x.beginPath();x.moveTo(X+rad,Y);x.arcTo(X+w,Y,X+w,Y+h,rad);x.arcTo(X+w,Y+h,X,Y+h,rad);x.arcTo(X,Y+h,X,Y,rad);x.arcTo(X,Y,X+w,Y,rad);x.closePath();};
+    const fit=(t,maxW)=>{if(x.measureText(t).width<=maxW)return t;while(t.length>1&&x.measureText(t+"…").width>maxW)t=t.slice(0,-1);return t+"…";};
+    const cell=(id,X,Y)=>{
+      if(!id){x.setLineDash([12,8]);x.strokeStyle="#c0504d";x.lineWidth=3;rr(X,Y,CW,RH,18);x.stroke();x.setLineDash([]);
+        x.fillStyle="#c0504d";x.font='700 34px "Assistant", sans-serif';x.textAlign="center";x.fillText("חסרה",X+CW/2,Y+RH/2);return;}
+      const s=byId.get(id);
+      x.fillStyle="#fff";rr(X,Y,CW,RH,18);x.fill();x.strokeStyle="#d9d7c8";x.lineWidth=2;x.stroke();
+      x.fillStyle="#2b3216";rr(X+CW-18-74,Y+15,74,74,14);x.fill();
+      x.fillStyle="#fff";x.textAlign="center";x.font='700 38px "Assistant", sans-serif';x.fillText(s.iron?String(s.iron):"—",X+CW-18-37,Y+RH/2+2);
+      x.textAlign="right";x.fillStyle="#1d2110";x.font='700 33px "Assistant", sans-serif';
+      const tx=X+CW-18-74-18,mw=CW-18-74-18-18;
+      x.fillText(fit(s.name||"",mw),tx,Y+(s.pakal?38:RH/2));
+      if(s.pakal){x.fillStyle="#6b705c";x.font='600 26px "Assistant", sans-serif';x.fillText(fit(s.pakal,mw),tx,Y+74);}
+    };
+    for(let i=0;i<n;i++){const Y=TOP+i*(RH+14);cell(r[i],W-M-CW,Y);cell(l[i],M,Y);}
+    x.fillStyle="#5b6440";x.font='600 28px "Assistant", sans-serif';x.textAlign="center";
+    x.fillText("סה\"כ "+(R.length+L.length)+"  ·  1 למטה מימין",W/2,H-55);
+    c.toBlob(async blob=>{
+      if(!blob){toast("לא הצלחתי ליצור תמונה");return;}
+      const f=new File([blob],"2-turim.png",{type:"image/png"});
+      try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"2 טורים מדורג"});return;}}catch(e){if(e&&e.name==="AbortError")return;}
+      const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="2-turim.png";document.body.append(a);a.click();a.remove();
+      setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast("התמונה נשמרה בהורדות – אפשר לשלוח אותה בוואטסאפ");
+    },"image/png");
   };
   const armTwice=(btn,label,ask,act)=>{let t;btn.onclick=()=>{
     if(!btn.classList.contains("armed")){btn.classList.add("armed");btn.textContent=ask;haptic(true);t=setTimeout(()=>{btn.classList.remove("armed");btn.textContent=label;},3000);return;}
