@@ -3689,9 +3689,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   /* iron numbers follow the two columns: bottom row right = 1, left = 2, the row above 3,4 …
      ("חסרה" boxes are skipped). Anyone not in the columns has no number. */
   function obRenumber(d){
-    // never more than one "חסרה": move people from the top of the longer column to the top of the shorter one
-    while(d.cols.right.length-d.cols.left.length>1)d.cols.left.unshift(d.cols.right.shift());
-    while(d.cols.left.length-d.cols.right.length>1)d.cols.right.unshift(d.cols.left.shift());
+    // never more than one "חסרה": take the soldier standing next to the empty box and move him into it
+    const fix=(lg,sh)=>{while(lg.length-sh.length>1){const m=sh.length,at=Math.max(0,m-1);sh.splice(at,0,lg.splice(at,1)[0]);}};
+    fix(d.cols.right,d.cols.left);fix(d.cols.left,d.cols.right);
     const R=d.cols.right.slice(),L=d.cols.left.slice(),n=Math.max(R.length,L.length);
     const pad=a=>{const g=n-a.length;if(!g)return a;if(!a.length)return Array(g).fill(null);return [...a.slice(0,-1),...Array(g).fill(null),a[a.length-1]];};
     const r=pad(R),l=pad(L),num=new Map();let k=1;
