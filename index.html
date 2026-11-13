@@ -395,7 +395,9 @@ header.top .pid .num{text-shadow:0 1px 0 var(--hi)}
 ul.ablist li.abrow{align-items:flex-start}
 .abside{display:grid;gap:4px;justify-items:center;flex:none;width:92px}
 .abtag{font-size:13px;font-weight:700;border-radius:8px;padding:4px 8px;text-align:center;width:100%;color:#fff;background:var(--teal)}
-.abtag[data-t="0"]{background:#2f7fc1}.abtag[data-t="1"]{background:#c86b1e}.abtag[data-t="2"]{background:#8e44ad}.abtag[data-t="3"]{background:#16806f}.abtag[data-t="4"]{background:#b23a48}.abtag[data-t="req"]{background:#6b7a8f}.abtag[data-t="o"]{background:#7a6a3a}
+.abtag[data-t="0"]{background:#2f7fc1}.abtag[data-t="1"]{background:#c86b1e}.abtag[data-t="2"]{background:#8e44ad}.abtag[data-t="3"]{background:#16806f}.abtag[data-t="4"]{background:#b23a48}.abtag[data-t="x"]{background:#5d6b2f}
+.chipbtn.addtype{border-style:dashed;color:var(--accent)}
+.addtypew{display:flex;gap:6px;align-items:center;width:100%;margin-top:4px}.addtypew input{flex:1;min-width:0}.abtag[data-t="req"]{background:#6b7a8f}.abtag[data-t="o"]{background:#7a6a3a}
 .abst{font-size:12px;color:var(--muted)}
 li.abrow.st-now .abst{color:var(--ok);font-weight:700}
 li.abrow.st-done{opacity:.55}
@@ -3066,11 +3068,31 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   const cfgId=()=>{const id=curView();return "abscfg-"+(id!=="*"?id:(me&&me.unitId)||"all");};
   function cfgOf(t){const c=(abCfgDoc&&abCfgDoc.types&&abCfgDoc.types[t])||AB_DEF[t]||{allDay:true};return c;}
   function loadCfg(){abCfgDoc=events.find(x=>x.id===cfgId())||null;}
+  // the built-in reasons plus the ones this unit added (shared with everyone in the unit)
+  const allAbTypes=()=>[...AB_TYPES,...((abCfgDoc&&abCfgDoc.extra)||[]).filter(t=>!AB_TYPES.includes(t))];
+  async function saveCfgDoc(upd){
+    const unit=writeUnit();if(!unit){toast("אין מסגרת פתוחה");return false;}
+    const base=abCfgDoc?{types:abCfgDoc.types||{},extra:abCfgDoc.extra||[]}:{types:{},extra:[]};
+    const d=Object.assign({kind:"cfg",soldierId:"",unit,date:"",by:uid},base,upd,{at:Date.now()});
+    const ok=await write("events/"+cfgId(),d,"abErr");if(ok)abCfgDoc=Object.assign({id:cfgId()},d);return ok;
+  }
   function renderTypes(){
     const box=$("abTypes");box.textContent="";
-    [...AB_TYPES,"אחר"].forEach(t=>{const b=el("button","chipbtn"+(t===abType?" on":""),t==="אחר"?"✎ אחר":t);b.type="button";
+    [...allAbTypes(),"אחר"].forEach(t=>{const b=el("button","chipbtn"+(t===abType?" on":""),t==="אחר"?"✎ אחר":t);b.type="button";
       b.setAttribute("role","radio");b.setAttribute("aria-checked",String(t===abType));
       b.onclick=()=>{abType=t;renderTypes();applyCfg();};box.append(b);});
+    // "+" adds a new reason for the whole unit
+    const add=el("button","chipbtn addtype","+ סיבה חדשה");add.type="button";
+    add.onclick=()=>{add.hidden=true;const w=el("div","addtypew");const i=el("input");i.type="text";i.maxLength=24;i.placeholder="שם הסיבה, למשל: קורס";
+      const ok=el("button","primary sm","הוספה");ok.type="button";const no=el("button","ghost sm","ביטול");no.type="button";
+      no.onclick=()=>renderTypes();
+      const go=async()=>{const t=i.value.trim();if(!t){i.focus();return;}
+        if(allAbTypes().includes(t)||t==="אחר"){abType=t;renderTypes();applyCfg();return;}
+        ok.disabled=true;const done=await saveCfgDoc({extra:[...((abCfgDoc&&abCfgDoc.extra)||[]),t]});ok.disabled=false;
+        if(done){abType=t;renderTypes();applyCfg();toast('"'+t+'" נוספה לכל המסגרת');}};
+      ok.onclick=go;i.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();go();}};
+      w.append(i,ok,no);box.append(w);i.focus();};
+    box.append(add);
     $("abOtherWrap").hidden=abType!=="אחר";
   }
   function applyCfg(){
@@ -3118,8 +3140,12 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   $("abCfgClose").onclick=()=>{$("abCfg").hidden=true;};
   function renderCfg(){
     const box=$("abCfgList");box.textContent="";
-    AB_TYPES.forEach((t,i)=>{const c=cfgOf(t);
+    allAbTypes().forEach((t,i)=>{const c=cfgOf(t);
       const r=el("div","cfgrow");r.append(el("b",null,t));
+      if(!AB_TYPES.includes(t)){const x=el("button","linkbtn muted","הסרה");x.type="button";x.onclick=async()=>{
+        if(!x.dataset.arm){x.dataset.arm="1";x.textContent="להסיר?";setTimeout(()=>{delete x.dataset.arm;x.textContent="הסרה";},2500);return;}
+        const types=Object.assign({},(abCfgDoc&&abCfgDoc.types)||{});delete types[t];
+        if(await saveCfgDoc({extra:((abCfgDoc&&abCfgDoc.extra)||[]).filter(z=>z!==t),types})){if(abType===t)abType=AB_TYPES[0];renderCfg();toast('"'+t+'" הוסרה');}};r.append(x);}
       const lab=el("label","allday");const cb=el("input");cb.type="checkbox";cb.id="cfa"+i;cb.checked=!!c.allDay;lab.append(cb," כל היום");
       const st=el("input");st.type="time";st.id="cfs"+i;st.value=c.start||"";
       const en=el("input");en.type="time";en.id="cfe"+i;en.value=c.end||"";
@@ -3129,12 +3155,11 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       r.append(lab,dw,tm);box.append(r);});
   }
   $("abCfgSave").onclick=async()=>{
-    const types={};
-    for(let i=0;i<AB_TYPES.length;i++){const a=$("cfa"+i).checked,st=$("cfs"+i).value,en=$("cfe"+i).value,dy=Math.max(1,Math.min(90,parseInt($("cfd"+i).value,10)||1));
-      if(!a&&(!st||!en))return showErr("abCfgErr","ב"+AB_TYPES[i]+": מלאו שעות או סמנו כל היום.");
-      types[AB_TYPES[i]]=a?{allDay:true,days:dy}:{allDay:false,start:st,end:en,days:dy};}
-    const unit=writeUnit();if(!unit)return showErr("abCfgErr","אין מסגרת פתוחה.");
-    const ok=await write("events/"+cfgId(),{kind:"cfg",soldierId:"",unit,types,date:"",at:Date.now(),by:uid},"abCfgErr");
+    const types={},T=allAbTypes();
+    for(let i=0;i<T.length;i++){const a=$("cfa"+i).checked,st=$("cfs"+i).value,en=$("cfe"+i).value,dy=Math.max(1,Math.min(90,parseInt($("cfd"+i).value,10)||1));
+      if(!a&&(!st||!en))return showErr("abCfgErr","ב"+T[i]+": מלאו שעות או סמנו כל היום.");
+      types[T[i]]=a?{allDay:true,days:dy}:{allDay:false,start:st,end:en,days:dy};}
+    const ok=await saveCfgDoc({types});
     if(ok){$("abCfg").hidden=true;toast("ההגדרות נשמרו");}
   };
   function absStatus(x,k){
@@ -3147,6 +3172,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     return (n>=a||n<b)?"now":"later";
   }
   function renderAbsent(){
+    loadCfg();
     if($("v-absent").hidden)return;
     const d=parseKey(abDay);
     $("abDayG").textContent=(abDay===key(new Date())?"היום · ":"")+"יום "+DOWL[d.getDay()]+", "+fmtG(abDay);
@@ -3160,7 +3186,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     rows.forEach(({x,s})=>{
       const st=absStatus(x,abDay);
       const li=el("li","abrow"+(st?" st-"+st:""));
-      const tag=el("span","abtag",x.absType||"");tag.dataset.t=x.req?"req":(AB_TYPES.indexOf(x.absType)>=0?String(AB_TYPES.indexOf(x.absType)):"o");
+      const tag=el("span","abtag",x.absType||"");tag.dataset.t=x.req?"req":(AB_TYPES.indexOf(x.absType)>=0?String(AB_TYPES.indexOf(x.absType)):(allAbTypes().includes(x.absType)?"x":"o"));
       const info=el("div","info");
       {const n1=el("div","n1");n1.append(s?sLink(s.name,s.id):"חייל שנמחק");info.append(n1);}
       const when=x.allDay?(x.to&&x.to!==x.date?dr(x.date,x.to):"כל היום"):(tr(x.start,x.end)+(x.to&&x.to!==x.date?" · עד "+ltr(fmtG(x.to)):""));
