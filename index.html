@@ -3092,7 +3092,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       // an older list (saved as one block) is converted to per-soldier fields the first time it's changed
       if(!L.sel&&L.items){const sel={};L.items.forEach((x,i)=>{sel[x.sid]={note:x.note||"",t:i+1};});
         await qc(fs.doc("events/"+L.id).update({sel,items:FV().delete()}));L.sel=sel;}
-      await qc(fs.doc("events/"+L.id).update(Object.assign({},upd,{at:Date.now()})));
+      // "at" stays the creation time so the order of the lists never changes; "mt" = last change
+      await qc(fs.doc("events/"+L.id).update(Object.assign({},upd,{mt:Date.now()})));
     }catch(e){toast(errMsg(e));}
   }
   function listChanged(){const L=curList();if(!L)return;const m=getMarks("list:"+L.id),cur=new Set(listItems(L).map(x=>x.sid)),upd={};let t=Date.now();
