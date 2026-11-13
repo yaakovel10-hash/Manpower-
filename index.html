@@ -299,7 +299,7 @@ body.bdopen{overflow:hidden}
 .bdboard{position:relative;flex:1;min-height:0;border-radius:16px;border:2px dashed color-mix(in srgb,var(--fg) 30%,transparent);background:repeating-linear-gradient(0deg,transparent 0 39px,color-mix(in srgb,var(--fg) 5%,transparent) 39px 40px),repeating-linear-gradient(90deg,transparent 0 39px,color-mix(in srgb,var(--fg) 5%,transparent) 39px 40px)}
 .bdhint{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:15px;pointer-events:none}
 .bdhint[hidden]{display:none}
-.bdpool{display:flex;gap:6px;overflow-x:auto;min-height:62px;padding:4px 2px;align-items:center;border-radius:12px;transition:background .15s}
+.bdpool{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-height:62px;padding:4px 2px;align-items:center;border-radius:12px;transition:background .15s}
 .bdpool.drop{background:color-mix(in srgb,var(--danger) 18%,transparent)}
 .bdcard{position:relative;flex:none;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:6px;align-items:center;min-width:84px;max-width:120px;padding:5px 8px;border-radius:10px;background:var(--tile);border:1px solid var(--line);font-size:12px;-webkit-user-select:none;user-select:none;touch-action:none;cursor:grab}
 .bdcard .bir{grid-row:1/3;min-width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:var(--fg);color:var(--bg);font-weight:800;font-size:13px;padding:0 3px}
@@ -3932,14 +3932,19 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const move=(cx,cy)=>{if(!ghost)return;const b=toBoard(cx,cy);
       ghost.style.left=Math.max(0,Math.min(100,b.u/b.W*100))+"%";ghost.style.top=Math.max(0,Math.min(100,b.v/b.H*100))+"%";
       $("bdPool").classList.toggle("drop",b.v>b.H);};
-    over.addEventListener("pointerdown",e=>{const c=e.target.closest(".bdcard");if(!c||!over.contains(c))return;
+    // the bottom row scrolls by swiping along it (the page is turned, so we scroll it ourselves)
+    let scr=null;
+    over.addEventListener("pointerdown",e=>{
+      if(e.target.closest("#bdPool"))scr={y:e.clientY,x:e.clientX,on:false};
+      const c=e.target.closest(".bdcard");if(!c||!over.contains(c))return;
       sx=e.clientX;sy=e.clientY;
       if(c.parentNode===$("bdBoard")){e.preventDefault();begin(c,sx,sy);return;}
       clearTimeout(lp);lp=setTimeout(()=>{lp=null;begin(c,sx,sy);},180);});
     over.addEventListener("pointermove",e=>{
       if(lp&&Math.hypot(e.clientX-sx,e.clientY-sy)>10){clearTimeout(lp);lp=null;}
-      if(drag){e.preventDefault();move(e.clientX,e.clientY);}});
-    const end=e=>{clearTimeout(lp);lp=null;if(!drag)return;
+      if(drag){e.preventDefault();move(e.clientX,e.clientY);return;}
+      if(scr&&!lp){const dy=e.clientY-scr.y;if(scr.on||Math.abs(dy)>6){scr.on=true;$("bdPool").scrollLeft-=dy;scr.y=e.clientY;}}});
+    const end=e=>{clearTimeout(lp);lp=null;scr=null;if(!drag)return;
       const b=toBoard(e.clientX,e.clientY),pos=bdPos(),inBoard=b.u>=0&&b.u<=b.W&&b.v>=0&&b.v<=b.H;
       if(inBoard)pos[drag.sid]={x:+(b.u/b.W).toFixed(4),y:+(b.v/b.H).toFixed(4)};else delete pos[drag.sid];
       $("bdPool").classList.remove("drop");drag=null;ghost=null;obSave();renderBoard();};
