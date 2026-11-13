@@ -474,13 +474,19 @@ li.rollrow.ok .rolltrack{box-shadow:inset 0 2px 6px rgba(0,0,0,.2),0 0 0 3px col
 .notelist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .notelist li{display:flex;gap:10px;align-items:center}
 .notelist .info{flex:1;min-width:0}
-button.ndot[data-n]::after{content:attr(data-n);position:absolute;top:-9px;left:-9px;font-size:10px;font-weight:700;color:#fff;background:var(--danger);border-radius:999px;min-width:14px;height:14px;line-height:14px;text-align:center;padding:0 2px}
+/* a dot with a number: the number sits inside the dot (no badge sticking out that gets cut off) */
+button.ndot[data-n]{width:auto;min-width:18px;height:18px;border-radius:999px;padding:0 5px}
+button.ndot[data-n]::after{content:attr(data-n);display:block;font-size:11px;font-weight:800;line-height:18px;color:#fff;text-align:center}
 button.ndot{position:relative}
+/* name + dots: only the name gets shortened with "…", the dots always stay whole */
+.nwn{display:flex!important;align-items:center;min-width:0;overflow:visible!important;padding-inline-end:4px}
+.nwn .nwt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nwn .ndot{flex:none}
 .gapnote{margin-top:4px;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--danger) 10%,transparent);border-inline-start:3px solid var(--danger);white-space:pre-wrap;font-size:15px}
 .gaprow .n1 .ndot{margin-inline-start:0}
-.ndot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 25%,transparent);vertical-align:middle;margin-inline-start:8px;flex:none}
+.ndot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 25%,transparent);vertical-align:middle;margin-inline-start:9px;flex:none}
 .ndot.pend{background:var(--warn);box-shadow:0 0 0 3px color-mix(in srgb,var(--warn) 30%,transparent)}
-button.ndot.pend[data-n]::after{background:var(--warn);color:#1b1a12}
+button.ndot.pend[data-n]::after{color:#1b1a12}
 button.ndot{border:0;padding:0;cursor:pointer;width:12px;height:12px}
 .n1 .ndot{position:relative;top:-1px}
 .statusbox.away{border-color:color-mix(in srgb,var(--teal) 50%,var(--line));background:linear-gradient(160deg,color-mix(in srgb,var(--teal) 16%,var(--surface)),var(--surface))}
@@ -2347,7 +2353,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   function sNotes(s){const L=(s.gaps||[]).filter(g=>g&&(g.text||"").trim());if((s.note||"").trim())L.unshift({id:"_old",text:s.note,at:0});return L;}
   function delNote(s,id){return id==="_old"?patch("soldiers/"+s.id,{note:""}):patch("soldiers/"+s.id,{gaps:(s.gaps||[]).filter(g=>g.id!==id)});}
   function nameWithNote(s,cls){
-    const d=el("div",cls||"n1");d.append(s.name||"");
+    const d=el("div",(cls||"n1")+" nwn");d.append(el("span","nwt",s.name||""));
     const N=sNotes(s);
     if(N.length){const b=el("button","ndot");b.type="button";const t=N.map(g=>g.text).join(" · ");b.title=t;b.setAttribute("aria-label","הערות: "+t);
       if(N.length>1)b.dataset.n=N.length;
