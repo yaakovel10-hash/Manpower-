@@ -3049,7 +3049,11 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!items.length){toast("הרשימה ריקה");return;}
     const RLM="‏",out=["*"+(L.title||"רשימה")+"*",waDate(L.at||Date.now())+(viewName()?" · "+viewName():""),""];
     items.forEach(({x,s},i)=>out.push(RLM+(i+1)+". "+s.name+(x.note?" – "+x.note:"")));
-    out.push("","סה\"כ "+items.length);sendWA(out.join("\n"));
+    out.push("","סה\"כ "+items.length);
+    // everyone in the unit who isn't on the list
+    const inL=new Set(items.map(o=>o.s.id)),rest=vis(soldiers).filter(s=>!inL.has(s.id)).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
+    if(rest.length){out.push("","*לא סומנו* ("+rest.length+")");rest.forEach(s=>out.push(RLM+"• "+s.name));}
+    sendWA(out.join("\n"));
   }
   $("lstOld").onclick=()=>{const box=$("lstOldBox");box.hidden=!box.hidden;if(box.hidden)return;box.textContent="";
     const all=listsEv();if(!all.length)box.append(el("div","mini","עוד אין רשימות. רשימה שתיצרו תישמר כאן."));
