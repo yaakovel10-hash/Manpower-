@@ -2355,7 +2355,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       b.onclick=e=>{e.stopPropagation();toast("📝 "+s.name+": "+t);};d.append(b);}
     // yellow dot: a בקש"צ that is still waiting for approval
     const P=vis(requests).filter(r=>r.soldierId===s.id&&r.status==="pending");
-    if(P.length){const b=el("button","ndot pend");b.type="button";const t=P.map(r=>(r.reason||'בקש"צ')+" · "+reqWhen(r)).join(" | ");
+    if(P.length){const b=el("button","ndot pend");b.type="button";const t=P.map(r=>(r.reason||'בקש"צ')+" · "+reqWhen(r)+(reqBy(r)?' · הוזן ע"י '+reqBy(r):"")).join(" | ");
       b.title=t;b.setAttribute("aria-label",'בקש"צ ממתין לאישור: '+t);if(P.length>1)b.dataset.n=P.length;
       b.addEventListener("pointerdown",e=>e.stopPropagation());
       b.onclick=e=>{e.stopPropagation();toast('⏳ בקש"צ ממתין – '+s.name+": "+t);};d.append(b);}
@@ -2570,6 +2570,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       c.append(el("div","n1",r.reason));
       const im=el("div");im.append(el("span","imp imp-"+r.imp,"חשיבות: "+(IMP[r.imp]||"")));c.append(im);
       if(r.notes)c.append(el("div","notes",r.notes));
+      {const who=reqBy(r);c.append(el("div","mini","✍️ הוזן ע\"י "+(who||"לא ידוע")+(r.at?" · "+fmtG(key(new Date(r.at))):"")));}
       if(r.status!=="pending"&&r.decidedAt)c.append(el("div","mini",(r.status==="approved"?"אושר":"נדחה")+(r.decidedByName?' ע"י '+r.decidedByName:"")+" · "+fmtG(key(new Date(r.decidedAt)))));
       if(canDecide){const row=el("div","row2");
         if(r.status!=="approved"){const a=el("button","approve","אישור");a.type="button";a.onclick=()=>decide(r,"approved");row.append(a);}
@@ -2591,7 +2592,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const fromTime=$("rFromT").value,toTime=$("rToT").value;
     if(to===from&&fromTime&&toTime&&toTime<=fromTime)return showErr("rErr","שעת החזרה מוקדמת משעת היציאה.");
     const btn=e.submitter;if(btn)btn.disabled=true;
-    const ok=await write("requests/"+newId(),{soldierId:curSoldier,unit:s.unit,from,to,fromTime,toTime,reason:$("rReason").value.trim(),imp:Number($("rImp").value),notes:$("rNotes").value.trim(),status:"pending",decidedBy:"",addedBy:uid,at:Date.now()},"rErr");
+    const ok=await write("requests/"+newId(),{soldierId:curSoldier,unit:s.unit,from,to,fromTime,toTime,reason:$("rReason").value.trim(),imp:Number($("rImp").value),notes:$("rNotes").value.trim(),status:"pending",decidedBy:"",addedBy:uid,addedByName:(me&&me.name)||"",at:Date.now()},"rErr");
     if(btn)btn.disabled=false;if(ok)resetR();
   };
 
@@ -2902,6 +2903,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     return null;
   }
   // date + optional leave/return times, e.g. "12.11 14:00 – 14.11 18:00"
+  // who entered the בקש"צ (older ones only have the account id, so look it up)
+  function reqBy(r){if(r.addedByName)return r.addedByName;if(!r.addedBy)return "";if(r.addedBy===uid)return (me&&me.name)||"";
+    const m=allMembers.find(x=>x.id===r.addedBy);if(m)return m.name||"";const s=soldiers.find(x=>x.memberId===r.addedBy);return s?s.name:"";}
   function reqWhen(r){
     const a=fmtG(r.from)+(r.fromTime?" \u2066"+r.fromTime+"\u2069":""),to=r.to||r.from;
     if(to===r.from)return a+(r.toTime?" – \u2066"+r.toTime+"\u2069":"");
