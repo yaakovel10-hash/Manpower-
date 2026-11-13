@@ -274,7 +274,9 @@ body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
 .lstold .lo .loinfo b{font-size:17px;line-height:1.25;overflow-wrap:anywhere}
 .lstold .lo .loinfo .mini{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lstold .lo .ghost.sm{flex:none}
-.lstold .lochk{flex:none;width:22px;height:22px}
+.lstold .lochk{flex:none;width:22px;height:22px;display:none}
+.lstold.picking .lochk{display:block}
+.lstold .lo{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #lstMulti{justify-self:stretch}
 .lstpanel{position:sticky;top:6px;z-index:7;display:grid;gap:8px;margin-bottom:12px;padding:12px 14px;border-radius:16px;border:2px solid var(--accent);background:var(--surface);box-shadow:0 12px 28px -16px var(--shadow);max-height:55vh;overflow:auto}
 .lsthead{display:flex;align-items:center;gap:8px}
@@ -3079,9 +3081,19 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const w=el("button","ghost sm","וואטסאפ");w.type="button";w.onclick=()=>sendList(L);
       // tick several lists to send them together
       const cb=el("input","lochk");cb.type="checkbox";cb.dataset.id=L.id;cb.setAttribute("aria-label","לבחור את "+(L.title||"הרשימה")+" לשליחה משותפת");
-      cb.onchange=()=>{const n=box.querySelectorAll(".lochk:checked").length;const f=$("lstMulti");f.hidden=n<2;f.textContent="שליחת "+n+" רשימות בהודעה אחת";};
+      const upd=()=>{const n=box.querySelectorAll(".lochk:checked").length;const f=$("lstMulti");if(f){f.hidden=n<2;f.textContent="שליחת "+n+" רשימות בהודעה אחת";}
+        if(!n)box.classList.remove("picking");};
+      cb.onchange=upd;
+      // long-press a list to start picking; while picking, a tap on a list ticks it
+      let lp=null,sx=0,sy=0;
+      r.addEventListener("pointerdown",e=>{if(e.target.closest("button,input"))return;sx=e.clientX;sy=e.clientY;
+        lp=setTimeout(()=>{lp=null;box.classList.add("picking");cb.checked=true;haptic(true);upd();r.dataset.lp="1";setTimeout(()=>delete r.dataset.lp,500);},450);});
+      r.addEventListener("pointermove",e=>{if(lp&&Math.hypot(e.clientX-sx,e.clientY-sy)>8){clearTimeout(lp);lp=null;}});
+      ["pointerup","pointercancel","pointerleave"].forEach(t=>r.addEventListener(t,()=>{clearTimeout(lp);lp=null;}));
+      r.addEventListener("contextmenu",e=>e.preventDefault());
+      r.addEventListener("click",e=>{if(r.dataset.lp||e.target.closest("button,input"))return;if(box.classList.contains("picking")){cb.checked=!cb.checked;upd();}});
       r.prepend(cb);r.append(w,o);box.append(r);});
-    if(all.length>1){box.append(el("div","mini","סמנו כמה רשימות כדי לשלוח אותן יחד."));
+    if(all.length>1){box.append(el("div","mini lohint","לחיצה ארוכה על רשימה – כדי לבחור כמה רשימות ולשלוח אותן יחד."));
       const f=el("button","primary sm","");f.id="lstMulti";f.type="button";f.hidden=true;
       f.onclick=()=>{const ids=[...box.querySelectorAll(".lochk:checked")].map(x=>x.dataset.id);sendLists(all.filter(L=>ids.includes(L.id)));};box.append(f);}};
   // several lists in one message; at the end, who isn't on any of them
