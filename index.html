@@ -267,6 +267,20 @@ body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
 .ocol .ocard .x{position:absolute;top:4px;left:6px;border:0;background:transparent;color:var(--muted);font-size:14px;padding:2px}
 .ocol .oslot{width:100%;min-height:44px}
 .ocolh{font-weight:800;text-align:center;font-size:14px;color:var(--muted)}
+.lstbar{display:flex;align-items:center;gap:12px;margin:4px 0 10px}
+.lstold{display:grid;gap:6px;margin-bottom:10px}
+.lstold .lo{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.lstold .lo b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lstpanel{position:sticky;top:6px;z-index:7;display:grid;gap:8px;margin-bottom:12px;padding:12px 14px;border-radius:16px;border:2px solid var(--accent);background:var(--surface);box-shadow:0 12px 28px -16px var(--shadow);max-height:55vh;overflow:auto}
+.lsthead{display:flex;align-items:center;gap:8px}
+.lsthead input{flex:1;min-width:0;font-weight:800;font-size:18px}
+.lstitems{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.lstitems li{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;align-items:center}
+.lstitems .num{font-weight:800;color:var(--muted);min-width:20px;text-align:center}
+.lstitems .nm{font-weight:700}
+.lstitems input{grid-column:2;padding:6px 10px;font-size:14px;border-radius:10px}
+body.listmode #atBar,body.listmode #atReset{visibility:hidden}
+body.listmode #lstBar{display:none}
 .cmdhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:22px}
 .cmdhead .sec{margin:0}
 .vfacts{display:flex;justify-content:flex-end;margin:-6px 0 10px}
@@ -875,7 +889,23 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <div class="rolldate" id="atDate"></div>
       <div class="wfilter"><select id="atSquad" aria-label="כיתה"></select><button class="ghost sm" type="button" id="atReset">איפוס</button></div>
       <div class="progress"><span id="atBar"></span></div>
-      <p class="mini">מקריאים שם ולוחצים על השורה כשהחייל נמצא. לחיצה נוספת מבטלת.</p>
+      <p class="mini" id="atHint">מקריאים שם ולוחצים על השורה כשהחייל נמצא. לחיצה נוספת מבטלת.</p>
+    </div>
+    <div class="lstbar" id="lstBar">
+      <button class="ghost sm" type="button" id="lstNew">📝 יצירת רשימה</button>
+      <button class="linkbtn" type="button" id="lstOld" hidden>רשימות קודמות</button>
+    </div>
+    <form class="add" id="lstForm" hidden>
+      <label class="f">כותרת לרשימה<input type="text" id="lstTitle" maxlength="60" placeholder="למשל: יוצאים לסיור, צריכים חיסון, מחר משמרת בוקר" required></label>
+      <div class="row2"><button class="primary" type="submit">התחלה</button><button class="ghost" type="button" id="lstCancel">ביטול</button></div>
+    </form>
+    <div class="lstold" id="lstOldBox" hidden></div>
+    <div class="lstpanel" id="lstPanel" hidden>
+      <div class="lsthead"><input type="text" id="lstName" maxlength="60" aria-label="כותרת הרשימה"><span class="count" id="lstN"></span></div>
+      <p class="mini">לוחצים על חייל כדי להוסיף אותו לרשימה (לחיצה נוספת מוציאה). אפשר לכתוב הערה לכל אחד.</p>
+      <ul class="lstitems" id="lstItems"></ul>
+      <div class="row2"><button class="primary sm" type="button" id="lstWa">שליחה בוואטסאפ</button><button class="ghost sm" type="button" id="lstDone">סיום</button></div>
+      <button class="linkbtn muted" type="button" id="lstDel">מחיקת הרשימה</button>
     </div>
     <ul class="list roll" id="atList"></ul>
     <div class="empty" id="atEmpty" hidden>אין חיילים במסגרת המוצגת. מפקדים מופיעים בנפרד למטה.</div>
@@ -2938,7 +2968,12 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if($("v-attend").hidden)return;
     $("atDate").textContent=fmtToday();
     const sq=squadSelect($("atSquad"));
-    const mk=rollKey("att"),marks=getMarks(mk);
+    const L=curList();document.body.classList.toggle("listmode",!!L);
+    $("atHint").textContent=L?"מצב רשימה: לוחצים על השורה כדי להוסיף לרשימה או להוציא ממנה.":"מקריאים שם ולוחצים על השורה כשהחייל נמצא. לחיצה נוספת מבטלת.";
+    const mk=L?"list:"+L.id:rollKey("att");
+    if(L)setMarks(mk,new Set((L.items||[]).map(x=>x.sid)));
+    const marks=getMarks(mk),onCh=L?listChanged:renderAttend;
+    renderListPanel(L);
     const S=vis(soldiers).filter(s=>!isCmdSoldier(s)&&(sq==="*"||(s.squad||"")===sq)).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));
     const here=[],away=[];S.forEach(s=>{const r=awayInfo(s.id);r?away.push({s,r}):here.push(s);});
     // commanders (including you): separate list at the bottom, can be hidden
@@ -2948,13 +2983,13 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     $("atCmdH").hidden=!cHere.length;$("atCmdT").textContent=showC?"הסתרה":"הצגה";
     $("atCmdN").textContent=cHere.length?cHere.filter(s=>marks.has(s.id)).length+"/"+cHere.length:"";
     const uc=$("atCmd");uc.textContent="";uc.hidden=!showC;
-    if(showC)cHere.forEach(s=>uc.append(rollRow(s.id,marks,mk,renderAttend,inner=>{
+    if(showC)cHere.forEach(s=>uc.append(rollRow(s.id,marks,mk,onCh,inner=>{
       const info=el("div","info");info.append(nameWithNote(s));
       info.append(el("div","n3",[s.role&&s.role!=="חייל"?s.role:"מפקד",s.squad?"כיתה "+s.squad:""].filter(Boolean).join(" · ")));
       inner.append(info,profBtn(s.id));
     })));
     const ul=$("atList");ul.textContent="";
-    here.forEach(s=>ul.append(rollRow(s.id,marks,mk,renderAttend,inner=>{
+    here.forEach(s=>ul.append(rollRow(s.id,marks,mk,onCh,inner=>{
       const info=el("div","info");info.append(nameWithNote(s));
       info.append(el("div","n3",[s.squad?"כיתה "+s.squad:"",s.num||""].filter(Boolean).join(" · ")));
       inner.append(info,profBtn(s.id));
@@ -2963,11 +2998,64 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     progress($("atBar"),$("atCount"),n,here.length);
     $("atEmpty").hidden=S.length>0;
     const ua=$("atAway");ua.textContent="";$("atAwayH").hidden=!away.length;
+    if(L){away.forEach(({s,r})=>ua.append(rollRow(s.id,marks,mk,onCh,inner=>{
+      const info=el("div","info");info.append(nameWithNote(s),el("div","n3",r.text));inner.append(info,el("span","awaytag",r.tag));})));return;}
     away.forEach(({s,r})=>{const li=el("li","rollrow off");const inner=el("div","rolltrack");const body=el("div","rollbody");
       const info=el("div","info");info.append(nameWithNote(s),el("div","n3",r.text));
       body.append(info,el("span","awaytag",r.tag),el("span","mini","‹"));inner.append(body);li.append(inner);
       li.classList.add("tap");li.onclick=()=>{location.hash="soldier-"+s.id;};ua.append(li);});
   }
+
+  /* ---------- lists: pick soldiers for any purpose, with a note per soldier, send in WhatsApp ---------- */
+  let listId=null;try{listId=localStorage.getItem("atListId");}catch(_){}
+  const listsEv=()=>vis(events).filter(x=>x.kind==="list").sort((a,b)=>(b.at||0)-(a.at||0));
+  let listLocal=null;
+  function curList(){if(!listId)return null;const d=events.find(x=>x.id===listId);
+    if(listLocal&&listLocal.id===listId&&(!d||(d.at||0)<=(listLocal.at||0)))return listLocal;
+    if(!d)return listLocal&&listLocal.id===listId?listLocal:null;
+    listLocal=JSON.parse(JSON.stringify(d));return listLocal;}
+  const setListId=id=>{listId=id;try{id?localStorage.setItem("atListId",id):localStorage.removeItem("atListId");}catch(_){}};
+  let listT=null;
+  function saveList(){const L=listLocal;if(!L)return;L.at=Date.now();clearTimeout(listT);
+    listT=setTimeout(()=>{const unit=writeUnit();if(!unit)return toast("בחרו מסגרת מוצגת");
+      write("events/"+L.id,{kind:"list",soldierId:"",unit,date:"",title:L.title||"רשימה",items:L.items||[],at:L.at,by:uid,byName:(me&&me.name)||""});},300);}
+  function listChanged(){const L=curList();if(!L)return;const m=getMarks("list:"+L.id),old=new Map((L.items||[]).map(x=>[x.sid,x]));
+    const keep=(L.items||[]).filter(x=>m.has(x.sid));m.forEach(sid=>{if(!old.has(sid))keep.push({sid,note:""});});
+    L.items=keep;saveList();renderAttend();}
+  function renderListPanel(L){
+    $("lstPanel").hidden=!L;$("lstBar").hidden=!!L;
+    const old=listsEv();$("lstOld").hidden=!old.length||!!L;
+    if(!L)return;
+    const nm=$("lstName");if(document.activeElement!==nm)nm.value=L.title||"";
+    const items=(L.items||[]).filter(x=>soldiers.some(s=>s.id===x.sid));$("lstN").textContent=items.length||"";
+    const ul=$("lstItems");if(ul.contains(document.activeElement))return;ul.textContent="";
+    items.forEach((x,i)=>{const s=soldiers.find(z=>z.id===x.sid);const li=el("li");
+      const inp=el("input");inp.type="text";inp.maxLength=80;inp.placeholder="הערה (לא חובה)";inp.value=x.note||"";
+      inp.onchange=()=>{x.note=inp.value.trim();saveList();};
+      li.append(el("span","num",String(i+1)),el("span","nm",s.name||""),inp);ul.append(li);});
+    if(!items.length)ul.append(el("li","mini","עוד לא נבחרו חיילים."));
+  }
+  $("lstNew").onclick=()=>{$("lstForm").hidden=false;$("lstOldBox").hidden=true;$("lstTitle").value="";$("lstTitle").focus();};
+  $("lstCancel").onclick=()=>{$("lstForm").hidden=true;};
+  $("lstForm").onsubmit=e=>{e.preventDefault();const t=$("lstTitle").value.trim();if(!t)return;
+    const id="list-"+newId();listLocal={id,kind:"list",title:t,items:[],at:Date.now()};setListId(id);$("lstForm").hidden=true;saveList();renderAttend();window.scrollTo(0,0);};
+  $("lstName").onchange=()=>{const L=curList();if(!L)return;L.title=$("lstName").value.trim()||"רשימה";saveList();};
+  $("lstDone").onclick=()=>{setListId(null);listLocal=null;renderAttend();toast("הרשימה נשמרה ב'רשימות קודמות'");};
+  {let arm=null;$("lstDel").onclick=()=>{const b=$("lstDel");if(!arm){b.textContent="לחצו שוב למחיקה";arm=setTimeout(()=>{arm=null;b.textContent="מחיקת הרשימה";},3000);return;}
+    clearTimeout(arm);arm=null;b.textContent="מחיקת הרשימה";const L=curList();setListId(null);listLocal=null;if(L)remove("events/"+L.id);renderAttend();toast("הרשימה נמחקה");};}
+  $("lstWa").onclick=()=>{const L=curList();if(!L)return;sendList(L);};
+  function sendList(L){
+    const items=(L.items||[]).map(x=>({x,s:soldiers.find(z=>z.id===x.sid)})).filter(o=>o.s);
+    if(!items.length){toast("הרשימה ריקה");return;}
+    const RLM="‏",out=["*"+(L.title||"רשימה")+"*",waDate(L.at||Date.now())+(viewName()?" · "+viewName():""),""];
+    items.forEach(({x,s},i)=>out.push(RLM+(i+1)+". "+s.name+(x.note?" – "+x.note:"")));
+    out.push("","סה\"כ "+items.length);sendWA(out.join("\n"));
+  }
+  $("lstOld").onclick=()=>{const box=$("lstOldBox");box.hidden=!box.hidden;if(box.hidden)return;box.textContent="";
+    listsEv().forEach(L=>{const r=el("div","lo");r.append(el("b",null,L.title||"רשימה"),el("span","mini",((L.items||[]).length)+" · "+waDate(L.at||0)));
+      const o=el("button","ghost sm","פתיחה");o.type="button";o.onclick=()=>{setListId(L.id);listLocal=null;box.hidden=true;renderAttend();window.scrollTo(0,0);};
+      const w=el("button","ghost sm","וואטסאפ");w.type="button";w.onclick=()=>sendList(L);
+      r.append(w,o);box.append(r);});};
   $("atSquad").onchange=renderAttend;
   $("atCmdT").onclick=()=>{let v="off";try{v=localStorage.getItem("showCmds")==="off"?"on":"off";localStorage.setItem("showCmds",v);}catch(_){}renderAttend();};
   $("atReset").onclick=()=>{setMarks(rollKey("att"),new Set());renderAttend();toast("הנוכחות אופסה");};
