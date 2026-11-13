@@ -224,6 +224,7 @@ html,body{overflow-x:clip}
 .seg button{flex:1;min-height:42px;border:0;border-radius:10px;background:transparent;color:var(--fg);font:inherit;font-weight:700;font-size:15px}
 .seg button.on{background:var(--accent);color:var(--on-accent,#1b1d16)}
 #v-orbat .ghost.sm.armed{background:var(--danger);border-color:var(--danger);color:#fff}
+.seg button.locked{opacity:.5}
 .seg.small button{min-height:36px;font-size:14px}
 .ironrow{display:flex;align-items:center;gap:10px}
 .ironrow .ironin{width:56px;text-align:center;font-weight:800;font-size:18px;padding:8px 4px;border-radius:12px}
@@ -770,7 +771,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     </div>
 
     <div id="obCols" hidden>
-      <div class="seg small" id="obColMode"><button type="button" data-m="regular">2 טורים רגיל</button><button type="button" data-m="staggered">2 טורים מדורג</button></div>
+      <div class="seg small" id="obColMode"><button type="button" data-m="regular">2 טורים רגיל</button><button type="button" data-m="staggered" class="locked" aria-disabled="true">🔒 2 טורים מדורג</button></div>
       <p class="mini">מחזיקים חייל וגוררים למקום החדש (או לוחצים עליו ואז על המקום). מספרי הברזל מתעדכנים לבד: 1 למטה מימין. ✕ מחזיר לרשימה.</p>
       <div class="row2"><button class="ghost sm" type="button" id="obColsAuto">מילוי לפי מספרי ברזל</button><button class="ghost sm" type="button" id="obColsClr">ניקוי</button></div>
       <div class="ocols" id="obColsBox"><div class="ocol" id="obColR"></div><div class="ocol" id="obColL"></div></div>
@@ -3630,7 +3631,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
         const sl=el("button","oslot","+");sl.type="button";sl.setAttribute("aria-label","העברה ל"+(g.title||"חוליה"));sl.onclick=()=>{if(obSel)obTap({slot:g.id});else toast("קודם לוחצים על חייל");};cards.append(sl);
         gr.append(hd,cards);box.append(gr);});
     }else{
-      const m=d.cols.mode==="staggered"?"staggered":"regular";
+      const m="regular"; // "staggered" is locked for now
       document.querySelectorAll("#obColMode button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
       $("obColsBox").classList.toggle("staggered",m==="staggered");
       ["right","left"].forEach(key=>{d.cols[key]=d.cols[key].filter(id=>byId.has(id)&&!placed.has(id));d.cols[key].forEach(id=>placed.add(id));});
@@ -3654,7 +3655,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     $("obPoolWrap").onclick=()=>{if(obSel&&obSel.place!=="pool")obTap({pool:true});};
   }
   document.querySelectorAll("#obTabs button").forEach(b=>b.onclick=()=>{obTab=b.dataset.t;obSel=null;try{localStorage.setItem("obTab",obTab);}catch(_){}renderOrbat();});
-  document.querySelectorAll("#obColMode button").forEach(b=>b.onclick=()=>{const d=obData();d.cols.mode=b.dataset.m;obSave();renderOrbat();});
+  document.querySelectorAll("#obColMode button").forEach(b=>b.onclick=()=>{
+    if(b.classList.contains("locked")){toast("2 טורים מדורג – בקרוב...");return;}
+    const d=obData();d.cols.mode=b.dataset.m;obSave();renderOrbat();});
   // destructive buttons need a second tap within 3 seconds
   const armTwice=(btn,label,ask,act)=>{let t;btn.onclick=()=>{
     if(!btn.classList.contains("armed")){btn.classList.add("armed");btn.textContent=ask;haptic(true);t=setTimeout(()=>{btn.classList.remove("armed");btn.textContent=label;},3000);return;}
