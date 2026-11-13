@@ -771,7 +771,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     </div>
 
     <div id="obCols" hidden>
-      <div class="seg small" id="obColMode"><button type="button" data-m="regular">2 טורים רגיל</button><button type="button" data-m="staggered" class="locked" aria-disabled="true">🔒 2 טורים מדורג</button></div>
+      <div class="seg small" id="obColMode"><button type="button" data-m="regular">2 טורים מדורג</button><button type="button" data-m="staggered" class="locked" aria-disabled="true">🔒 2 טורים רגיל</button></div>
       <p class="mini">מחזיקים חייל וגוררים למקום החדש (או לוחצים עליו ואז על המקום). מספרי הברזל מתעדכנים לבד: 1 למטה מימין. ✕ מחזיר לרשימה.</p>
       <div class="row2"><button class="ghost sm" type="button" id="obColsAuto">מילוי לפי מספרי ברזל</button><button class="ghost sm" type="button" id="obColsClr">ניקוי</button></div>
       <div class="ocols" id="obColsBox"><div class="ocol" id="obColR"></div><div class="ocol" id="obColL"></div></div>
@@ -3656,7 +3656,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   }
   document.querySelectorAll("#obTabs button").forEach(b=>b.onclick=()=>{obTab=b.dataset.t;obSel=null;try{localStorage.setItem("obTab",obTab);}catch(_){}renderOrbat();});
   document.querySelectorAll("#obColMode button").forEach(b=>b.onclick=()=>{
-    if(b.classList.contains("locked")){toast("2 טורים מדורג – בקרוב...");return;}
+    if(b.classList.contains("locked")){toast("2 טורים רגיל – בקרוב...");return;}
     const d=obData();d.cols.mode=b.dataset.m;obSave();renderOrbat();});
   // destructive buttons need a second tap within 3 seconds
   const armTwice=(btn,label,ask,act)=>{let t;btn.onclick=()=>{
