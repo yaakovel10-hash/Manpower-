@@ -267,7 +267,7 @@ body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
 .ocol .ocard .x{position:absolute;top:4px;left:6px;border:0;background:transparent;color:var(--muted);font-size:14px;padding:2px}
 .ocol .oslot{width:100%;min-height:44px}
 .ocolh{font-weight:800;text-align:center;font-size:14px;color:var(--muted)}
-.lstbar{display:flex;align-items:center;gap:12px;margin:4px 0 10px}
+.lstbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 10px}
 .lstold{display:grid;gap:6px;margin-bottom:10px}
 .lstold .lo{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .lstold .lo b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -893,7 +893,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     </div>
     <div class="lstbar" id="lstBar">
       <button class="ghost sm" type="button" id="lstNew">📝 יצירת רשימה</button>
-      <button class="linkbtn" type="button" id="lstOld" hidden>רשימות קודמות</button>
+      <button class="ghost sm" type="button" id="lstOld">🕘 היסטוריית רשימות</button>
     </div>
     <form class="add" id="lstForm" hidden>
       <label class="f">כותרת לרשימה<input type="text" id="lstTitle" maxlength="60" placeholder="למשל: יוצאים לסיור, צריכים חיסון, מחר משמרת בוקר" required></label>
@@ -3024,7 +3024,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     L.items=keep;saveList();renderAttend();}
   function renderListPanel(L){
     $("lstPanel").hidden=!L;$("lstBar").hidden=!!L;
-    const old=listsEv();$("lstOld").hidden=!old.length||!!L;
+    if(L)$("lstOldBox").hidden=true;
     if(!L)return;
     const nm=$("lstName");if(document.activeElement!==nm)nm.value=L.title||"";
     const items=(L.items||[]).filter(x=>soldiers.some(s=>s.id===x.sid));$("lstN").textContent=items.length||"";
@@ -3040,7 +3040,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   $("lstForm").onsubmit=e=>{e.preventDefault();const t=$("lstTitle").value.trim();if(!t)return;
     const id="list-"+newId();listLocal={id,kind:"list",title:t,items:[],at:Date.now()};setListId(id);$("lstForm").hidden=true;saveList();renderAttend();window.scrollTo(0,0);};
   $("lstName").onchange=()=>{const L=curList();if(!L)return;L.title=$("lstName").value.trim()||"רשימה";saveList();};
-  $("lstDone").onclick=()=>{setListId(null);listLocal=null;renderAttend();toast("הרשימה נשמרה ב'רשימות קודמות'");};
+  $("lstDone").onclick=()=>{setListId(null);listLocal=null;renderAttend();toast("הרשימה נשמרה בהיסטוריית הרשימות");};
   {let arm=null;$("lstDel").onclick=()=>{const b=$("lstDel");if(!arm){b.textContent="לחצו שוב למחיקה";arm=setTimeout(()=>{arm=null;b.textContent="מחיקת הרשימה";},3000);return;}
     clearTimeout(arm);arm=null;b.textContent="מחיקת הרשימה";const L=curList();setListId(null);listLocal=null;if(L)remove("events/"+L.id);renderAttend();toast("הרשימה נמחקה");};}
   $("lstWa").onclick=()=>{const L=curList();if(!L)return;sendList(L);};
@@ -3052,7 +3052,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     out.push("","סה\"כ "+items.length);sendWA(out.join("\n"));
   }
   $("lstOld").onclick=()=>{const box=$("lstOldBox");box.hidden=!box.hidden;if(box.hidden)return;box.textContent="";
-    listsEv().forEach(L=>{const r=el("div","lo");r.append(el("b",null,L.title||"רשימה"),el("span","mini",((L.items||[]).length)+" · "+waDate(L.at||0)));
+    const all=listsEv();if(!all.length)box.append(el("div","mini","עוד אין רשימות. רשימה שתיצרו תישמר כאן."));
+    all.forEach(L=>{const r=el("div","lo");r.append(el("b",null,L.title||"רשימה"),el("span","mini",((L.items||[]).length)+" · "+waDate(L.at||0)));
       const o=el("button","ghost sm","פתיחה");o.type="button";o.onclick=()=>{setListId(L.id);listLocal=null;box.hidden=true;renderAttend();window.scrollTo(0,0);};
       const w=el("button","ghost sm","וואטסאפ");w.type="button";w.onclick=()=>sendList(L);
       r.append(w,o);box.append(r);});};
