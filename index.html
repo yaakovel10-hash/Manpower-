@@ -223,6 +223,7 @@ html,body{overflow-x:clip}
 .seg{display:flex;gap:4px;padding:4px;margin-top:12px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
 .seg button{flex:1;min-height:42px;border:0;border-radius:10px;background:transparent;color:var(--fg);font:inherit;font-weight:700;font-size:15px}
 .seg button.on{background:var(--accent);color:var(--on-accent,#1b1d16)}
+#v-orbat .ghost.sm.armed{background:var(--danger);border-color:var(--danger);color:#fff}
 .seg.small button{min-height:36px;font-size:14px}
 .ironrow{display:flex;align-items:center;gap:10px}
 .ironrow .ironin{width:56px;text-align:center;font-weight:800;font-size:18px;padding:8px 4px;border-radius:12px}
@@ -3638,6 +3639,10 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   }
   document.querySelectorAll("#obTabs button").forEach(b=>b.onclick=()=>{obTab=b.dataset.t;obSel=null;try{localStorage.setItem("obTab",obTab);}catch(_){}renderOrbat();});
   document.querySelectorAll("#obColMode button").forEach(b=>b.onclick=()=>{const d=obData();d.cols.mode=b.dataset.m;obSave();renderOrbat();});
+  // destructive buttons need a second tap within 3 seconds
+  const armTwice=(btn,label,ask,act)=>{let t;btn.onclick=()=>{
+    if(!btn.classList.contains("armed")){btn.classList.add("armed");btn.textContent=ask;haptic(true);t=setTimeout(()=>{btn.classList.remove("armed");btn.textContent=label;},3000);return;}
+    clearTimeout(t);btn.classList.remove("armed");btn.textContent=label;act();};};
   $("obAuto").onclick=async()=>{
     const P=obPeople(),used=new Set(P.map(s=>s.iron).filter(Boolean));let n=1,ops=0;
     const b=fs.batch();
@@ -3646,20 +3651,22 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     try{await qc(b.commit());toast("מוספרו "+ops);}catch(e){showErr("obErr",errMsg(e));}
   };
   $("obAddGrp").onclick=()=>{const d=obData();d.front.groups.push({id:newId(),title:"חוליה חדשה",ids:[]});obSave();renderOrbat();};
-  $("obFrontAuto").onclick=()=>{
+  const frontAuto=()=>{
     const d=obData(),P=obPeople();
     const find=t=>{let g=d.front.groups.find(x=>x.title===t);if(!g){g={id:newId(),title:t,ids:[]};d.front.groups.push(g);}return g;};
     d.front.groups.forEach(g=>g.ids=[]);
     P.forEach(s=>{const g=s.squad?find("כיתה "+s.squad+"'"):find("חוליית פיקוד");g.ids.push(s.id);});
     obSel=null;obSave();renderOrbat();toast("סודר לפי כיתות");
   };
-  $("obColsAuto").onclick=()=>{
+  armTwice($("obFrontAuto"),"סידור לפי כיתות","לחצו שוב – הסידור הנוכחי יוחלף",frontAuto);
+  const colsAuto=()=>{
     const d=obData(),P=obPeople().filter(s=>s.iron);
     if(!P.length){toast("קודם תנו מספרי ברזל");return;}
     d.cols.right=P.filter(s=>s.iron%2===1).map(s=>s.id);d.cols.left=P.filter(s=>s.iron%2===0).map(s=>s.id);
     obSel=null;obSave();renderOrbat();toast("אי-זוגיים מימין, זוגיים משמאל");
   };
-  $("obColsClr").onclick=()=>{const d=obData();d.cols.right=[];d.cols.left=[];obSel=null;obSave();renderOrbat();};
+  armTwice($("obColsAuto"),"מילוי לפי מספרי ברזל","לחצו שוב – הטורים יוחלפו",colsAuto);
+  armTwice($("obColsClr"),"ניקוי","לחצו שוב לניקוי הטורים",()=>{const d=obData();d.cols.right=[];d.cols.left=[];obSel=null;obSave();renderOrbat();toast("הטורים נוקו");});
   addEventListener("hashchange",()=>{obSel=null;if(!obDirty)obLocal=null;});
 
   /* notes that mention "בלאי" go to the wear list automatically (one wear item per note, never twice) */
