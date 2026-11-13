@@ -253,6 +253,10 @@ body.obsel .oslot{border-color:var(--accent);color:var(--accent)}
 .ocol .ocard.colcard{grid-template-columns:auto 1fr;grid-template-rows:auto auto;min-height:56px}
 .ocol .ocard .cir{grid-row:1/3;min-width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--fg);color:var(--bg);font-weight:800;font-size:17px;padding:0 4px}
 .ocol .ocard.colcard .nm{font-size:14px;font-weight:700}
+#obColsBox .ocard,#obPool .ocard{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.ocard.odragging{opacity:.25;outline:2px dashed var(--accent);outline-offset:-2px}
+.ocard.oghost{position:fixed;left:0;top:0;margin:0;z-index:60;pointer-events:none;box-shadow:0 20px 30px -10px var(--shadow);transition:none}
+#obColsBox.dragon .ocard.missing{display:none}
 .ocol .ocard.missing{background:transparent;border:2px dashed color-mix(in srgb,var(--danger) 55%,var(--line));cursor:default}
 .ocol .ocard.missing .cir{background:transparent;color:var(--muted);border:1px dashed var(--line)}
 .ocol .ocard.missing .nm{color:var(--danger)}
@@ -768,7 +772,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 
     <div id="obCols" hidden>
       <div class="seg small" id="obColMode"><button type="button" data-m="regular">2 טורים רגיל</button><button type="button" data-m="staggered">2 טורים מדורג</button></div>
-      <p class="mini">לוחצים על חייל ואז על המקום החדש. ✕ מחזיר לרשימה.</p>
+      <p class="mini">מחזיקים חייל וגוררים למקום החדש (או לוחצים עליו ואז על המקום). מספרי הברזל מתעדכנים לבד: 1 למטה מימין. ✕ מחזיר לרשימה.</p>
       <div class="row2"><button class="ghost sm" type="button" id="obColsAuto">מילוי לפי מספרי ברזל</button><button class="ghost sm" type="button" id="obColsClr">ניקוי</button></div>
       <div class="ocols" id="obColsBox"><div class="ocol" id="obColR"></div><div class="ocol" id="obColL"></div></div>
     </div>
@@ -3558,7 +3562,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   }
   const obPeople=()=>{const P=vis(soldiers);return P.slice().sort((a,b)=>((a.iron||9999)-(b.iron||9999))||(isCmdSoldier(b)-isCmdSoldier(a))||(a.name||"").localeCompare(b.name||"","he"));};
   function oCard(s,place){
-    const b=el("button","ocard");b.type="button";b.innerHTML=FIG;
+    const b=el("button","ocard");b.type="button";b.innerHTML=FIG;b.dataset.sid=s.id;
     b.append(el("span","pk",s.pakal||(isCmdSoldier(s)?(s.role&&s.role!=="חייל"?s.role:"מפקד"):"—")),el("span","nm",s.name||""));
     if(s.iron)b.append(el("span","ir",String(s.iron)));
     if(obSel&&obSel.sid===s.id)b.classList.add("sel");
@@ -3585,7 +3589,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       else if(!la&&lb){lb[ib]=a.sid;}          // a from pool takes t's spot
     }else if(t.slot){obPull(d,a.sid);const l=obList(d,t.slot);if(l)l.push(a.sid);}
     else if(t.pool){obPull(d,a.sid);}
-    haptic(false);obSave();renderOrbat();
+    haptic(false);if(obTab==="cols")obRenumber(d);obSave();renderOrbat();
   }
   function renderOrbat(){
     {const P=vis(soldiers),n=P.filter(s=>s.iron).length;$("cntOb").textContent=P.length?n+"/"+P.length+" ממוספרים":"—";}
@@ -3639,7 +3643,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
         if(gap&&!d.cols[key].length)missing();
         d.cols[key].forEach((id,i)=>{const c=oCard(byId.get(id),pl);const s=byId.get(id);
           c.textContent="";c.classList.add("colcard");c.append(el("span","cir",s.iron?String(s.iron):"—"),el("span","nm",s.name||""),el("span","pk",s.pakal||""));
-          const x=el("span","x","✕");x.onclick=e=>{e.stopPropagation();obPull(d,id);obSel=null;obSave();renderOrbat();};c.append(x);
+          const x=el("span","x","✕");x.onclick=e=>{e.stopPropagation();obPull(d,id);obSel=null;obRenumber(d);obSave();renderOrbat();};c.append(x);
           if(gap&&i===d.cols[key].length-1)missing();
           col.append(c);});
         const sl=el("button","oslot","+");sl.type="button";sl.onclick=()=>{if(obSel)obTap({slot:pl});else toast("קודם לוחצים על חייל");};col.append(sl);});
@@ -3676,11 +3680,60 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!P.length){toast("קודם תנו מספרי ברזל");return;}
     // highest number on top, 1 at the bottom
     const desc=P.slice().sort((a,b)=>b.iron-a.iron);
-    d.cols.right=desc.filter(s=>s.iron%2===0).map(s=>s.id);d.cols.left=desc.filter(s=>s.iron%2===1).map(s=>s.id);
-    obSel=null;obSave();renderOrbat();toast("זוגיים מימין, אי-זוגיים משמאל");
+    d.cols.right=desc.filter(s=>s.iron%2===1).map(s=>s.id);d.cols.left=desc.filter(s=>s.iron%2===0).map(s=>s.id);
+    obSel=null;obRenumber(d);obSave();renderOrbat();toast("סודר לפי מספרי ברזל");
   };
   armTwice($("obColsAuto"),"מילוי לפי מספרי ברזל","לחצו שוב – הטורים יוחלפו",colsAuto);
   armTwice($("obColsClr"),"ניקוי","לחצו שוב לניקוי הטורים",()=>{const d=obData();d.cols.right=[];d.cols.left=[];obSel=null;obSave();renderOrbat();toast("הטורים נוקו");});
+  /* iron numbers follow the two columns: bottom row right = 1, left = 2, the row above 3,4 …
+     ("חסרה" boxes are skipped). Anyone not in the columns has no number. */
+  function obRenumber(d){
+    const R=d.cols.right.slice(),L=d.cols.left.slice(),n=Math.max(R.length,L.length);
+    const pad=a=>{const g=n-a.length;if(!g)return a;if(!a.length)return Array(g).fill(null);return [...a.slice(0,-1),...Array(g).fill(null),a[a.length-1]];};
+    const r=pad(R),l=pad(L),num=new Map();let k=1;
+    for(let i=n-1;i>=0;i--){if(r[i])num.set(r[i],k++);if(l[i])num.set(l[i],k++);}
+    const b=fs.batch();let ops=0;
+    vis(soldiers).forEach(s=>{const v=num.get(s.id)||0;if((s.iron||0)!==v){s.iron=v;b.update(fs.doc("soldiers/"+s.id),{iron:v});ops++;}});
+    if(ops)qc(b.commit()).catch(e=>showErr("obErr",errMsg(e)));
+  }
+  /* long-press a soldier in "2 טורים" and drag him: to another spot, the other column, or back to the list */
+  {
+    const root=$("v-orbat");let lp=null,drag=null,ghost=null,gx=0,gy=0,lx=0,ly=0,sx=0,sy=0,last=0,justDragged=false;
+    const cardsIn=sel=>[...document.querySelectorAll(sel.split(",").map(x=>x.trim()+" .ocard[data-sid]").join(","))];
+    const inside=(r,mx,my)=>lx>r.left+mx&&lx<r.right-mx&&ly>r.top+my&&ly<r.bottom-my;
+    const place=()=>{if(ghost)ghost.style.transform="translate("+(lx-gx)+"px,"+(ly-gy)+"px) scale(1.04)";};
+    const start=c=>{drag=c;const r=c.getBoundingClientRect();gx=sx-r.left;gy=sy-r.top;
+      ghost=c.cloneNode(true);ghost.classList.add("oghost");ghost.style.width=r.width+"px";ghost.style.height=r.height+"px";document.body.append(ghost);
+      c.classList.add("odragging");$("obColsBox").classList.add("dragon");obSel=null;document.body.classList.remove("obsel");
+      root.querySelectorAll(".ocard.sel").forEach(x=>x.classList.remove("sel"));haptic(true);place();};
+    root.addEventListener("pointerdown",e=>{
+      if(obTab!=="cols")return;const c=e.target.closest(".ocard[data-sid]");
+      if(!c||e.target.closest(".x")||!c.closest("#obColsBox,#obPool"))return;
+      sx=lx=e.clientX;sy=ly=e.clientY;clearTimeout(lp);lp=setTimeout(()=>{lp=null;start(c);},280);});
+    root.addEventListener("pointermove",e=>{
+      lx=e.clientX;ly=e.clientY;
+      if(lp&&Math.hypot(lx-sx,ly-sy)>8){clearTimeout(lp);lp=null;}
+      if(!drag)return;e.preventDefault();place();
+      const now=Date.now();if(now-last<120)return;
+      const t=cardsIn("#obColR, #obColL, #obPool").filter(x=>x!==drag).find(x=>{const r=x.getBoundingClientRect();return inside(r,r.width*.15,r.height*.2);});
+      if(t){const sib=[...t.parentNode.children];
+        if(t.parentNode===drag.parentNode&&sib.indexOf(drag)<sib.indexOf(t))t.after(drag);else t.before(drag);last=now;haptic(false);return;}
+      // over an empty part of a column (or its "+") → to the end of that column; over the list → back to the list
+      for(const col of [$("obColR"),$("obColL")]){const r=col.getBoundingClientRect();
+        if(inside(r,0,0)&&drag.parentNode!==col){const slot=col.querySelector(".oslot");col.insertBefore(drag,slot);last=now;haptic(false);return;}}
+      const pr=$("obPoolWrap").getBoundingClientRect();
+      if(inside(pr,0,0)&&drag.parentNode!==$("obPool")){$("obPool").append(drag);last=now;haptic(false);}
+    });
+    const end=()=>{clearTimeout(lp);lp=null;if(!drag)return;
+      const c=drag;drag=null;if(ghost){ghost.remove();ghost=null;}c.classList.remove("odragging");$("obColsBox").classList.remove("dragon");
+      justDragged=true;setTimeout(()=>{justDragged=false;},350);
+      const d=obData();d.cols.right=cardsIn("#obColR").map(x=>x.dataset.sid);d.cols.left=cardsIn("#obColL").map(x=>x.dataset.sid);
+      obRenumber(d);obSave();renderOrbat();};
+    root.addEventListener("pointerup",end);root.addEventListener("pointercancel",end);
+    root.addEventListener("touchmove",e=>{if(drag)e.preventDefault();},{passive:false});
+    root.addEventListener("click",e=>{if(justDragged){e.preventDefault();e.stopPropagation();}},true);
+    root.addEventListener("contextmenu",e=>{if(e.target.closest(".ocard"))e.preventDefault();});
+  }
   addEventListener("hashchange",()=>{obSel=null;if(!obDirty)obLocal=null;});
 
   /* notes that mention "בלאי" go to the wear list automatically (one wear item per note, never twice) */
