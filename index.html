@@ -3676,8 +3676,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!P.length){toast("קודם תנו מספרי ברזל");return;}
     // highest number on top, 1 at the bottom
     const desc=P.slice().sort((a,b)=>b.iron-a.iron);
-    d.cols.right=desc.filter(s=>s.iron%2===1).map(s=>s.id);d.cols.left=desc.filter(s=>s.iron%2===0).map(s=>s.id);
-    obSel=null;obSave();renderOrbat();toast("אי-זוגיים מימין, זוגיים משמאל");
+    d.cols.right=desc.filter(s=>s.iron%2===0).map(s=>s.id);d.cols.left=desc.filter(s=>s.iron%2===1).map(s=>s.id);
+    obSel=null;obSave();renderOrbat();toast("זוגיים מימין, אי-זוגיים משמאל");
   };
   armTwice($("obColsAuto"),"מילוי לפי מספרי ברזל","לחצו שוב – הטורים יוחלפו",colsAuto);
   armTwice($("obColsClr"),"ניקוי","לחצו שוב לניקוי הטורים",()=>{const d=obData();d.cols.right=[];d.cols.left=[];obSel=null;obSave();renderOrbat();toast("הטורים נוקו");});
