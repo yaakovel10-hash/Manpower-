@@ -1295,7 +1295,13 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const id=curView();if(id==="*")return true;
     const vu=unitById(id);return !vu||sameUpTo(u,vu.path,vu.depth);
   }
-  const vis=arr=>arr.filter(x=>inScope(x.unit)&&inView(x.unit));
+  // filtered lists are asked for hundreds of times per screen; remember the answer until the data or the view changes
+  const visCache=new WeakMap();
+  const vis=arr=>{
+    const k=curView()+"|"+myLen()+"|"+units.length+"|"+(me&&me.unitId||"");
+    const c=visCache.get(arr);if(c&&c.k===k&&c.n===arr.length)return c.out.slice();
+    const out=arr.filter(x=>inScope(x.unit)&&inView(x.unit));visCache.set(arr,{k,n:arr.length,out});return out.slice();
+  };
   const soldierById=id=>soldiers.find(s=>s.id===id&&inScope(s.unit)&&inView(s.unit));
   const errMsg=e=>e&&e.code==="permission-denied"?"אין לך הרשאה לפעולה הזו במסגרת הזו.":"השמירה נכשלה. בדקו חיבור לאינטרנט ונסו שוב.";
   /* offline: a write is kept on the phone and sent later, so don't wait for the server */
