@@ -3970,12 +3970,17 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     x.font='600 26px "Assistant", sans-serif';x.fillStyle="#dfe6c8";x.textAlign="left";x.fillText(waDate(Date.now()),30,48);
     const rr=(X,Y,w,h,r)=>{x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();};
     ids.forEach(id=>{const s=byId.get(id),p=pos[id];
+      // card width follows the name, so nothing is cut off
+      x.font='700 24px "Assistant", sans-serif';const nw=x.measureText(s.name||"").width;
+      x.font='600 20px "Assistant", sans-serif';const pw=s.pakal?x.measureText(s.pakal).width:0;
+      const w=Math.ceil(Math.max(nw+40+28,pw+28,120)),h=s.pakal?88:64;
       // board-x runs along the long side; on the picture the long side is horizontal (right → left like Hebrew)
-      const cx=W-30-p.x*(W-60),cy=110+p.y*(H-40),w=170,h=s.pakal?88:66;
+      let cx=W-30-p.x*(W-60),cy=110+p.y*(H-40);
+      cx=Math.min(Math.max(cx,w/2+10),W-w/2-10);cy=Math.min(Math.max(cy,90+h/2+10),H+110-h/2-10);
       x.fillStyle="#fff";rr(cx-w/2,cy-h/2,w,h,14);x.fill();x.strokeStyle="#c9c7b6";x.lineWidth=2;x.stroke();
-      x.fillStyle="#2b3216";rr(cx+w/2-48,cy-h/2+8,40,40,10);x.fill();x.fillStyle="#fff";x.textAlign="center";x.font='700 22px "Assistant", sans-serif';x.fillText(s.iron?String(s.iron):"—",cx+w/2-28,cy-h/2+29);
-      x.textAlign="right";x.fillStyle="#1d2110";x.font='700 22px "Assistant", sans-serif';x.fillText((s.name||"").slice(0,14),cx+w/2-56,cy-h/2+29);
-      if(s.pakal){x.fillStyle="#6b705c";x.font='600 19px "Assistant", sans-serif';x.fillText(s.pakal.slice(0,16),cx+w/2-12,cy+h/2-18);}});
+      x.fillStyle="#2b3216";rr(cx+w/2-48,cy-h/2+10,38,38,10);x.fill();x.fillStyle="#fff";x.textAlign="center";x.font='700 21px "Assistant", sans-serif';x.fillText(s.iron?String(s.iron):"—",cx+w/2-29,cy-h/2+30);
+      x.textAlign="right";x.fillStyle="#1d2110";x.font='700 24px "Assistant", sans-serif';x.fillText(s.name||"",cx+w/2-56,cy-h/2+30);
+      if(s.pakal){x.fillStyle="#6b705c";x.font='600 20px "Assistant", sans-serif';x.fillText(s.pakal,cx+w/2-14,cy+h/2-20);}});
     c.toBlob(async blob=>{if(!blob)return;const f=new File([blob],"2-lefanim.png",{type:"image/png"});
       try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"2 לפנים"});return;}}catch(e){if(e&&e.name==="AbortError")return;}
       const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="2-lefanim.png";document.body.append(a);a.click();a.remove();toast("התמונה נשמרה בהורדות");},"image/png");
