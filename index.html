@@ -479,6 +479,8 @@ button.ndot{position:relative}
 .gapnote{margin-top:4px;padding:6px 10px;border-radius:10px;background:color-mix(in srgb,var(--danger) 10%,transparent);border-inline-start:3px solid var(--danger);white-space:pre-wrap;font-size:15px}
 .gaprow .n1 .ndot{margin-inline-start:0}
 .ndot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 25%,transparent);vertical-align:middle;margin-inline-start:8px;flex:none}
+.ndot.pend{background:var(--warn);box-shadow:0 0 0 3px color-mix(in srgb,var(--warn) 30%,transparent)}
+button.ndot.pend[data-n]::after{background:var(--warn);color:#1b1a12}
 button.ndot{border:0;padding:0;cursor:pointer;width:12px;height:12px}
 .n1 .ndot{position:relative;top:-1px}
 .statusbox.away{border-color:color-mix(in srgb,var(--teal) 50%,var(--line));background:linear-gradient(160deg,color-mix(in srgb,var(--teal) 16%,var(--surface)),var(--surface))}
@@ -2351,6 +2353,12 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       if(N.length>1)b.dataset.n=N.length;
       b.addEventListener("pointerdown",e=>e.stopPropagation());
       b.onclick=e=>{e.stopPropagation();toast("📝 "+s.name+": "+t);};d.append(b);}
+    // yellow dot: a בקש"צ that is still waiting for approval
+    const P=vis(requests).filter(r=>r.soldierId===s.id&&r.status==="pending");
+    if(P.length){const b=el("button","ndot pend");b.type="button";const t=P.map(r=>(r.reason||'בקש"צ')+" · "+reqWhen(r)).join(" | ");
+      b.title=t;b.setAttribute("aria-label",'בקש"צ ממתין לאישור: '+t);if(P.length>1)b.dataset.n=P.length;
+      b.addEventListener("pointerdown",e=>e.stopPropagation());
+      b.onclick=e=>{e.stopPropagation();toast('⏳ בקש"צ ממתין – '+s.name+": "+t);};d.append(b);}
     return d;
   }
   $("dNoteSave").onclick=async()=>{const s=curSoldier&&soldierById(curSoldier);if(!s)return;const v=$("dNote").value.trim();if(!v){$("dNote").focus();return;}
