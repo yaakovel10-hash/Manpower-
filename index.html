@@ -947,6 +947,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
   <section id="v-gaps" hidden>
     <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>פערים</h1><span class="count" id="gpCount"></span><button class="pencil wa" type="button" id="gpWa" aria-label="שליחת רשימת הפערים בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
     <p class="mini">כל ההערות שנרשמו על חיילים ועל אמל"ח. מוסיפים הערה מדף החייל, או מתפריט ⋮ של הנשק.</p>
+    <label class="f" id="gpFWrap">הצגת פערים של<select id="gpF"><option value="">כולם</option></select></label>
     <h2 class="sec" id="gpSH" hidden>חיילים</h2>
     <ul class="list" id="gpS"></ul>
     <h2 class="sec" id="gpWH" hidden>אמל"ח</h2>
@@ -3822,23 +3823,34 @@ const top=el("div","top");
     sendWA(L.join("\n"));
   };
   $("gpWa").onclick=()=>{
-    const S=vis(soldiers).filter(x=>sNotes(x).length).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));
-    const W=vis(weapons).filter(w=>(w.notes||"").trim());
+    let S=vis(soldiers).filter(x=>sNotes(x).length).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));
+    let W=vis(weapons).filter(w=>(w.notes||"").trim());
+    if(gpF){S=S.filter(x=>x.id===gpF);W=W.filter(w=>w.owner===gpF);}
     if(!S.length&&!W.length){toast("אין פערים לשליחה");return;}
-    const L=["*פערים"+(viewName()?" – "+viewName():"")+"*",waDate(Date.now())];
+    const fs0=gpF&&soldiers.find(z=>z.id===gpF);const L=["*פערים"+(fs0?" – "+fs0.name:(viewName()?" – "+viewName():""))+"*",waDate(Date.now())];
     if(S.length){L.push("","*חיילים*");S.forEach(x=>{const N=sNotes(x);
       if(N.length===1)L.push("• "+x.name+": "+N[0].text);else{L.push("• "+x.name+":");N.forEach(g=>L.push("   – "+g.text));}});}
     if(W.length){L.push("",'*אמל"ח*');W.forEach(w=>{const o=w.owner&&soldiers.find(z=>z.id===w.owner);
       L.push("• "+wType(w.type)+" "+(w.num||"")+(o?" ("+o.name+")":(w.ownerName?" ("+w.ownerName+")":""))+": "+w.notes);});}
     sendWA(L.join("\n"));
   };
+  let gpF="";
+  $("gpF").onchange=()=>{gpF=$("gpF").value;renderGaps();};
   function renderGaps(){
-    const S=vis(soldiers).filter(x=>sNotes(x).length).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));
-    const W=vis(weapons).filter(w=>(w.notes||"").trim()).sort((a,b)=>wType(a.type).localeCompare(wType(b.type),"he"));
+    let S=vis(soldiers).filter(x=>sNotes(x).length).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));
+    let W=vis(weapons).filter(w=>(w.notes||"").trim()).sort((a,b)=>wType(a.type).localeCompare(wType(b.type),"he"));
     const n=S.reduce((t,x)=>t+sNotes(x).length,0)+W.length;$("cntGp").textContent=n?n+" פתוחים":"אין פערים";
     {const ns=S.length,gb=$("gapBadge");gb.hidden=!ns;gb.textContent="⚠ "+ns;gb.title=ns+" חיילים עם פערים";}
     if($("v-gaps").hidden)return;
     $("gpCount").textContent=n||"";
+    {// filter by soldier: everyone with a note or a weapon note
+      const sel=$("gpF"),ids=new Set(S.map(x=>x.id));W.forEach(w=>{if(w.owner&&soldiers.some(z=>z.id===w.owner))ids.add(w.owner);});
+      const opts=[...ids].map(id=>soldiers.find(z=>z.id===id)).filter(Boolean).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
+      if(gpF&&!ids.has(gpF))gpF="";
+      sel.textContent="";const o0=el("option",null,"כולם ("+n+")");o0.value="";sel.append(o0);
+      opts.forEach(x=>{const k=sNotes(x).length+W.filter(w=>w.owner===x.id).length;const o=el("option",null,x.name+" ("+k+")");o.value=x.id;sel.append(o);});
+      sel.value=gpF;$("gpFWrap").hidden=!opts.length;
+      if(gpF){S=S.filter(x=>x.id===gpF);W=W.filter(w=>w.owner===gpF);}}
     const done=(path,data,label)=>{const b=el("button","ghost sm","✓ טופל");b.type="button";
       b.onclick=e=>{e.stopPropagation();if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="למחוק את ההערה?";setTimeout(()=>{b.classList.remove("armed");b.textContent="✓ טופל";},3000);return;}
         patch(path,data).then(ok=>{if(ok)toast(label+" – ההערה נמחקה");});};return b;};
