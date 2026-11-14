@@ -446,7 +446,10 @@ header.top .pid .num{text-shadow:0 1px 0 var(--hi)}
 .nowcard .nc{display:grid;gap:2px;padding:6px 0;border-block:1px solid var(--line)}
 .nowcard .nc .lb{font-size:13px;font-weight:800;color:var(--accent);letter-spacing:.3px}
 .nowcard .nc .tt{font-size:26px;font-weight:800;line-height:1.2}
-.nowcard .nc .tm{font-size:15px;color:var(--muted);text-align:right}
+.nowcard .nc .tm{font-size:30px;font-weight:800;color:var(--accent);text-align:right}
+.nowcard .np b,.nowcard .nn b{font-size:18px}
+.sprow .n1{display:flex;gap:10px;align-items:baseline}.sprow .sptm{white-space:nowrap;flex-shrink:0;direction:ltr;unicode-bidi:isolate;font-size:20px;font-weight:800;color:var(--accent);min-width:58px}
+.whoadd{color:var(--accent)!important}
 .nowcard .linkbtn{justify-self:start;font-size:14px}
 .evbar{width:6px;align-self:stretch;border-radius:6px;background:var(--ec);flex:none;box-shadow:0 0 8px -1px var(--ec)}
 .chips{display:flex;gap:8px;flex-wrap:wrap;padding-top:4px}
@@ -3458,7 +3461,7 @@ const top=el("div","top");
     const sm=(cls,lbl,x)=>{const d=el("div",cls);d.append(el("span",null,lbl),el("b",null,x.start),el("span",null,x.title));return d;};
     if(prev)li.append(sm("np","קודם:",prev));
     const c=el("div","nc");c.append(el("span","lb",pos.cur>=0?pos.label:(pos.label==="מתחיל"?"ראשון ביום":"הבא בתור")),el("span","tt",cur.title),el("span","tm",cur.start+(cur.end?"–"+cur.end:"")+(cur.note?" · "+cur.note:"")));
-    li.append(c);
+    whoToggle(c,cur);li.append(c);
     if(next&&pos.label!=="הסתיים")li.append(sm("nn","אחר כך:",next));
     const b=el("button","linkbtn",scAll?"הסתרת הלו\"ז המלא":"הצגת כל הלו\"ז ("+P.length+")");b.type="button";b.onclick=()=>{scAll=!scAll;renderSched();};li.append(b);
     return li;
@@ -3491,7 +3494,7 @@ const top=el("div","top");
     const P=all.filter(x=>x.src==="paste"&&x.start);
     const list=all.filter(x=>!P.includes(x));
     if(P.length){ul.append(el("li","schead","לו\"ז יומי"));ul.append(nowCard(P,scSel));
-      if(scAll)P.forEach(x=>ul.append(evRow(x)));}
+      if(scAll)P.forEach(x=>ul.append(evRow(x,true)));}
     ul.append(el("li","schead","אירועים"));
     list.forEach(x=>ul.append(evRow(x)));
     const ab=A.filter(x=>onDay(x,scSel));
@@ -3501,7 +3504,14 @@ const top=el("div","top");
     if(!list.length&&!ab.length)ul.append(el("li","mini","אין אירועים ביום הזה."));
     $("scCount").textContent=U.filter(x=>x.date&&x.date.slice(0,7)===key(first).slice(0,7)).length||"";
   }
-  function evRow(x){
+  // tapping shows who added it
+  function whoToggle(node,x){const w=el("div","n3 whoadd","נוסף ע\"י "+(x.addedByName||"לא ידוע")+(x.at?" · "+fmtG(key(new Date(x.at))):""));w.hidden=true;node.append(w);
+    node.classList.add("tap");node.addEventListener("click",e=>{if(e.target.closest("button"))return;w.hidden=!w.hidden;});}
+  function evRow(x,paste){
+    if(paste){const li=el("li","evrow sprow");li.style.setProperty("--ec",x.color||EV_COLORS[0]);
+      const info=el("div","info"),n1=el("div","n1");n1.append(el("span","sptm",x.start+(x.end?"–"+x.end:"")),el("span",null,x.title));info.append(n1);
+      if(x.note)info.append(el("div","n3",x.note));whoToggle(info,x);
+      li.append(el("span","evbar"),info,delBtn(()=>remove("events/"+x.id)));return li;}
       const li=el("li","evrow");li.style.setProperty("--ec",x.color||EV_COLORS[0]);
       const info=el("div","info");info.append(el("div","n1",x.title));
       const meta=[x.start?tr(x.start,x.end):"כל היום",x.to&&x.to!==x.date?"עד "+ltr(fmtG(x.to)):"",x.addedByName?"נוסף ע\"י "+x.addedByName:""].filter(Boolean).join(" · ");
