@@ -661,7 +661,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <button class="pencil homegear" id="setBtn" type="button" aria-expanded="false" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </div>
     </header>
-    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="setShowReqs" data-k="reqs"> בקש"צים</label></div>
+    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="setShowReqs" data-k="reqs"> בקש"צים</label><label class="allday"><input type="checkbox" id="setShowMed" data-k="med"> רפואה</label></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <nav class="tiles" id="homeTiles">
@@ -713,6 +713,11 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><rect x="12" y="8" width="40" height="50" rx="5" fill="var(--accent)" fill-opacity=".25"/><path d="M24 8V4h16v4"/><rect x="24" y="4" width="16" height="8" rx="2" fill="var(--bg)"/><path d="M20 26h24M20 34h24M20 42h12"/><circle cx="46" cy="48" r="9" fill="var(--bg)"/><path d="M42 48l3 3 5-6"/></svg>
         <span class="t">בקש"צים</span><span class="c" id="cntRq">—</span>
       </a>
+      <a class="tile t-red" href="#med" id="tileMed">
+        <span class="badge" id="mdBadge" hidden></span>
+        <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><rect x="8" y="18" width="48" height="36" rx="6" fill="var(--accent)" fill-opacity=".25"/><path d="M24 18v-6h16v6"/><path d="M32 26v20M22 36h20" stroke-width="5"/></svg>
+        <span class="t">רפואה</span><span class="c" id="cntMd">—</span>
+      </a>
       <a class="tile t-sand" href="#gaps" id="tileGaps">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M14 8h28l10 10v38H14z" fill="var(--accent)" fill-opacity=".25"/><path d="M42 8v10h10"/><path d="M22 28h20M22 36h20M22 44h12"/><circle cx="48" cy="48" r="9" fill="var(--bg)"/><path d="M48 43v6M48 53v.5"/></svg>
         <span class="t">פערים</span><span class="c" id="cntGp">—</span>
@@ -734,7 +739,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <span class="mini">ממלאים מלמעלה למטה, עד הרמה של המסגרת. למשל לפלוגה: חטיבה, גדוד ופלוגה, בלי מחלקה וכיתה. מי שנכנס בקישור של מסגרת רואה את כל מה שמתחתיה.</span>
       <div class="unitf" id="uNew"></div>
       <div class="f">רובריקות שיופיעו במסגרת<span class="mini">ברירת מחדל לכל המפקדים במסגרת. כל מפקד יכול לשנות לעצמו בהגדרות.</span>
-        <div class="tilechk"><label class="allday"><input type="checkbox" id="nuT-nmr" checked> נמ"ר</label><label class="allday"><input type="checkbox" id="nuT-veh" checked> רכב</label><label class="allday"><input type="checkbox" id="nuT-gaps" checked> פערים</label><label class="allday"><input type="checkbox" id="nuT-orbat" checked> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="nuT-reqs" checked> בקש"צים</label></div></div>
+        <div class="tilechk"><label class="allday"><input type="checkbox" id="nuT-nmr" checked> נמ"ר</label><label class="allday"><input type="checkbox" id="nuT-veh" checked> רכב</label><label class="allday"><input type="checkbox" id="nuT-gaps" checked> פערים</label><label class="allday"><input type="checkbox" id="nuT-orbat" checked> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="nuT-reqs" checked> בקש"צים</label><label class="allday"><input type="checkbox" id="nuT-med" checked> רפואה</label></div></div>
       <p class="err" id="unErr" hidden></p>
       <div class="row2"><button class="primary" type="submit">פתיחה</button><button class="ghost" type="button" id="cancelU">ביטול</button></div>
     </form>
@@ -910,6 +915,33 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     <label class="searchbox"><input type="search" id="rqQ" placeholder="חיפוש חייל או סיבה…" autocomplete="off"></label>
     <div id="rqList" style="margin-top:10px"></div>
     <div class="empty" id="rqEmpty" hidden></div>
+  </section>
+
+  <section id="v-med" hidden>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>רפואה</h1><span class="count" id="mdCount"></span><button class="pencil wa" type="button" id="mdWa" aria-label="שליחת הפניות הרפואיות בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
+    <button class="primary" id="openMD" type="button">+ פנייה רפואית חדשה</button>
+    <form class="add" id="formMD" hidden>
+      <div class="f">חייל<div id="mdPick"></div></div>
+      <div class="row2">
+        <label class="f">תאריך (תור / הפניה)<input type="date" id="mqFrom" required></label>
+        <label class="f">עד תאריך<input type="date" id="mqTo"></label>
+      </div>
+      <div class="row2">
+        <label class="f">שעת יציאה<input type="time" id="mqFromT"></label>
+        <label class="f">שעת חזרה<input type="time" id="mqToT"></label>
+      </div>
+      <label class="f">סיבה / תלונה<input type="text" id="mqReason" maxlength="100" required></label>
+      <label class="f">דחיפות
+        <select id="mqImp"><option value="1">נמוכה</option><option value="2" selected>בינונית</option><option value="3">גבוהה</option><option value="4">דחופה</option></select>
+      </label>
+      <label class="f">הערות<textarea id="mqNotes" maxlength="500"></textarea></label>
+      <p class="err" id="mqErr" hidden></p>
+      <div class="row2"><button class="primary" type="submit">שמירה</button><button class="ghost" type="button" id="cancelMD">ביטול</button></div>
+    </form>
+    <div class="rqtabs" id="mdTabs"><button type="button" data-t="pending">ממתינים <span id="mdN-pending"></span></button><button type="button" data-t="approved">מאושרים <span id="mdN-approved"></span></button><button type="button" data-t="past">היסטוריה</button></div>
+    <label class="searchbox"><input type="search" id="mdQ" placeholder="חיפוש חייל או סיבה…" autocomplete="off"></label>
+    <div id="mdList" style="margin-top:10px"></div>
+    <div class="empty" id="mdEmpty" hidden></div>
   </section>
 
   <section id="v-gaps" hidden>
@@ -1468,7 +1500,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   function pathOf(unitId){const u=unitById(unitId);return u?Object.assign({},u.path):null;}
 
   /* ---------- screens ---------- */
-  const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat","v-zr","v-reqs"];
+  const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat","v-zr","v-reqs","v-med"];
   function show(ids){ALL.forEach(i=>$(i).hidden=!ids.includes(i));$("bootStatus").hidden=true;}
   function route(){
     if(!ready)return;
@@ -1494,6 +1526,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(h==="wear"){show(["v-wear"]);renderWear();return;}
     if(h==="gaps"){show(["v-gaps"]);renderGaps();return;}
     if(h==="reqs"){show(["v-reqs"]);renderReqList();return;}
+    if(h==="med"){show(["v-med"]);renderMedList();return;}
     if(h==="zreport"){show(["v-zr"]);renderZR();return;}
     if(h==="orbat"){show(["v-orbat"]);renderOrbat();return;}
     if(h==="nmr"||h==="veh"){setVk(h);show(["v-nmr"]);renderNmr();return;}
@@ -1710,7 +1743,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     document.addEventListener("pointerdown",e=>{if(nav.classList.contains("editing")&&!e.target.closest("#homeTiles"))exit();});
     addEventListener("hashchange",exit);
   }
-  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"],["orbat","מבנה וארגון לקרב","tileOrbat","setShowOrbat"],["reqs",'בקש"צים',"tileReqs","setShowReqs"]];
+  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"],["orbat","מבנה וארגון לקרב","tileOrbat","setShowOrbat"],["reqs",'בקש"צים',"tileReqs","setShowReqs"],["med","רפואה","tileMed","setShowMed"]];
   // default for a tile: the closest unit (own unit, then its parents) that set it; otherwise shown
   function unitTileDefault(k){
     let u=me&&me.unitId?unitById(me.unitId):null;
@@ -2676,7 +2709,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   };
 
   /* ---------- requests ---------- */
-  function reqCard(r,withName){
+  function reqCard(r,withName,base){base=base||"requests";
     const canDecide=canDecideReq(r.unit);
     const sol=soldierById(r.soldierId);
       const c=el("div","req"+(r.status==="approved"&&reqOutNow(r)?" out":""));
@@ -2685,15 +2718,15 @@ const top=el("div","top");
       top.append(el("span","when",reqWhen(r)),el("span","pill st-"+r.status,ST[r.status]||""));c.append(top);
       if(hParts)c.append(el("div","mini",hebFull(parseKey(r.from))));
       c.append(el("div","n1",r.reason));
-      const im=el("div");im.append(el("span","imp imp-"+r.imp,"חשיבות: "+(IMP[r.imp]||"")));c.append(im);
+      const im=el("div");im.append(el("span","imp imp-"+r.imp,(base==="events"?"דחיפות: ":"חשיבות: ")+(IMP[r.imp]||"")));c.append(im);
       if(r.notes)c.append(el("div","notes",r.notes));
       {const who=reqBy(r);c.append(el("div","mini","✍️ הוזן ע\"י "+(who||"לא ידוע")+(r.at?" · "+fmtG(key(new Date(r.at))):"")));}
       if(r.status!=="pending"&&r.decidedAt)c.append(el("div","mini",(r.status==="approved"?"אושר":"נדחה")+(r.decidedByName?' ע"י '+r.decidedByName:"")+" · "+fmtG(key(new Date(r.decidedAt)))));
       if(canDecide){const row=el("div","row2");
-        if(r.status!=="approved"){const a=el("button","approve","אישור");a.type="button";a.onclick=()=>decide(r,"approved");row.append(a);}
-        if(r.status!=="rejected"){const n=el("button","reject","דחייה");n.type="button";n.onclick=()=>decide(r,"rejected");row.append(n);}
+        if(r.status!=="approved"){const a=el("button","approve","אישור");a.type="button";a.onclick=()=>decide(r,"approved",base);row.append(a);}
+        if(r.status!=="rejected"){const n=el("button","reject","דחייה");n.type="button";n.onclick=()=>decide(r,"rejected",base);row.append(n);}
         c.append(row);}
-      const d=el("div");d.style.textAlign="left";d.append(delBtn(()=>remove("requests/"+r.id)));c.append(d);
+      const d=el("div");d.style.textAlign="left";d.append(delBtn(()=>remove(base+"/"+r.id)));c.append(d);
     return c;
   }
   function renderReqs(){
@@ -2704,7 +2737,7 @@ const top=el("div","top");
     rq.forEach(r=>box.append(reqCard(r,false)));
     $("emptyR").hidden=rq.length>0;
   }
-  async function decide(r,status){if(!canDecideReq(r.unit))return;await patch("requests/"+r.id,{status,decidedBy:uid,decidedByName:((me&&me.name)||"")+((me&&me.title)?" ("+me.title+")":isAdmin?" (מנהל)":""),decidedAt:Date.now()},"rErr");}
+  async function decide(r,status,base){if(!canDecideReq(r.unit))return;await patch((base||"requests")+"/"+r.id,{status,decidedBy:uid,decidedByName:((me&&me.name)||"")+((me&&me.title)?" ("+me.title+")":isAdmin?" (מנהל)":""),decidedAt:Date.now()},"rErr");}
   function resetR(){$("formR").reset();showErr("rErr","");$("formR").hidden=true;$("openR").hidden=false;}
   $("openR").onclick=()=>{$("formR").hidden=false;$("openR").hidden=true;$("rFrom").value=key(new Date());$("rReason").focus();};
   $("cancelR").onclick=resetR;
@@ -3020,6 +3053,7 @@ const top=el("div","top");
   /* ---------- roll call & equipment check (swipe right = seen) ---------- */
   const todayKey=()=>key(new Date());
   function awayInfo(sid){
+    {const m=medEv().find(x=>x.soldierId===sid&&x.status==="approved"&&reqOutNow(x));if(m)return {tag:"רפואה",text:"רפואה: "+(m.reason||"")+" · חוזר "+fmtG(m.to||m.from)+(m.toTime?" ב-\u2066"+m.toTime+"\u2069":"")};}
     const r=awayReq(sid);if(r)return {tag:'בקש"צ',text:'בקש"צ מאושר: '+(r.reason||"")+" · חוזר "+fmtG(r.to||r.from)+(r.toTime?" ב-\u2066"+r.toTime+"\u2069":"")};
     const t=todayKey(),a=vis(events).find(x=>x.kind==="abs"&&x.soldierId===sid&&x.date&&x.date<=t&&(x.to||x.date)>=t);
     if(a)return {tag:a.absType||"היעדרות",text:(a.absType||"היעדרות")+" · "+(a.allDay?"כל היום":"\u2066"+a.start+"–"+a.end+"\u2069")+(a.to&&a.to!==a.date?" · עד "+fmtG(a.to):"")};
@@ -3824,54 +3858,61 @@ const top=el("div","top");
     $("gpSH").hidden=!S.length;$("gpWH").hidden=!W.length;$("gpEmpty").hidden=n>0;
   }
 
-  /* ---------- בקש"צים screen ---------- */
-  let rqTab="pending";
-  function renderReqList(){
-    const t=todayKey(),R=vis(requests);
-    const pend=R.filter(r=>r.status==="pending"),appr=R.filter(r=>r.status==="approved"&&(r.to||r.from||"")>=t);
-    const outNow=appr.filter(reqOutNow).length;
-    $("cntRq").textContent=pend.length?pend.length+" ממתינים":(outNow?outNow+" בחוץ עכשיו":"אין ממתינים");
-    {const np=pend.filter(r=>canDecideReq(r.unit)).length,b=$("rqBadge");b.hidden=!np;b.textContent=np;}
-    if($("v-reqs").hidden)return;
-    $("rqN-pending").textContent=pend.length?"("+pend.length+")":"";$("rqN-approved").textContent=appr.length?"("+appr.length+")":"";
-    document.querySelectorAll("#rqTabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===rqTab));
-    let L=rqTab==="pending"?pend.slice().sort((a,b)=>(b.imp||0)-(a.imp||0)||(a.from||"").localeCompare(b.from||""))
-      :rqTab==="approved"?appr.slice().sort((a,b)=>(reqOutNow(b)-reqOutNow(a))||(a.from||"").localeCompare(b.from||"")||(a.fromTime||"").localeCompare(b.fromTime||""))
-      :R.filter(r=>!pend.includes(r)&&!appr.includes(r)).sort((a,b)=>(b.from||"").localeCompare(a.from||""));
-    const q=$("rqQ").value.trim();
-    if(q)L=L.filter(r=>{const so=soldierById(r.soldierId);return ((so&&so.name)||"").includes(q)||(r.reason||"").includes(q)||(r.notes||"").includes(q);});
-    $("rqCount").textContent=pend.length||"";
-    const box=$("rqList");box.textContent="";
-    L.slice(0,rqTab==="past"?150:500).forEach(r=>box.append(reqCard(r,true)));
-    const e=$("rqEmpty");e.hidden=L.length>0;e.textContent=q?"לא נמצא.":rqTab==="pending"?'אין בקש"צים שממתינים לאישור.':rqTab==="approved"?'אין בקש"צים מאושרים קרובים.':"אין היסטוריה עדיין.";
+  /* ---------- בקש"צים / רפואה screens (same screen, two data sources) ---------- */
+  function medEv(){return vis(events).filter(x=>x.kind==="med");}
+  function reqScreen(o){ // o: {v,P,Q,src,base,title,noun,toastNoun,extra}
+    const $$=x=>$(o.P+x),$q=x=>$(o.Q+x);let tab="pending";
+    function render(){
+      const t=todayKey(),R=o.src();
+      const pend=R.filter(r=>r.status==="pending"),appr=R.filter(r=>r.status==="approved"&&(r.to||r.from||"")>=t);
+      const outNow=appr.filter(reqOutNow).length;
+      $(o.cnt).textContent=pend.length?pend.length+" ממתינים":(outNow?outNow+" בחוץ עכשיו":"אין ממתינים");
+      {const np=pend.filter(r=>canDecideReq(r.unit)).length,b=$(o.badge);b.hidden=!np;b.textContent=np;}
+      if($(o.v).hidden)return;
+      $$("N-pending").textContent=pend.length?"("+pend.length+")":"";$$("N-approved").textContent=appr.length?"("+appr.length+")":"";
+      $$("Tabs").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
+      let L=tab==="pending"?pend.slice().sort((a,b)=>(b.imp||0)-(a.imp||0)||(a.from||"").localeCompare(b.from||""))
+        :tab==="approved"?appr.slice().sort((a,b)=>(reqOutNow(b)-reqOutNow(a))||(a.from||"").localeCompare(b.from||"")||(a.fromTime||"").localeCompare(b.fromTime||""))
+        :R.filter(r=>!pend.includes(r)&&!appr.includes(r)).sort((a,b)=>(b.from||"").localeCompare(a.from||""));
+      const q=$$("Q").value.trim();
+      if(q)L=L.filter(r=>{const so=soldierById(r.soldierId);return ((so&&so.name)||"").includes(q)||(r.reason||"").includes(q)||(r.notes||"").includes(q);});
+      $$("Count").textContent=pend.length||"";
+      const box=$$("List");box.textContent="";
+      L.slice(0,tab==="past"?150:500).forEach(r=>box.append(reqCard(r,true,o.base)));
+      const e=$$("Empty");e.hidden=L.length>0;e.textContent=q?"לא נמצא.":tab==="pending"?"אין "+o.noun+" שממתינים לאישור.":tab==="approved"?"אין "+o.noun+" מאושרים קרובים.":"אין היסטוריה עדיין.";
+    }
+    $$("Tabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;tab=b.dataset.t;render();};
+    $$("Q").oninput=render;
+    const form=$(o.form),open=$(o.open);
+    const reset=()=>{form.reset();showErr(o.Q+"Err","");form.hidden=true;open.hidden=false;};
+    open.onclick=()=>{makePicker(o.P+"Pick","חיפוש חייל…",true);form.hidden=false;open.hidden=true;$q("From").value=key(new Date());showErr(o.Q+"Err","");};
+    $(o.cancel).onclick=reset;
+    form.onsubmit=async e=>{
+      e.preventDefault();const pk=pickers[o.P+"Pick"],pp=pickedPerson(pk&&pk.value),s=pp&&pp.soldier;
+      if(!s)return showErr(o.Q+"Err","בחרו חייל מהרשימה.");
+      const from=$q("From").value,to=$q("To").value||from;
+      if(to<from)return showErr(o.Q+"Err","תאריך הסיום מוקדם מתאריך ההתחלה.");
+      const fromTime=$q("FromT").value,toTime=$q("ToT").value;
+      if(to===from&&fromTime&&toTime&&toTime<=fromTime)return showErr(o.Q+"Err","שעת החזרה מוקדמת משעת היציאה.");
+      const btn=e.submitter;if(btn)btn.disabled=true;
+      const ok=await write(o.base+"/"+newId(),Object.assign({soldierId:s.id,unit:s.unit,from,to,fromTime,toTime,reason:$q("Reason").value.trim(),imp:Number($q("Imp").value),notes:$q("Notes").value.trim(),status:"pending",decidedBy:"",addedBy:uid,addedByName:(me&&me.name)||"",at:Date.now()},o.extra||{},o.extra?{date:from}:{}),o.Q+"Err");
+      if(btn)btn.disabled=false;if(ok){reset();tab="pending";toast(o.toastNoun+" של "+s.name+" נשמר");render();}
+    };
+    $$("Wa").onclick=()=>{
+      const t=todayKey(),R=o.src(),nm=r=>{const so=soldierById(r.soldierId);return so?so.name:"?";};
+      const pend=R.filter(r=>r.status==="pending").sort((a,b)=>(a.from||"").localeCompare(b.from||""));
+      const appr=R.filter(r=>r.status==="approved"&&(r.to||r.from||"")>=t).sort((a,b)=>(a.from||"").localeCompare(b.from||""));
+      if(!pend.length&&!appr.length){toast("אין מה לשלוח");return;}
+      const line=r=>"• "+nm(r)+" – "+reqWhen(r).replace(/[⁦⁩]/g,"")+(r.reason?" – "+r.reason:"");
+      const L=["*"+o.title+(viewName()?" – "+viewName():"")+"*",waDate(Date.now())];
+      if(pend.length){L.push("","*ממתינים לאישור*");pend.forEach(r=>L.push(line(r)));}
+      if(appr.length){L.push("","*מאושרים*");appr.forEach(r=>L.push(line(r)));}
+      sendWA(L.join("\n"));
+    };
+    return render;
   }
-  $("rqTabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;rqTab=b.dataset.t;renderReqList();};
-  $("rqQ").oninput=()=>renderReqList();
-  function resetRQ(){$("formRQ").reset();showErr("qErr","");$("formRQ").hidden=true;$("openRQ").hidden=false;}
-  $("openRQ").onclick=()=>{makePicker("rqPick","חיפוש חייל…",true);$("formRQ").hidden=false;$("openRQ").hidden=true;$("qFrom").value=key(new Date());showErr("qErr","");};
-  $("cancelRQ").onclick=resetRQ;
-  $("formRQ").onsubmit=async e=>{
-    e.preventDefault();const pp=pickedPerson(pickers.rqPick&&pickers.rqPick.value),s=pp&&pp.soldier;
-    if(!s)return showErr("qErr","בחרו חייל מהרשימה.");
-    const from=$("qFrom").value,to=$("qTo").value||from;
-    if(to<from)return showErr("qErr","תאריך הסיום מוקדם מתאריך ההתחלה.");
-    const fromTime=$("qFromT").value,toTime=$("qToT").value;
-    if(to===from&&fromTime&&toTime&&toTime<=fromTime)return showErr("qErr","שעת החזרה מוקדמת משעת היציאה.");
-    const btn=e.submitter;if(btn)btn.disabled=true;
-    const ok=await write("requests/"+newId(),{soldierId:s.id,unit:s.unit,from,to,fromTime,toTime,reason:$("qReason").value.trim(),imp:Number($("qImp").value),notes:$("qNotes").value.trim(),status:"pending",decidedBy:"",addedBy:uid,addedByName:(me&&me.name)||"",at:Date.now()},"qErr");
-    if(btn)btn.disabled=false;if(ok){resetRQ();rqTab="pending";toast('הבקש"צ של '+s.name+" נשלח");renderReqList();}
-  };
-  $("rqWa").onclick=()=>{
-    const t=todayKey(),R=vis(requests),nm=r=>{const so=soldierById(r.soldierId);return so?so.name:"?";};
-    const pend=R.filter(r=>r.status==="pending").sort((a,b)=>(a.from||"").localeCompare(b.from||""));
-    const appr=R.filter(r=>r.status==="approved"&&(r.to||r.from||"")>=t).sort((a,b)=>(a.from||"").localeCompare(b.from||""));
-    if(!pend.length&&!appr.length){toast('אין בקש"צים לשליחה');return;}
-    const line=r=>"• "+nm(r)+" – "+reqWhen(r).replace(/[\u2066\u2069]/g,"")+(r.reason?" – "+r.reason:"");
-    const L=['*בקש"צים'+(viewName()?" – "+viewName():"")+"*",waDate(Date.now())];
-    if(pend.length){L.push("","*ממתינים לאישור*");pend.forEach(r=>L.push(line(r)));}
-    if(appr.length){L.push("","*מאושרים*");appr.forEach(r=>L.push(line(r)));}
-    sendWA(L.join("\n"));
-  };
+  const renderReqList=reqScreen({v:"v-reqs",P:"rq",Q:"q",cnt:"cntRq",badge:"rqBadge",form:"formRQ",open:"openRQ",cancel:"cancelRQ",src:()=>vis(requests),base:"requests",title:'בקש"צים',noun:'בקש"צים',toastNoun:'הבקש"צ'});
+  const renderMedList=reqScreen({v:"v-med",P:"md",Q:"mq",cnt:"cntMd",badge:"mdBadge",form:"formMD",open:"openMD",cancel:"cancelMD",src:medEv,base:"events",title:"רפואה",noun:"פניות",toastNoun:"הפנייה הרפואית",extra:{kind:"med"}});
 
   /* ---------- מבנה וארגון לקרב ---------- */
   const FIG='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a7 6 0 0 1 14 0z" fill="currentColor" fill-opacity=".25"/><path d="M7 11h18"/><circle cx="16" cy="14" r="4"/><path d="M8 29c0-5 3.5-8 8-8s8 3 8 8"/><path d="M22 20l6-5"/></svg>';
@@ -4269,7 +4310,7 @@ const top=el("div","top");
     renderQueued=true;
     requestAnimationFrame(()=>{renderQueued=false;try{renderAllNow();}catch(e){console.warn("render",e);}});
   }
-  const SNAP_IDS=["meName","meRole","meUnit","meId","cntAt","cntVf","cntSc","cntAb","cntWr","cntNm","cntOb","cntGp","cntVh","cntRq","rqBadge","cntMine","pendBadge","gapBadge","faultBadge","openUnits","viewWrap"];
+  const SNAP_IDS=["meName","meRole","meUnit","meId","cntAt","cntVf","cntSc","cntAb","cntWr","cntNm","cntOb","cntGp","cntVh","cntRq","rqBadge","cntMd","mdBadge","cntMine","pendBadge","gapBadge","faultBadge","openUnits","viewWrap"];
   let lastSnap="";
   function saveHomeSnap(){
     try{const t={};SNAP_IDS.forEach(id=>{const e=$(id);if(e)t[id]=[id==="openUnits"||id==="viewWrap"?null:e.textContent,e.hidden];});
@@ -4285,7 +4326,7 @@ const top=el("div","top");
     renderMe();renderS();renderW();
     if(curSoldier)renderDetail();
     if(!$("v-units").hidden)renderUnits();
-    renderMine();renderAttend();renderVerify();renderSched();renderAbsent();renderWear();renderNmr();renderNmrD();renderGaps();renderOrbat();renderZR();renderReqList();
+    renderMine();renderAttend();renderVerify();renderSched();renderAbsent();renderWear();renderNmr();renderNmrD();renderGaps();renderOrbat();renderZR();renderReqList();renderMedList();
     {const t=key(new Date()),ue=unitEv().filter(x=>onDay(x,t)).length,ab=absEv().filter(x=>onDay(x,t)).length+vis(requests).filter(r=>r.status==="approved"&&r.from&&r.from<=t&&(r.to||r.from)>=t).length;
      $("cntSc").textContent=ue?ue+" אירועים היום":"אין אירועים היום";$("cntAb").textContent=ab?ab+" היום":"אין היום";}
     {const S=vis(soldiers).filter(s=>!isCmdSoldier(s)),here=S.filter(s=>!awayInfo(s.id)),m=getMarks(rollKey("att"));
