@@ -72,6 +72,7 @@ form.add,.panel{background:var(--surface);border:1px solid var(--line);border-ra
 label.f{display:grid;gap:4px;font-size:14px;color:var(--muted)}
 input[type=text],input[type=tel],input[type=date],input[type=time],select,textarea{font:inherit;font-size:17px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
 textarea{min-height:70px;resize:vertical}
+.sppre{list-style:none;margin:0;padding:0;display:grid;gap:4px}.sppre li{display:flex;gap:10px;align-items:baseline;padding:6px 10px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}.sppre b{direction:ltr;min-width:84px;text-align:right;color:var(--accent)}.sppre .mini{margin-inline-start:auto}
 input.ltr{direction:ltr;text-align:right;font-family:var(--mono)}
 .photo-pick{display:flex;align-items:center;gap:12px}
 .av{width:64px;height:64px;border-radius:50%;object-fit:cover;background:var(--tile);border:1px solid var(--line);flex:none;display:grid;place-items:center;color:var(--muted)}
@@ -759,7 +760,16 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
   <!-- SCHEDULE -->
   <section id="v-sched" hidden>
     <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>לו"ז</h1><span class="count" id="scCount"></span></div>
-    <button class="primary" type="button" id="openSE">+ הוספת אירוע</button>
+    <div class="row2"><button class="primary" type="button" id="openSE">+ הוספת אירוע</button><button class="ghost" type="button" id="openSP">📋 הדבקת לו"ז</button></div>
+    <form class="add" id="formSP" hidden>
+      <label class="f">מדביקים את הלו"ז (שורה לכל אירוע, שעה בהתחלה)<textarea id="spText" rows="8" placeholder="לו&quot;ז למחר:&#10;4:35 - השכמה&#10;6:25 - הזנקה&#10;12:00 - ארוחת צהריים"></textarea></label>
+      <label class="f">לאיזה יום<input type="date" id="spDate" required></label>
+      <span class="mini" id="spHint"></span>
+      <ul class="sppre" id="spPre"></ul>
+      <label class="allday" id="spRepWrap" hidden><input type="checkbox" id="spRep"> למחוק את מה שכבר רשום ביום הזה</label>
+      <p class="err" id="spErr" hidden></p>
+      <div class="row2"><button class="primary" type="submit" id="spSave">הוספה ללו"ז</button><button class="ghost" type="button" id="cancelSP">ביטול</button></div>
+    </form>
     <form class="add" id="formSE" hidden>
       <label class="f">שם האירוע<input type="text" id="seTitle" maxlength="80" required placeholder="למשל: מסדר מפקד, אימון ירי, שיחת מ&quot;פ"></label>
       <div class="row2">
@@ -3345,8 +3355,8 @@ const top=el("div","top");
       b.setAttribute("role","radio");b.setAttribute("aria-checked",String(c===seColor));b.setAttribute("aria-label","צבע "+(i+1));
       b.onclick=()=>{seColor=c;renderColors();};box.append(b);});
   }
-  $("openSE").onclick=()=>{$("formSE").hidden=false;$("openSE").hidden=true;$("seDate").value=scSel;$("seTo").value="";renderColors();showErr("seErr","");$("seTitle").focus();};
-  const resetSE=()=>{$("formSE").reset();$("formSE").hidden=true;$("openSE").hidden=false;};
+  $("openSE").onclick=()=>{$("formSE").hidden=false;$("openSE").hidden=true;$("openSP").hidden=true;$("seDate").value=scSel;$("seTo").value="";renderColors();showErr("seErr","");$("seTitle").focus();};
+  const resetSE=()=>{$("formSE").reset();$("formSE").hidden=true;$("openSE").hidden=false;$("openSP").hidden=false;};
   $("cancelSE").onclick=resetSE;
   $("formSE").onsubmit=async e=>{
     e.preventDefault();
@@ -3355,6 +3365,71 @@ const top=el("div","top");
     const btn=$("seSave");btn.disabled=true;
     const ok=await write("events/"+newId(),{kind:"unit",soldierId:"",unit,title:$("seTitle").value.trim(),date,to,start:$("seFrom").value||"",end:$("seUntil").value||"",time:$("seFrom").value||"",color:seColor,note:$("seNote").value.trim(),addedBy:uid,addedByName:(me&&me.name)||"",at:Date.now()},"seErr");
     btn.disabled=false;if(ok){scSel=date;const d=parseKey(date);scY=d.getFullYear();scM=d.getMonth();resetSE();renderSched();toast("האירוע נוסף");}
+  };
+
+  /* --- paste a whole day's schedule from WhatsApp --- */
+  const pad2=n=>String(n).padStart(2,"0");
+  function spDayFrom(txt){ // "למחר", "היום", "מחרתיים", a weekday or a date in the text
+    const t=new Date(),k=n=>key(new Date(t.getFullYear(),t.getMonth(),t.getDate()+n));
+    const head=txt.split("\n").slice(0,3).join(" ");
+    const dm=head.match(/(\d{1,2})[./](\d{1,2})(?:[./](\d{2,4}))?/);
+    if(dm&&!/\d{1,2}:\d{2}/.test(dm[0])){let y=dm[3]?Number(dm[3]):t.getFullYear();if(y<100)y+=2000;const d=new Date(y,Number(dm[2])-1,Number(dm[1]));if(!isNaN(d)&&d.getMonth()===Number(dm[2])-1)return key(d);}
+    if(/מחרתיים/.test(head))return k(2);
+    if(/מחר/.test(head))return k(1);
+    if(/היום|להיום/.test(head))return k(0);
+    const days=["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+    for(let i=0;i<7;i++)if(new RegExp("(יום|ל|ב)\\s*"+days[i]+"(?![א-ת])").test(head)){let n=(i-t.getDay()+7)%7;if(!n)n=7;return k(n);}
+    return null;
+  }
+  function spParse(txt){
+    const out=[];
+    txt.replace(/\r/g,"").split("\n").forEach(raw=>{
+      let line=raw.replace(/[‎‏⁦-⁩*_~]/g,"").trim();if(!line)return;
+      let m=line.match(/^(\d{1,2})[:.](\d{2})(?:\s*(?:-|–|—|עד)\s*(\d{1,2})[:.](\d{2}))?\s*(בערך|בערך\.|~)?\s*[-–—:,.]?\s*(.*)$/);
+      let tail=null;
+      if(!m){tail=line.match(/^(.*?)[\s\-–—:,]+(\d{1,2})[:.](\d{2})\s*$/);}
+      if(m&&Number(m[1])<24&&Number(m[2])<60){
+        let title=(m[6]||"").replace(/^[-–—:,.\s]+/,"").trim();let note=m[5]?"בערך":"";
+        if(/^בערך\b/.test(title)){title=title.replace(/^בערך[\s\-–—:,]*/,"");note="בערך";}
+        out.push({start:pad2(m[1])+":"+m[2],end:m[3]?pad2(m[3])+":"+m[4]:"",title:title||"אירוע",note});
+      }else if(tail&&Number(tail[2])<24){
+        out.push({start:pad2(tail[2])+":"+tail[3],end:"",title:tail[1].trim()||"אירוע",note:""});
+      }else if(out.length){ // a line without a time continues the previous item
+        const p=out[out.length-1];p.note=(p.note?p.note+" · ":"")+line;
+      }
+    });
+    // each item ends when the next one starts
+    out.forEach((x,i)=>{const n=out[i+1];if(!x.end&&n&&n.start>x.start)x.end=n.start;});
+    return out;
+  }
+  function spPreview(){
+    const txt=$("spText").value,items=spParse(txt),ul=$("spPre");ul.textContent="";
+    items.forEach(x=>{const li=el("li");li.append(el("b",null,x.start+(x.end?"–"+x.end:"")),el("span",null,x.title));if(x.note)li.append(el("span","mini",x.note));ul.append(li);});
+    const d=$("spDate").value,have=d?unitEv().filter(x=>x.date===d&&(x.to||x.date)===d).length:0;
+    $("spRepWrap").hidden=!have;if(!have)$("spRep").checked=false;
+    $("spHint").textContent=items.length?"זוהו "+items.length+" אירועים"+(d?" ליום "+DOWL[parseKey(d).getDay()]+" "+fmtG(d):"")+(have?" · כבר רשומים ביום הזה "+have+" אירועים":""):(txt.trim()?"לא זוהו שעות. כל שורה צריכה להתחיל בשעה, למשל 12:00 - ארוחת צהריים":"");
+    $("spSave").textContent=items.length?"הוספת "+items.length+" אירועים ללו\"ז":"הוספה ללו\"ז";
+  }
+  let spAuto=true;
+  $("spText").oninput=()=>{if(spAuto){const d=spDayFrom($("spText").value);if(d)$("spDate").value=d;}spPreview();};
+  $("spDate").oninput=()=>{spAuto=false;spPreview();};
+  const resetSP=()=>{$("formSP").reset();$("spPre").textContent="";$("spHint").textContent="";$("spRepWrap").hidden=true;showErr("spErr","");$("formSP").hidden=true;$("openSP").hidden=false;$("openSE").hidden=false;};
+  $("openSP").onclick=()=>{resetSE();spAuto=true;$("formSP").hidden=false;$("openSP").hidden=true;$("openSE").hidden=true;$("spDate").value=scSel;spPreview();$("spText").focus();};
+  $("cancelSP").onclick=resetSP;
+  $("formSP").onsubmit=async e=>{
+    e.preventDefault();
+    const unit=writeUnit();if(!unit)return showErr("spErr","אין מסגרת פתוחה.");
+    const date=$("spDate").value;if(!date)return showErr("spErr","בחרו יום.");
+    const items=spParse($("spText").value);if(!items.length)return showErr("spErr","לא זוהו אירועים. כל שורה צריכה להתחיל בשעה.");
+    const btn=$("spSave");btn.disabled=true;
+    const day=unitEv().filter(x=>x.date===date&&(x.to||x.date)===date);
+    if($("spRep").checked)await Promise.all(day.map(x=>remove("events/"+x.id)));
+    const keep=$("spRep").checked?[]:day,dup=x=>keep.some(y=>y.start===x.start&&(y.title||"").trim()===x.title);
+    const add=items.filter(x=>!dup(x));const now=Date.now();
+    const res=await Promise.all(add.map((x,i)=>write("events/"+newId(),{kind:"unit",soldierId:"",unit,title:x.title.slice(0,80),date,to:date,start:x.start,end:x.end,time:x.start,color:seColor,note:x.note.slice(0,200),addedBy:uid,addedByName:(me&&me.name)||"",at:now+i},"spErr")));
+    btn.disabled=false;
+    if(res.every(Boolean)){scSel=date;const d=parseKey(date);scY=d.getFullYear();scM=d.getMonth();resetSP();renderSched();
+      toast(add.length+" אירועים נוספו ללו\"ז"+(items.length>add.length?" ("+(items.length-add.length)+" כבר היו)":""));}
   };
   $("scPrev").onclick=()=>{scM--;if(scM<0){scM=11;scY--;}renderSched();};
   $("scNext").onclick=()=>{scM++;if(scM>11){scM=0;scY++;}renderSched();};
