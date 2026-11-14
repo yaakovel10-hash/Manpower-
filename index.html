@@ -439,6 +439,7 @@ header.top .pid .num{text-shadow:0 1px 0 var(--hi)}
 .sw.on{box-shadow:0 0 0 3px var(--fg),0 3px 8px -3px var(--shadow)}
 .dot.ab{background:var(--muted)}
 .evrow{gap:10px}
+.list li.schead{display:block;border:0;padding:14px 2px 4px;font-weight:800;font-size:15px;color:var(--muted);background:none;box-shadow:none}
 .list li.nowcard,.nowcard{display:grid;grid-template-columns:1fr;align-items:stretch;gap:6px;padding:14px 16px!important;border:2px solid var(--accent);border-radius:16px;background:var(--surface);margin:6px 0 10px;box-shadow:0 10px 24px -16px var(--shadow)}
 .nowcard .np,.nowcard .nn{color:var(--muted);opacity:.75;font-size:15px;display:flex;gap:8px}
 .nowcard .np b,.nowcard .nn b,.nowcard .nc .tm{direction:ltr;unicode-bidi:isolate}
@@ -3406,8 +3407,6 @@ const top=el("div","top");
         const p=out[out.length-1];p.note=(p.note?p.note+" · ":"")+line;
       }
     });
-    // each item ends when the next one starts
-    out.forEach((x,i)=>{const n=out[i+1];if(!x.end&&n&&n.start>x.start)x.end=n.start;});
     return out;
   }
   function spPreview(){
@@ -3490,21 +3489,24 @@ const top=el("div","top");
     const ul=$("scDay");ul.textContent="";
     const all=U.filter(x=>onDay(x,scSel)).sort((a,b)=>(a.start||"").localeCompare(b.start||""));
     const P=all.filter(x=>x.src==="paste"&&x.start);
-    const list=P.length&&!scAll?all.filter(x=>!P.includes(x)):all;
-    if(P.length)ul.append(nowCard(P,scSel));
-    list.forEach(x=>{
-      const li=el("li","evrow");li.style.setProperty("--ec",x.color||EV_COLORS[0]);
-      const info=el("div","info");info.append(el("div","n1",x.title));
-      const meta=[x.start?tr(x.start,x.end):"כל היום",x.to&&x.to!==x.date?"עד "+ltr(fmtG(x.to)):"",x.addedByName?"נוסף ע\"י "+x.addedByName:""].filter(Boolean).join(" · ");
-      info.append(el("div","n3",meta));if(x.note)info.append(el("div","n3",x.note));
-      li.append(el("span","evbar"),info,delBtn(()=>remove("events/"+x.id)));ul.append(li);
-    });
+    const list=all.filter(x=>!P.includes(x));
+    if(P.length){ul.append(el("li","schead","לו\"ז יומי"));ul.append(nowCard(P,scSel));
+      if(scAll)P.forEach(x=>ul.append(evRow(x)));}
+    ul.append(el("li","schead","אירועים"));
+    list.forEach(x=>ul.append(evRow(x)));
     const ab=A.filter(x=>onDay(x,scSel));
     if(ab.length){const li=el("li","evrow abs");li.style.setProperty("--ec","var(--muted)");const info=el("div","info");
       info.append(el("div","n1",ab.length+" היעדרויות ותורנויות"),el("div","n3",ab.slice(0,4).map(x=>x.title).join(" · ")+(ab.length>4?" …":"")));
       li.append(el("span","evbar"),info);li.classList.add("tap");li.onclick=()=>{abDay=scSel;location.hash="absent";};ul.append(li);}
-    if(!ul.children.length)ul.append(el("li","mini","אין אירועים ביום הזה."));
+    if(!list.length&&!ab.length)ul.append(el("li","mini","אין אירועים ביום הזה."));
     $("scCount").textContent=U.filter(x=>x.date&&x.date.slice(0,7)===key(first).slice(0,7)).length||"";
+  }
+  function evRow(x){
+      const li=el("li","evrow");li.style.setProperty("--ec",x.color||EV_COLORS[0]);
+      const info=el("div","info");info.append(el("div","n1",x.title));
+      const meta=[x.start?tr(x.start,x.end):"כל היום",x.to&&x.to!==x.date?"עד "+ltr(fmtG(x.to)):"",x.addedByName?"נוסף ע\"י "+x.addedByName:""].filter(Boolean).join(" · ");
+      info.append(el("div","n3",meta));if(x.note)info.append(el("div","n3",x.note));
+      li.append(el("span","evbar"),info,delBtn(()=>remove("events/"+x.id)));return li;
   }
 
   /* --- absences --- */
