@@ -439,6 +439,14 @@ header.top .pid .num{text-shadow:0 1px 0 var(--hi)}
 .sw.on{box-shadow:0 0 0 3px var(--fg),0 3px 8px -3px var(--shadow)}
 .dot.ab{background:var(--muted)}
 .evrow{gap:10px}
+.list li.nowcard,.nowcard{display:grid;grid-template-columns:1fr;align-items:stretch;gap:6px;padding:14px 16px!important;border:2px solid var(--accent);border-radius:16px;background:var(--surface);margin:6px 0 10px;box-shadow:0 10px 24px -16px var(--shadow)}
+.nowcard .np,.nowcard .nn{color:var(--muted);opacity:.75;font-size:15px;display:flex;gap:8px}
+.nowcard .np b,.nowcard .nn b,.nowcard .nc .tm{direction:ltr;unicode-bidi:isolate}
+.nowcard .nc{display:grid;gap:2px;padding:6px 0;border-block:1px solid var(--line)}
+.nowcard .nc .lb{font-size:13px;font-weight:800;color:var(--accent);letter-spacing:.3px}
+.nowcard .nc .tt{font-size:26px;font-weight:800;line-height:1.2}
+.nowcard .nc .tm{font-size:15px;color:var(--muted);text-align:right}
+.nowcard .linkbtn{justify-self:start;font-size:14px}
 .evbar{width:6px;align-self:stretch;border-radius:6px;background:var(--ec);flex:none;box-shadow:0 0 8px -1px var(--ec)}
 .chips{display:flex;gap:8px;flex-wrap:wrap;padding-top:4px}
 .chipbtn{font:inherit;font-size:15px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:linear-gradient(180deg,var(--surface),var(--tile));color:var(--fg);cursor:pointer;box-shadow:inset 0 1px 0 var(--hi),0 3px 8px -6px var(--shadow)}
@@ -3426,13 +3434,36 @@ const top=el("div","top");
     if($("spRep").checked)await Promise.all(day.map(x=>remove("events/"+x.id)));
     const keep=$("spRep").checked?[]:day,dup=x=>keep.some(y=>y.start===x.start&&(y.title||"").trim()===x.title);
     const add=items.filter(x=>!dup(x));const now=Date.now();
-    const res=await Promise.all(add.map((x,i)=>write("events/"+newId(),{kind:"unit",soldierId:"",unit,title:x.title.slice(0,80),date,to:date,start:x.start,end:x.end,time:x.start,color:seColor,note:x.note.slice(0,200),addedBy:uid,addedByName:(me&&me.name)||"",at:now+i},"spErr")));
+    const res=await Promise.all(add.map((x,i)=>write("events/"+newId(),{kind:"unit",soldierId:"",unit,title:x.title.slice(0,80),date,to:date,start:x.start,end:x.end,time:x.start,color:seColor,note:x.note.slice(0,200),src:"paste",addedBy:uid,addedByName:(me&&me.name)||"",at:now+i},"spErr")));
     btn.disabled=false;
     if(res.every(Boolean)){scSel=date;const d=parseKey(date);scY=d.getFullYear();scM=d.getMonth();resetSP();renderSched();
       toast(add.length+" אירועים נוספו ללו\"ז"+(items.length>add.length?" ("+(items.length-add.length)+" כבר היו)":""));}
   };
   $("scPrev").onclick=()=>{scM--;if(scM<0){scM=11;scY--;}renderSched();};
   $("scNext").onclick=()=>{scM++;if(scM>11){scM=0;scY++;}renderSched();};
+  let scAll=false;
+  // where are we in a pasted day schedule: the item happening now, the one before and the one after
+  function nowPos(P,day){
+    const t=todayKey();
+    if(day>t)return {cur:-1,next:0,label:"מתחיל"};
+    if(day<t)return {cur:P.length-1,label:"הסתיים"};
+    const d=new Date(),now=pad2(d.getHours())+":"+pad2(d.getMinutes());
+    let i=-1;P.forEach((x,j)=>{if(x.start<=now)i=j;});
+    if(i<0)return {cur:-1,next:0,label:"בקרוב"};
+    const x=P[i];if(x.end&&x.end>x.start&&now>=x.end&&i===P.length-1)return {cur:i,label:"הסתיים"};
+    return {cur:i,label:"עכשיו"};
+  }
+  function nowCard(P,day){
+    const li=el("li","nowcard"),pos=nowPos(P,day);
+    const ci=pos.cur>=0?pos.cur:pos.next,cur=P[ci],prev=pos.cur>=0?P[pos.cur-1]:null,next=P[ci+1];
+    const sm=(cls,lbl,x)=>{const d=el("div",cls);d.append(el("span",null,lbl),el("b",null,x.start),el("span",null,x.title));return d;};
+    if(prev)li.append(sm("np","קודם:",prev));
+    const c=el("div","nc");c.append(el("span","lb",pos.cur>=0?pos.label:(pos.label==="מתחיל"?"ראשון ביום":"הבא בתור")),el("span","tt",cur.title),el("span","tm",cur.start+(cur.end?"–"+cur.end:"")+(cur.note?" · "+cur.note:"")));
+    li.append(c);
+    if(next&&pos.label!=="הסתיים")li.append(sm("nn","אחר כך:",next));
+    const b=el("button","linkbtn",scAll?"הסתרת הלו\"ז המלא":"הצגת כל הלו\"ז ("+P.length+")");b.type="button";b.onclick=()=>{scAll=!scAll;renderSched();};li.append(b);
+    return li;
+  }
   function renderSched(){
     if($("v-sched").hidden)return;
     const first=new Date(scY,scM,1),last=new Date(scY,scM+1,0);
@@ -3457,7 +3488,10 @@ const top=el("div","top");
     const sd=parseKey(scSel);
     $("scDayHead").textContent="יום "+DOWL[sd.getDay()]+", "+fmtG(scSel)+(hParts?" · "+hebFull(sd):"");
     const ul=$("scDay");ul.textContent="";
-    const list=U.filter(x=>onDay(x,scSel)).sort((a,b)=>(a.start||"").localeCompare(b.start||""));
+    const all=U.filter(x=>onDay(x,scSel)).sort((a,b)=>(a.start||"").localeCompare(b.start||""));
+    const P=all.filter(x=>x.src==="paste"&&x.start);
+    const list=P.length&&!scAll?all.filter(x=>!P.includes(x)):all;
+    if(P.length)ul.append(nowCard(P,scSel));
     list.forEach(x=>{
       const li=el("li","evrow");li.style.setProperty("--ec",x.color||EV_COLORS[0]);
       const info=el("div","info");info.append(el("div","n1",x.title));
@@ -4415,7 +4449,8 @@ const top=el("div","top");
     if(!$("v-units").hidden)renderUnits();
     renderMine();renderAttend();renderVerify();renderSched();renderAbsent();renderWear();renderNmr();renderNmrD();renderGaps();renderOrbat();renderZR();renderReqList();renderMedList();
     {const t=key(new Date()),ue=unitEv().filter(x=>onDay(x,t)).length,ab=absEv().filter(x=>onDay(x,t)).length+vis(requests).filter(r=>r.status==="approved"&&r.from&&r.from<=t&&(r.to||r.from)>=t).length;
-     $("cntSc").textContent=ue?ue+" אירועים היום":"אין אירועים היום";$("cntAb").textContent=ab?ab+" היום":"אין היום";}
+     const P=unitEv().filter(x=>x.src==="paste"&&x.start&&onDay(x,t)).sort((a,b)=>a.start.localeCompare(b.start)),pos=P.length?nowPos(P,t):null;
+     $("cntSc").textContent=pos&&pos.cur>=0&&pos.label==="עכשיו"?"עכשיו: "+P[pos.cur].title:pos&&pos.label==="בקרוב"?"בקרוב: "+P[0].title:(ue?ue+" אירועים היום":"אין אירועים היום");$("cntAb").textContent=ab?ab+" היום":"אין היום";}
     {const S=vis(soldiers).filter(s=>!isCmdSoldier(s)),here=S.filter(s=>!awayInfo(s.id)),m=getMarks(rollKey("att"));
      $("cntAt").textContent=here.length+" בבסיס"+(S.length-here.length?" · "+(S.length-here.length)+" בבית":"")+(m.size?" · ✓"+here.filter(s=>m.has(s.id)).length:"");
      $("cntVf").textContent=vis(weapons).length+" פריטים";}
