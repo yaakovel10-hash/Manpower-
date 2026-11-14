@@ -450,6 +450,7 @@ header.top .pid .num{text-shadow:0 1px 0 var(--hi)}
 .nowcard .np b,.nowcard .nn b{font-size:18px}
 .sprow .n1{display:flex;gap:10px;align-items:baseline}.sprow .sptm{white-space:nowrap;flex-shrink:0;direction:ltr;unicode-bidi:isolate;font-size:20px;font-weight:800;color:var(--accent);min-width:58px}
 .whoadd{color:var(--accent)!important}
+.sprow .sptm.allday{font-size:14px;font-weight:700;color:var(--muted);min-width:0}
 .nowcard .linkbtn{justify-self:start;font-size:14px}
 .evbar{width:6px;align-self:stretch;border-radius:6px;background:var(--ec);flex:none;box-shadow:0 0 8px -1px var(--ec)}
 .chips{display:flex;gap:8px;flex-wrap:wrap;padding-top:4px}
@@ -3512,11 +3513,11 @@ const top=el("div","top");
       const info=el("div","info"),n1=el("div","n1");n1.append(el("span","sptm",x.start+(x.end?"–"+x.end:"")),el("span",null,x.title));info.append(n1);
       if(x.note)info.append(el("div","n3",x.note));whoToggle(info,x);
       li.append(el("span","evbar"),info,delBtn(()=>remove("events/"+x.id)));return li;}
-      const li=el("li","evrow");li.style.setProperty("--ec",x.color||EV_COLORS[0]);
-      const info=el("div","info");info.append(el("div","n1",x.title));
-      const meta=[x.start?tr(x.start,x.end):"כל היום",x.to&&x.to!==x.date?"עד "+ltr(fmtG(x.to)):"",x.addedByName?"נוסף ע\"י "+x.addedByName:""].filter(Boolean).join(" · ");
-      info.append(el("div","n3",meta));if(x.note)info.append(el("div","n3",x.note));
-      li.append(el("span","evbar"),info,delBtn(()=>remove("events/"+x.id)));return li;
+    const li=el("li","evrow sprow");li.style.setProperty("--ec",x.color||EV_COLORS[0]);
+    const info=el("div","info"),n1=el("div","n1");n1.append(el("span","sptm"+(x.start?"":" allday"),x.start?x.start+(x.end?"–"+x.end:""):"כל היום"),el("span",null,x.title));info.append(n1);
+    if(x.to&&x.to!==x.date)info.append(el("div","n3","עד "+ltr(fmtG(x.to))));
+    if(x.note)info.append(el("div","n3",x.note));whoToggle(info,x);
+    li.append(el("span","evbar"),info,delBtn(()=>remove("events/"+x.id)));return li;
   }
 
   /* --- absences --- */
@@ -3659,6 +3660,15 @@ const top=el("div","top");
   }
 
   const swept=new Set();
+  let pasteFixed=false;
+  function fixOldPaste(){
+    if(pasteFixed||!events.length)return;pasteFixed=true;
+    const G={};unitEv().filter(x=>!x.src&&x.start&&x.addedBy===uid&&x.date&&(x.to||x.date)===x.date&&x.at).forEach(x=>{(G[x.date]=G[x.date]||[]).push(x);});
+    Object.values(G).forEach(L=>{L.sort((a,b)=>a.at-b.at);
+      let grp=[];const flush=()=>{if(grp.length>=3){const S=grp.slice().sort((a,b)=>a.start.localeCompare(b.start));
+          S.forEach((x,i)=>{const n=S[i+1],upd={src:"paste"};if(x.end&&n&&x.end===n.start)upd.end="";patch("events/"+x.id,upd);});}grp=[];};
+      L.forEach(x=>{if(grp.length&&x.at-grp[grp.length-1].at>50)flush();grp.push(x);});flush();});
+  }
   function mergeSweep(){
     if(!soldiers.length)return;
     soldiers.filter(x=>x.memberId&&!swept.has(x.id)&&inScope(x.unit)).forEach(x=>{swept.add(x.id);if(dupsOf(x).length===1)autoMerge(x);});
@@ -4455,7 +4465,7 @@ const top=el("div","top");
     if(!ready)return;
     setTimeout(saveHomeSnap,0);
     setTimeout(syncWearNotes,0);
-    ensureLink();mergeSweep();
+    ensureLink();mergeSweep();try{fixOldPaste();}catch(e){console.warn(e);}
     renderMe();renderS();renderW();
     if(curSoldier)renderDetail();
     if(!$("v-units").hidden)renderUnits();
