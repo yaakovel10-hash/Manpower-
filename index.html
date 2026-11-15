@@ -4084,7 +4084,7 @@ const top=el("div","top");
   }
 
   /* --- absences --- */
-  let abDay=key(today),abType=AB_TYPES[0],abCfgDoc=null;
+  let abDay=key(today),abType=null,abCfgDoc=null;
   const cfgId=()=>{const id=curView();return "abscfg-"+(id!=="*"?id:(me&&me.unitId)||"all");};
   function cfgOf(t){const c=(abCfgDoc&&abCfgDoc.types&&abCfgDoc.types[t])||AB_DEF[t]||{allDay:true};return c;}
   function loadCfg(){abCfgDoc=events.find(x=>x.id===cfgId())||null;}
@@ -4116,11 +4116,13 @@ const top=el("div","top");
     $("abOtherWrap").hidden=abType!=="אחר";
   }
   function applyCfg(){
-    const c=abType==="אחר"?{allDay:true}:cfgOf(abType);
+    const c=(!abType||abType==="אחר")?{allDay:true}:cfgOf(abType);
     $("abAllDay").checked=!!c.allDay;$("abStart").value=c.start||"";$("abEnd").value=c.end||"";$("abTimes").hidden=!!c.allDay;
     setDays(c.days||1);
     if(abType==="אחר")$("abOther").focus();
   }
+  // "Enter" on the keyboard in the reason box only closes the keyboard, it doesn't save yet
+  $("abOther").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();e.target.blur();}};
   $("abAllDay").onchange=()=>{$("abTimes").hidden=$("abAllDay").checked;};
   /* number of days <-> end date */
   function setDays(n){n=Math.max(1,Math.min(90,parseInt(n,10)||1));$("abDays").value=n;
@@ -4137,14 +4139,15 @@ const top=el("div","top");
   $("openAB").onclick=()=>{
     const sel=$("abSoldier");sel.textContent="";const o0=el("option",null,"בחרו חייל");o0.value="";sel.append(o0);
     vis(soldiers).slice().sort((a,b)=>(a.name||"").localeCompare(b.name||"","he")).forEach(s=>{const o=el("option",null,s.name+(s.squad?" · כיתה "+s.squad:""));o.value=s.id;sel.append(o);});
-    loadCfg();$("formAB").hidden=false;$("openAB").hidden=true;$("abCfg").hidden=true;$("abFrom").value=abDay;$("abTo").value="";showErr("abErr","");renderTypes();applyCfg();
+    loadCfg();abType=null;$("abOther").value="";$("formAB").hidden=false;$("openAB").hidden=true;$("abCfg").hidden=true;$("abFrom").value=abDay;$("abTo").value="";showErr("abErr","");renderTypes();applyCfg();
   };
   const resetAB=()=>{$("formAB").reset();$("formAB").hidden=true;$("openAB").hidden=false;};
   $("cancelAB").onclick=resetAB;
   $("formAB").onsubmit=async e=>{
     e.preventDefault();
     const s=soldierById($("abSoldier").value);if(!s)return showErr("abErr","בחרו חייל.");
-    const type=abType==="אחר"?$("abOther").value.trim():abType;if(!type)return showErr("abErr","כתבו את סוג ההיעדרות.");
+    if(!abType)return showErr("abErr","בחרו את סוג ההיעדרות.");
+    const type=abType==="אחר"?$("abOther").value.trim():abType;if(!type){$("abOther").focus();return showErr("abErr","כתבו מה הסיבה בשדה \"פירוט\".");}
     const date=$("abFrom").value,to=$("abTo").value||date;if(to<date)return showErr("abErr","תאריך הסיום מוקדם מההתחלה.");
     const nowHM=()=>{const d=new Date();return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");};
     const allDay=$("abAllDay").checked,start=allDay?"":($("abStart").value||nowHM()),end=allDay?"":$("abEnd").value;
@@ -4152,7 +4155,7 @@ const top=el("div","top");
     const title=type+(allDay?"":" "+tr(start,end));
     const btn=$("abSave");btn.disabled=true;
     const ok=await write("events/"+newId(),{kind:"abs",soldierId:s.id,unit:s.unit,absType:type,title,date,to,allDay,start,end,time:start,note:$("abNote").value.trim(),addedBy:uid,addedByName:(me&&me.name)||"",at:Date.now()},"abErr");
-    btn.disabled=false;if(ok){abDay=date;resetAB();renderAbsent();toast("ההיעדרות נוספה");}
+    btn.disabled=false;if(ok){abDay=date;resetAB();renderAbsent();toast("נוספה היעדרות: "+type);}
   };
   $("abPrev").onclick=()=>{const d=parseKey(abDay);abDay=key(new Date(d.getFullYear(),d.getMonth(),d.getDate()-1));renderAbsent();};
   $("abNext").onclick=()=>{const d=parseKey(abDay);abDay=key(new Date(d.getFullYear(),d.getMonth(),d.getDate()+1));renderAbsent();};
@@ -4166,7 +4169,7 @@ const top=el("div","top");
       if(!AB_TYPES.includes(t)){const x=el("button","linkbtn muted","הסרה");x.type="button";x.onclick=async()=>{
         if(!x.dataset.arm){x.dataset.arm="1";x.textContent="להסיר?";setTimeout(()=>{delete x.dataset.arm;x.textContent="הסרה";},2500);return;}
         const types=Object.assign({},(abCfgDoc&&abCfgDoc.types)||{});delete types[t];
-        if(await saveCfgDoc({extra:((abCfgDoc&&abCfgDoc.extra)||[]).filter(z=>z!==t),types})){if(abType===t)abType=AB_TYPES[0];renderCfg();toast('"'+t+'" הוסרה');}};r.append(x);}
+        if(await saveCfgDoc({extra:((abCfgDoc&&abCfgDoc.extra)||[]).filter(z=>z!==t),types})){if(abType===t)abType=null;renderCfg();toast('"'+t+'" הוסרה');}};r.append(x);}
       const lab=el("label","allday");const cb=el("input");cb.type="checkbox";cb.id="cfa"+i;cb.checked=!!c.allDay;lab.append(cb," כל היום");
       const st=el("input");st.type="time";st.id="cfs"+i;st.value=c.start||"";
       const en=el("input");en.type="time";en.id="cfe"+i;en.value=c.end||"";
