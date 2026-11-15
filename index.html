@@ -428,6 +428,7 @@ body.bulking #openS,body.bulking #openImp,body.bulking #openW,body.bulking #open
 .rolldate{font-weight:700}
 .rollhead .wfilter{margin:0}
 .rollhead .wfilter select{flex:1;max-width:none}
+.vfsplit select{flex:1 1 0!important;min-width:0}
 .progress{height:8px;border-radius:99px;background:var(--tile);overflow:hidden}
 .progress span{display:block;height:100%;width:0;background:var(--ok);transition:width .2s}
 ul.roll li.rollrow{display:block;padding:0;border-bottom:0;margin-bottom:10px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
@@ -1126,7 +1127,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <div class="rolldate" id="vfDate"></div>
       <label class="f">איזה צל"מ בודקים?<select id="vfType"></select></label>
       <label class="allday"><input type="checkbox" id="vfUnstored" checked> רק מה שלא מאופסן</label>
-      <div class="wfilter"><select id="vfSquad" aria-label="כיתה"></select><button class="ghost sm" type="button" id="vfReset">איפוס</button></div>
+      <div class="wfilter vfsplit"><select id="vfSquad" aria-label="כיתה"></select><select id="vfWho" aria-label="חייל"></select><button class="ghost sm" type="button" id="vfReset">איפוס</button></div>
       <div class="progress"><span id="vfBar"></span></div>
       <p class="mini">לוחצים על השורה כשראיתם את הפריט. לחיצה נוספת מבטלת.</p>
     </div>
@@ -3423,7 +3424,15 @@ const top=el("div","top");
     if(!ty){$("vfEmpty").hidden=true;$("vfAwayH").hidden=true;progress($("vfBar"),$("vfCount"),0,0);$("vfCount").textContent="";return;}
     const mk=rollKey("vf",ty),marks=getMarks(mk);
     const ownerOf=w=>w.ownerMember?{name:w.ownerMember===uid?"אני":(w.ownerName||"מפקד"),squad:""}:soldiers.find(x=>x.id===w.owner)||null;
-    const list=W.filter(w=>(ty==="*"||wType(w.type)===ty)).filter(w=>{if(sq==="*")return true;const o=ownerOf(w);return o&&(o.squad||"")===sq;})
+    const whoKey=w=>w.ownerMember?"m:"+w.ownerMember:(w.owner||"-");
+    const bySq=W.filter(w=>(ty==="*"||wType(w.type)===ty)).filter(w=>{if(sq==="*")return true;const o=ownerOf(w);return o&&(o.squad||"")===sq;});
+    {// soldier filter: everyone who holds an item in the current type/squad
+      const ws=$("vfWho"),wv=ws.value;ws.textContent="";const o0=el("option",null,"כל החיילים");o0.value="";ws.append(o0);
+      const C=new Map();bySq.forEach(w=>{const k=whoKey(w);if(!C.has(k))C.set(k,{n:k==="-"?"לא חתום":((ownerOf(w)||{}).name||"?"),c:0});C.get(k).c++;});
+      [...C.entries()].sort((a,b)=>a[1].n.localeCompare(b[1].n,"he")).forEach(([k,v])=>{const o=el("option",null,v.n+" ("+v.c+")");o.value=k;ws.append(o);});
+      ws.value=C.has(wv)?wv:"";}
+    const who=$("vfWho").value;
+    const list=bySq.filter(w=>!who||whoKey(w)===who)
       .sort((a,b)=>((ownerOf(a)||{}).name||"ת").localeCompare((ownerOf(b)||{}).name||"ת","he")||String(a.num).localeCompare(String(b.num)));
     const here=[],away=[];list.forEach(w=>{const r=w.owner&&!w.ownerMember?awayInfo(w.owner):null;r?away.push({w,r}):here.push(w);});
     const row=(w,inner)=>{const ic=el("div","wicon");svgSet(ic,weaponIcon(w.type));const o=ownerOf(w);
@@ -3441,7 +3450,7 @@ const top=el("div","top");
     $("vfEmpty").hidden=list.length>0;$("vfAwayH").hidden=!away.length;
   }
   let vfTouched=false;
-  $("vfType").onchange=()=>{vfTouched=true;renderVerify();};$("vfSquad").onchange=renderVerify;$("vfUnstored").onchange=renderVerify;
+  $("vfType").onchange=()=>{vfTouched=true;renderVerify();};$("vfSquad").onchange=renderVerify;$("vfWho").onchange=renderVerify;$("vfUnstored").onchange=renderVerify;
   $("vfReset").onclick=()=>{const ty=$("vfType").value;if(!ty)return;setMarks(rollKey("vf",ty),new Set());renderVerify();toast("הבדיקה אופסה");};
 
   /* ---------- schedule (unit events) & absences / duties ---------- */
