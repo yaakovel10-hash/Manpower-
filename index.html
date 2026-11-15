@@ -158,6 +158,14 @@ h2.sec{font-family:var(--display);font-weight:400;font-size:20px;margin:18px 0 8
 .ftigrid table{border-collapse:collapse;width:100%;font-size:14px}.ftigrid th{font-size:12px;color:var(--muted);text-align:right;padding:6px;white-space:nowrap}
 .ftigrid td{padding:4px;border-top:1px solid var(--line)}.ftigrid select{min-width:120px;padding:6px;font-size:14px}.ftigrid input{width:70px;padding:6px;text-align:center;direction:ltr;font-size:14px}
 .ftigrid tr.skip td{opacity:.45}.ftigrid tr.isnew select{border-color:var(--warn)}.ftigrid .ftnm{width:100%;margin-top:4px;text-align:right;direction:rtl}.ftigrid tr.nomatch select{border-color:var(--danger)}
+.ftchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.ftchips .chip{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;font-weight:700}.ftchips .chip.add{border-style:dashed;color:var(--accent)}
+#ftDCards>li.ftcard{display:block!important;padding:12px 14px}
+.fttop{display:flex;align-items:center;gap:10px}.fttop b{font-size:18px;flex:1;min-width:0}
+.ftpass{font-weight:800;font-size:14px;border-radius:999px;padding:3px 12px}.ftpass.ok{background:color-mix(in srgb,var(--ok) 22%,transparent);color:var(--ok)}.ftpass.no{background:color-mix(in srgb,var(--danger) 22%,transparent);color:var(--danger)}
+.ftscore{font-weight:800;font-size:20px;min-width:40px;text-align:center;color:var(--accent);font-variant-numeric:tabular-nums}
+.ftcats{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.ftcard.open .ftcats{display:grid}
+.ftcat{display:grid;gap:2px;padding:8px 10px;border-radius:12px;background:color-mix(in srgb,var(--accent) 8%,var(--surface));border:1px solid var(--line)}.ftcat span{font-size:13px;color:var(--muted)}.ftcat b{font-size:19px;direction:ltr;text-align:right;font-variant-numeric:tabular-nums}
+.ftcat.sc{grid-column:1/-1;background:color-mix(in srgb,var(--warn) 14%,var(--surface))}
 .ftpb{font-size:11px;font-weight:800;color:var(--warn);margin-inline-start:6px}
 .impnote{display:grid;gap:8px;margin:10px 0}.impnote .row2{grid-template-columns:1fr auto}.impnote input{min-width:0}#impPasteBox{display:grid;gap:8px}#impPasteBox[hidden]{display:none}
 .rqtabs{display:flex;gap:6px;margin:12px 0 4px}.rqtabs button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:8px 4px;font:inherit;font-weight:700;font-size:14px}.rqtabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -1063,7 +1071,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <label class="f">פעילות<select id="ftAct"></select></label>
         <div id="ftCustom" hidden>
           <label class="f">שם הפעילות<input type="text" id="ftCName" maxlength="40" placeholder="למשל: ריצת 5 ק&quot;מ"></label>
-          <label class="f">מה מודדים<select id="ftCType"><option value="time">זמן (פחות = טוב יותר)</option><option value="count">כמות חזרות (יותר = טוב יותר)</option><option value="num">מספר אחר (יותר = טוב יותר)</option></select></label>
+          <label class="f">מה מודדים<select id="ftCType"><option value="time">זמן (פחות = טוב יותר)</option><option value="count">כמות חזרות (יותר = טוב יותר)</option><option value="num">מספר אחר (יותר = טוב יותר)</option><option value="pass">עבר / לא עבר</option></select></label>
         </div>
         <label class="f">תאריך<input type="date" id="ftDate" required></label>
         <p class="err" id="ftErr" hidden></p>
@@ -1076,7 +1084,13 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <ul class="list ftrows" id="ftRows"></ul>
         <button class="linkbtn muted" type="button" id="ftSDel">מחיקת המדידה</button>
       </div>
-      <h2 class="sec" id="ftHistH">מדידות קודמות</h2>
+      <div id="ftDay" hidden>
+        <div class="ftshead"><div><b id="ftDTitle"></b><span class="mini" id="ftDSub"></span></div><button class="ghost sm" type="button" id="ftDBack">כל הימים</button></div>
+        <div class="ftchips" id="ftDActs"></div>
+        <label class="searchbox"><input type="search" id="ftDQ" placeholder="חיפוש חייל…" autocomplete="off"></label>
+        <ul class="list ftcards" id="ftDCards"></ul>
+      </div>
+      <h2 class="sec" id="ftHistH">ימי מדידה</h2>
       <ul class="list" id="ftHist"></ul>
       <div class="empty" id="ftEmpty" hidden>עוד אין מדידות. לוחצים על "+ מדידה חדשה", בוחרים פעילות ומזינים לכל חייל את התוצאה.</div>
     </div>
@@ -4486,17 +4500,23 @@ const top=el("div","top");
 
   /* ---------- כושר: fitness results and each soldier's progress ---------- */
   // better: "low" = less is better (times), "high" = more is better
-  const FIT_PRESETS=[["ריצת 3 ק\"מ","time"],["ריצת 2 ק\"מ","time"],["ריצת 1 ק\"מ","time"],["ספרינטים","time"],["מתח","count"],["שכיבות סמיכה","count"],["כפיפות בטן","count"],["מקבילים","count"]];
+  const FIT_PRESETS=[["ריצת 3 ק\"מ","time"],["ריצת 2 ק\"מ","time"],["ריצת 1 ק\"מ","time"],["ספרינטים","time"],["מתח","count"],["מקבילים","count"],["טראפ בר","count"],["זריזות","time"],["שכיבות סמיכה","count"],["כפיפות בטן","count"],["ציון סופי","count"],["עבר / לא עבר","pass"]];
+  const FIT_PASS="עבר / לא עבר",FIT_SCORE="ציון סופי";
+  // order of categories on a soldier's card
+  const fitRank=a=>{const L=[/ריצ/,/מתח/,/מקביל/,/טראפ/,/זריז/,/ספרינט/,/שכיב/,/בטן/];for(let i=0;i<L.length;i++)if(L[i].test(a))return i;return a===FIT_SCORE?50:40;};
   const fitEv=()=>visRO(events).filter(x=>x.kind==="fit");
   const fitBetter=t=>t==="time"?"low":"high";
+  const passVal=v=>{v=String(v||"").trim();if(!v)return null;if(/לא|^x$|✗|✘|נכשל/i.test(v))return 0;if(/עו?בר|^v$|✓|✔|כן/i.test(v))return 1;return null;};
   function fitActs(){const m=new Map();FIT_PRESETS.forEach(([n,t])=>m.set(n,t));fitEv().forEach(x=>{if(x.act&&!m.has(x.act))m.set(x.act,x.mtype||"count");});return m;}
-  function parseFit(v,t){v=String(v||"").trim().replace(",",".");if(!v)return null;
+  function parseFit(v,t){if(t==="pass")return passVal(v);v=String(v||"").trim().replace(",",".");if(!v)return null;
     if(t==="time"){let m=v.match(/^(\d{1,2}):(\d{1,2}):(\d{1,2})(?:\.\d+)?$/);if(m)return +m[1]*3600+ +m[2]*60+ +m[3];
-      m=v.match(/^(\d{1,3}):(\d{1,2})\.(\d+)$/);if(m)return +m[1]*60+ +m[2];
+      m=v.match(/^(\d{1,3}):(\d{1,2})\.(\d)\d*$/);if(m)return +m[1]*60+ +m[2]+ +m[3]/10;
       m=v.match(/^(\d{1,3})[:.'’ ](\d{1,2})$/);if(m)return +m[1]*60+ +m[2];
       if(/^\d{3,4}$/.test(v))return +v.slice(0,-2)*60+ +v.slice(-2);if(/^\d{1,2}$/.test(v))return +v*60;return null;}
     const n=Number(v);return isFinite(n)&&n>=0?n:null;}
-  const fmtFit=(v,t)=>v==null?"":t==="time"?Math.floor(v/60)+":"+String(Math.round(v%60)).padStart(2,"0"):String(+v.toFixed(2));
+  const fmtFit=(v,t)=>{if(v==null)return "";if(t==="pass")return v?"עבר":"לא עבר";
+    if(t==="time"){const tot=Math.round(v*10)/10,h=Math.floor(tot/3600),mi=Math.floor((tot%3600)/60),se=tot%60,ss=(se<10?"0":"")+(Number.isInteger(se)?se:se.toFixed(1));return (h?h+":"+String(mi).padStart(2,"0"):mi)+":"+ss;}
+    return String(+(+v).toFixed(2));};
   let ftTab="res",ftOpen=null;
   // all measurements of one activity, oldest first: [{date,v,at}] per soldier
   function fitSeries(act){const M=new Map();
@@ -4514,17 +4534,56 @@ const top=el("div","top");
     if(ftTab==="res")renderFitRes();else renderFitProg();
   }
   function fitSoldiers(sq){return visRO(soldiers).filter(s=>!isCmdSoldier(s)&&(sq==="*"||(s.squad||"")===sq)).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));}
+  let ftDay=null;
   function renderFitRes(){
     const E=fitEv().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.at||0)-(a.at||0));
     const cur=ftOpen&&E.find(x=>x.id===ftOpen);if(ftOpen&&!cur)ftOpen=null;
-    $("ftSess").hidden=!cur;$("ftBtns").hidden=!!cur||!$("ftForm").hidden||!$("ftImp").hidden;
-    if(cur)renderFitSess(cur);
-    const ul=$("ftHist");ul.textContent="";
-    E.filter(x=>x!==cur).forEach(x=>{const n=Object.values(x.results||{}).filter(v=>v!=null&&v!=="").length;
-      const li=el("li","tap");const info=el("div","info");info.append(el("div","n1",x.act),el("div","n3",fmtG(x.date)+" · "+n+" תוצאות"+(x.byName?" · "+x.byName:"")));
-      li.append(info,delBtn(()=>remove("events/"+x.id)));li.onclick=()=>{ftOpen=x.id;renderFit();scrollTo({top:0,behavior:"smooth"});};ul.append(li);});
-    $("ftHistH").hidden=!E.filter(x=>x!==cur).length;$("ftEmpty").hidden=E.length>0||!$("ftForm").hidden;
+    if(ftDay&&!E.some(x=>x.date===ftDay))ftDay=null;
+    $("ftSess").hidden=!cur;$("ftDay").hidden=!!cur||!ftDay;
+    $("ftBtns").hidden=!!cur||!!ftDay||!$("ftForm").hidden||!$("ftImp").hidden;
+    if(cur)renderFitSess(cur);else if(ftDay)renderFitDay(ftDay,E.filter(x=>x.date===ftDay));
+    // one row per day of measurements
+    const ul=$("ftHist");ul.textContent="";const days=[...new Set(E.map(x=>x.date))];
+    const showList=!cur&&!ftDay;
+    if(showList)days.forEach(d=>{const X=E.filter(x=>x.date===d),sids=new Set();X.forEach(x=>Object.keys(x.results||{}).forEach(k=>sids.add(k)));
+      const pass=X.find(x=>x.act===FIT_PASS),np=pass?Object.values(pass.results||{}).filter(v=>v===1).length:null,nf=pass?Object.values(pass.results||{}).filter(v=>v===0).length:null;
+      const li=el("li","tap");const info=el("div","info");
+      info.append(el("div","n1","מבחן כושר · "+fmtG(d)),el("div","n3",X.map(x=>x.act).sort((a,b)=>fitRank(a)-fitRank(b)).filter(a=>a!==FIT_PASS).join(" · ")));
+      info.append(el("div","n3",sids.size+" חיילים"+(pass?" · עברו "+np+(nf?" · לא עברו "+nf:""):"")));
+      li.append(info,el("span","chev","‹"));li.onclick=()=>{ftDay=d;$("ftDQ").value="";renderFit();scrollTo({top:0});};ul.append(li);});
+    $("ftHistH").hidden=!showList||!days.length;$("ftEmpty").hidden=E.length>0||!$("ftForm").hidden;
   }
+  // a day of measurements: one card per soldier, tap to see every category
+  const ftOpenCards=new Set();
+  function renderFitDay(d,X){
+    const A=fitActs();
+    $("ftDTitle").textContent="מבחן כושר";$("ftDSub").textContent=" · "+fmtG(d);
+    const acts=X.slice().sort((a,b)=>fitRank(a.act)-fitRank(b.act));
+    const ch=$("ftDActs");ch.textContent="";
+    acts.forEach(x=>{const b=el("button","chip",(x.act===FIT_PASS?"עבר/לא עבר":x.act)+" ✎");b.type="button";b.onclick=()=>{ftOpen=x.id;renderFit();scrollTo({top:0});};ch.append(b);});
+    const add=el("button","chip add","+ קטגוריה");add.type="button";add.onclick=()=>{$("ftNew").click();$("ftDate").value=d;};ch.append(add);
+    const sids=new Set();X.forEach(x=>Object.keys(x.results||{}).forEach(k=>sids.add(k)));
+    const pass=X.find(x=>x.act===FIT_PASS),score=X.find(x=>x.act===FIT_SCORE);
+    const q=$("ftDQ").value.trim();
+    const S=[...sids].map(id=>soldierById(id)).filter(Boolean).filter(s=>!q||(s.name||"").includes(q))
+      .sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
+    const ul=$("ftDCards");ul.textContent="";
+    S.forEach(s=>{const li=el("li","ftcard tap"+(ftOpenCards.has(d+s.id)?" open":""));
+      const top=el("div","fttop");top.append(el("b",null,s.name));
+      const pv=pass?(pass.results||{})[s.id]:null;
+      if(pv===1||pv===0)top.append(el("span","ftpass "+(pv?"ok":"no"),pv?"עבר":"לא עבר"));
+      const sv=score?(score.results||{})[s.id]:null;if(sv!=null)top.append(el("span","ftscore",String(sv)));
+      li.append(top);
+      const grid=el("div","ftcats");
+      acts.filter(x=>x.act!==FIT_PASS).forEach(x=>{const v=(x.results||{})[s.id];const t=x.mtype||A.get(x.act)||"count";
+        const c=el("div","ftcat"+(x.act===FIT_SCORE?" sc":""));c.append(el("span",null,x.act),el("b",null,v==null||v===""?"—":fmtFit(+v,t)));grid.append(c);});
+      li.append(grid);
+      li.onclick=e=>{if(e.target.closest("a,button"))return;const k=d+s.id;ftOpenCards.has(k)?ftOpenCards.delete(k):ftOpenCards.add(k);li.classList.toggle("open");};
+      ul.append(li);});
+    if(!S.length)ul.append(el("li","mini",q?"לא נמצא.":"אין תוצאות ביום הזה."));
+  }
+  $("ftDBack").onclick=()=>{ftDay=null;renderFit();};
+  $("ftDQ").oninput=()=>renderFitRes();
   function renderFitSess(x){
     const t=x.mtype||fitActs().get(x.act)||"count";
     $("ftSTitle").textContent=x.act;$("ftSSub").textContent=" · "+fmtG(x.date)+(t==="time"?" · זמן בדקות:שניות":"");
@@ -4538,7 +4597,7 @@ const top=el("div","top");
     const S=fitSoldiers(sq);
     S.forEach((s,i)=>{const li=el("li");const info=el("div","info");info.append(el("div","n1",s.name));
       const pv=prevOf(s.id);info.append(el("div","ph",pv?"קודם: "+fmtFit(pv.v,t)+" ("+fmtG(pv.date).slice(0,-5)+")":(s.squad?"כיתה "+s.squad:"")));
-      const inp=el("input");inp.type="text";inp.inputMode=t==="time"?"decimal":"decimal";inp.placeholder=t==="time"?"דק:שנ":"—";inp.dataset.sid=s.id;
+      const inp=el("input");inp.type="text";inp.inputMode=t==="pass"?"text":"decimal";inp.placeholder=t==="time"?"דק:שנ":t==="pass"?"עבר/לא":"—";inp.dataset.sid=s.id;
       const v=(x.results||{})[s.id];inp.value=fmtFit(v==null||v===""?null:+v,t);if(inp.value)li.classList.add("saved");
       inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const nx=ul.querySelectorAll("input")[i+1];if(nx)nx.focus();else inp.blur();}};
       inp.onchange=()=>{const raw=inp.value.trim();
@@ -4550,7 +4609,7 @@ const top=el("div","top");
   }
   function renderFitProg(){
     const A=fitActs(),sel=$("ftPAct"),pv=sel.value;sel.textContent="";
-    const used=[...new Set(fitEv().map(x=>x.act))];
+    const used=[...new Set(fitEv().map(x=>x.act))].filter(a=>a!==FIT_PASS).sort((a,b)=>fitRank(a)-fitRank(b));
     used.forEach(a=>{const o=el("option",null,a);o.value=a;sel.append(o);});
     const ul=$("ftProg");ul.textContent="";ul.className="list ftprog";
     if(!used.length){sel.hidden=true;$("ftPHint").textContent="עוד אין מדידות. אחרי שמזינים תוצאות, כאן רואים את ההתקדמות של כל חייל.";return;}
@@ -4667,8 +4726,11 @@ const top=el("div","top");
   let ftI=null; // {cols,rows,map:[act|""],types:{},sids:[]}
   const FT_GUESS=[[/מתח/,"מתח"],[/שכיב/,"שכיבות סמיכה"],[/בטן/,"כפיפות בטן"],[/מקביל/,"מקבילים"],[/ספרינט/,"ספרינטים"],[/3\s*ק|ריצ/,"ריצת 3 ק\"מ"],[/2\s*ק/,"ריצת 2 ק\"מ"]];
   function guessAct(c){
+    if(c.kind==="other"&&c.samples.length&&c.samples.every(v=>passVal(v)!=null))return FIT_PASS;
+    if(/ציון/.test(c.head)&&c.kind==="num")return FIT_SCORE;
+    if(c.kind==="num"){const v=c.samples.map(Number);if(v.length>=3&&v.every(x=>x>=50&&x<=100)&&new Set(v).size>1&&/ציון|סופי/.test(c.head||"ציון"))return FIT_SCORE;}
     if(c.kind==="pid"||c.kind==="date"||c.kind==="other")return "";
-    if(/ציון|הערכ|הער|קבוצ|שימוש|מס"?ד/.test(c.head))return "";
+    if(/הערכ|הער|קבוצ|שימוש|מס"?ד/.test(c.head))return "";
     for(const [re,a] of FT_GUESS)if(re.test(c.head))return a;
     if(/זריז/.test(c.head))return "new:זריזות";
     if(c.kind==="time"){const v=c.samples.map(x=>parseFit(x,"time")).filter(x=>x!=null);const avg=v.reduce((a,b)=>a+b,0)/(v.length||1);if(avg>=480)return "ריצת 3 ק\"מ";}
@@ -4759,7 +4821,7 @@ const top=el("div","top");
       if(ex){const upd={};Object.entries(res).forEach(([k,v])=>upd["results."+k]=v);await patch("events/"+ex.id,upd,"ftIErr");}
       else await write("events/"+newId(),{kind:"fit",soldierId:"",unit,act,mtype,date,results:res,addedBy:uid,byName:(me&&me.name)||"",at:Date.now()},"ftIErr");
     }
-    btn.disabled=false;toast("נשמרו "+n+" תוצאות"+(bad?" ("+bad+" ערכים לא תקינים דולגו)":""));ftICloseF();
+    btn.disabled=false;ftDay=date;toast("נשמרו "+n+" תוצאות"+(bad?" ("+bad+" ערכים לא תקינים דולגו)":""));ftICloseF();
   };
   $("ftTabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;ftTab=b.dataset.t;renderFit();};
   $("ftPAct").onchange=renderFitProg;$("ftPSquad").onchange=renderFitProg;$("ftSquad").onchange=()=>{$("ftRows").dataset.id="";renderFitRes();};
@@ -4773,9 +4835,9 @@ const top=el("div","top");
     if(act==="__new"){act=$("ftCName").value.trim();mtype=$("ftCType").value;if(!act)return showErr("ftErr","כתבו שם לפעילות.");}
     const date=$("ftDate").value;if(!date)return showErr("ftErr","בחרו תאריך.");
     const id=newId();const ok=await write("events/"+id,{kind:"fit",soldierId:"",unit,act,mtype,date,results:{},addedBy:uid,byName:(me&&me.name)||"",at:Date.now()},"ftErr");
-    if(ok){$("ftForm").hidden=true;ftOpen=id;renderFit();}
+    if(ok){$("ftForm").hidden=true;ftOpen=id;ftDay=date;renderFit();}
   };
-  $("ftSClose").onclick=()=>{if(document.activeElement)document.activeElement.blur();setTimeout(()=>{ftOpen=null;renderFit();},50);};
+  $("ftSClose").onclick=()=>{if(document.activeElement)document.activeElement.blur();setTimeout(()=>{const x=fitEv().find(z=>z.id===ftOpen);if(x)ftDay=x.date;ftOpen=null;renderFit();},50);};
   $("ftSDel").onclick=()=>{const b=$("ftSDel");if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="ללחוץ שוב כדי למחוק";setTimeout(()=>{b.classList.remove("armed");b.textContent="מחיקת המדידה";},3000);return;}
     const id=ftOpen;ftOpen=null;remove("events/"+id);b.classList.remove("armed");b.textContent="מחיקת המדידה";renderFit();};
   $("ftWa").onclick=()=>{
