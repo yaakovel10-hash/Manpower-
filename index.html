@@ -791,6 +791,9 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     <form class="add" id="scSet" hidden>
       <label class="f">מיקום לזמני היום ולשבת<select id="scLoc"></select></label>
       <span class="mini" id="scLocNote"></span>
+      <div class="row2" id="scAddRow" hidden><input type="text" id="scAddName" maxlength="30" placeholder='שם המקום, למשל בא"ח גולני'><button class="primary" type="button" id="scAddSave">שמירה</button></div>
+      <button class="linkbtn" type="button" id="scAddBtn">+ הוספת מקום לפי המיקום שבו אני נמצא עכשיו</button>
+      <button class="linkbtn muted" type="button" id="scDelBtn" hidden>מחיקת המקום הזה מהרשימה</button>
       <label class="allday"><input type="checkbox" id="scShowHol" checked> חגים ומועדים</label>
       <label class="allday"><input type="checkbox" id="scShowZ" checked> זמני היום, כניסת ויציאת שבת</label>
       <button class="ghost" type="button" id="scSetDone">סגירה</button>
@@ -3520,11 +3523,14 @@ const top=el("div","top");
   }
 
   /* ---------- Jewish calendar: holidays, Shabbat times, sun times (all computed on the phone) ---------- */
-  const CAL_LOCS=[["ירושלים",31.778,35.235,40],["תל אביב",32.085,34.781,20],["חיפה",32.794,34.99,30],["באר שבע",31.252,34.791,20],["אילת",29.558,34.952,20],["צפת",32.965,35.496,20],["טבריה",32.795,35.531,20],["קריית שמונה",33.207,35.57,20],["נהריה",33.006,35.098,20],["כרמיאל",32.919,35.304,20],["עפולה",32.608,35.289,20],["קצרין",32.993,35.69,20],["נתניה",32.332,34.86,20],["פתח תקווה",32.087,34.887,20],["ראשון לציון",31.964,34.804,20],["מודיעין",31.898,35.01,20],["בית שמש",31.747,34.988,30],["אשדוד",31.804,34.655,20],["אשקלון",31.669,34.571,20],["שדרות",31.525,34.596,20],["אריאל",32.106,35.187,20],["חברון / קריית ארבע",31.532,35.099,20],["דימונה",31.069,35.033,20],["מצפה רמון",30.61,34.801,20]];
-  let calCfg={loc:0,hol:true,z:true,gps:null};
+  const CAL_LOCS=[["ירושלים",31.778,35.235,40],["תל אביב",32.085,34.781,20],["חיפה",32.794,34.99,30],["באר שבע",31.252,34.791,20],["אילת",29.558,34.952,20],["צפת",32.965,35.496,20],["טבריה",32.795,35.531,20],["קריית שמונה",33.207,35.57,20],["נהריה",33.006,35.098,20],["כרמיאל",32.919,35.304,20],["עפולה",32.608,35.289,20],["קצרין",32.993,35.69,20],["נתניה",32.332,34.86,20],["פתח תקווה",32.087,34.887,20],["ראשון לציון",31.964,34.804,20],["מודיעין",31.898,35.01,20],["בית שמש",31.747,34.988,30],["אשדוד",31.804,34.655,20],["אשקלון",31.669,34.571,20],["שדרות",31.525,34.596,20],["אריאל",32.106,35.187,20],["חברון / קריית ארבע",31.532,35.099,20],["דימונה",31.069,35.033,20],["מצפה רמון",30.61,34.801,20],["עמיעד",32.917,35.534,20]];
+  let calCfg={loc:0,hol:true,z:true,gps:null,custom:[]};
   try{Object.assign(calCfg,JSON.parse(localStorage.getItem("calCfg")||"{}"));}catch(_){}
   const saveCal=()=>{try{localStorage.setItem("calCfg",JSON.stringify(calCfg));}catch(_){}};
-  const calLoc=()=>calCfg.loc==="gps"&&calCfg.gps?["המיקום שלי",calCfg.gps[0],calCfg.gps[1],20]:CAL_LOCS[calCfg.loc]||CAL_LOCS[0];
+  const calLoc=()=>{const L=calCfg.loc;
+    if(L==="gps"&&calCfg.gps)return ["המיקום שלי",calCfg.gps[0],calCfg.gps[1],20];
+    if(typeof L==="string"&&L.startsWith("c")){const c=(calCfg.custom||[])[+L.slice(1)];if(c)return [c.n,c.lat,c.lon,20];}
+    return CAL_LOCS[L]||CAL_LOCS[0];};
   let hFull;try{hFull=new Intl.DateTimeFormat("en-u-ca-hebrew",{day:"numeric",month:"long"});}catch(_){}
   function hmd(d){if(!hFull)return null;const p=hFull.formatToParts(d);return {m:(p.find(x=>x.type==="month")||{}).value,d:parseInt((p.find(x=>x.type==="day")||{}).value,10)};}
   const addD=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
@@ -3589,18 +3595,26 @@ const top=el("div","top");
     }
     return (H.length||calCfg.z)?li:null;
   }
-  {const sel=$("scLoc");CAL_LOCS.forEach((c,i)=>{const o=el("option",null,c[0]);o.value=i;sel.append(o);});const og=el("option",null,"📍 המיקום הנוכחי שלי");og.value="gps";sel.append(og);}
-  const syncCalSet=()=>{$("scLoc").value=String(calCfg.loc);$("scShowHol").checked=calCfg.hol;$("scShowZ").checked=calCfg.z;$("scLocNote").textContent=calCfg.loc==="gps"&&calCfg.gps?"לפי המיקום שנשמר בטלפון":"";};
+  function fillLocs(){const sel=$("scLoc");sel.textContent="";
+    (calCfg.custom||[]).forEach((c,i)=>{const o=el("option",null,"⭐ "+c.n);o.value="c"+i;sel.append(o);});
+    CAL_LOCS.forEach((c,i)=>{const o=el("option",null,c[0]);o.value=i;sel.append(o);});const og=el("option",null,"📍 המיקום הנוכחי שלי");og.value="gps";sel.append(og);}
+  fillLocs();
+  const getPos=(ok)=>{if(!navigator.geolocation){toast("אין גישה למיקום בטלפון הזה");return;}
+    $("scLocNote").textContent="מאתר מיקום…";
+    navigator.geolocation.getCurrentPosition(p=>ok([+p.coords.latitude.toFixed(3),+p.coords.longitude.toFixed(3)]),
+      ()=>{toast("לא הצלחתי לקבל מיקום. בדקו שהרשאת המיקום פתוחה.");syncCalSet();},{enableHighAccuracy:false,timeout:15000,maximumAge:6e5});};
+  $("scAddBtn").onclick=()=>{$("scAddRow").hidden=false;$("scAddName").focus();};
+  $("scAddSave").onclick=()=>{const n=$("scAddName").value.trim();if(!n){$("scAddName").focus();return;}
+    getPos(g=>{calCfg.custom=(calCfg.custom||[]).concat({n,lat:g[0],lon:g[1]});calCfg.loc="c"+(calCfg.custom.length-1);saveCal();fillLocs();$("scAddRow").hidden=true;$("scAddName").value="";syncCalSet();renderSched();toast("\""+n+"\" נשמר");});};
+  $("scDelBtn").onclick=()=>{const i=+String(calCfg.loc).slice(1);calCfg.custom.splice(i,1);calCfg.loc=0;saveCal();fillLocs();syncCalSet();renderSched();};
+  const syncCalSet=()=>{$("scLoc").value=String(calCfg.loc);$("scDelBtn").hidden=!String(calCfg.loc).startsWith("c");$("scShowHol").checked=calCfg.hol;$("scShowZ").checked=calCfg.z;$("scLocNote").textContent=calCfg.loc==="gps"&&calCfg.gps?"לפי המיקום שנשמר בטלפון":"";};
   $("scSetBtn").onclick=()=>{const p=$("scSet");p.hidden=!p.hidden;syncCalSet();};
   $("scSetDone").onclick=()=>{$("scSet").hidden=true;};$("scSet").onsubmit=e=>e.preventDefault();
   $("scShowHol").onchange=e=>{calCfg.hol=e.target.checked;saveCal();renderSched();};
   $("scShowZ").onchange=e=>{calCfg.z=e.target.checked;saveCal();renderSched();};
   $("scLoc").onchange=e=>{const v=e.target.value;
-    if(v!=="gps"){calCfg.loc=Number(v);saveCal();syncCalSet();renderSched();return;}
-    if(!navigator.geolocation){toast("אין גישה למיקום בטלפון הזה");syncCalSet();return;}
-    $("scLocNote").textContent="מאתר מיקום…";
-    navigator.geolocation.getCurrentPosition(p=>{calCfg.loc="gps";calCfg.gps=[+p.coords.latitude.toFixed(3),+p.coords.longitude.toFixed(3)];saveCal();syncCalSet();renderSched();toast("המיקום נשמר");},
-      ()=>{toast("לא הצלחתי לקבל מיקום. בדקו שהרשאת המיקום פתוחה.");syncCalSet();},{enableHighAccuracy:false,timeout:15000,maximumAge:6e5});};
+    if(v!=="gps"){calCfg.loc=v.startsWith("c")?v:Number(v);saveCal();syncCalSet();renderSched();return;}
+    getPos(g=>{calCfg.loc="gps";calCfg.gps=g;saveCal();syncCalSet();renderSched();toast("המיקום נשמר");});};
   function renderSched(){
     if($("v-sched").hidden)return;
     const first=new Date(scY,scM,1),last=new Date(scY,scM+1,0);
