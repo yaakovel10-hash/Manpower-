@@ -454,6 +454,9 @@ body.bulking #openS,body.bulking #openImp,body.bulking #openW,body.bulking #open
 .bulkmove select{flex:1;min-width:0;font-size:15px;padding:8px}
 .primary.sm{width:auto;padding:9px 16px;font-size:15px}
 .found{border:1px solid var(--warn);border-radius:10px;padding:10px;display:grid;gap:8px;color:var(--fg)}
+.retbtn{justify-self:start;margin-top:6px;background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok);border:1px solid color-mix(in srgb,var(--ok) 45%,transparent);border-radius:999px;padding:7px 14px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.retbtn:disabled{opacity:.5}
+.retd{color:var(--ok);font-weight:700}
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 .ipop{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);width:min(340px,calc(100vw - 32px));background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:12px 16px;box-shadow:0 18px 40px -12px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:61;display:grid;gap:8px;text-align:right}
@@ -3170,6 +3173,8 @@ const top=el("div","top");
       const im=el("div");im.append(el("span","imp imp-"+r.imp,(base==="events"?"דחיפות: ":"חשיבות: ")+(IMP[r.imp]||"")));c.append(im);
       if(r.notes)c.append(el("div","notes",r.notes));
       {const who=reqBy(r);c.append(el("div","mini","✍️ הוזן ע\"י "+(who||"לא ידוע")+(r.at?" · "+fmtG(key(new Date(r.at))):"")));}
+      if(r.returnedAt)c.append(el("div","mini","↩ חזר לנוכחות ב-\u2066"+(r.toTime||"")+"\u2069 · "+fmtG(r.to||"")+(r.returnedByName?' (ע"י '+r.returnedByName+")":"")));
+      if(r.status==="approved"&&reqOutNow(r))c.append(retBtn(r,base));
       if(r.status!=="pending"&&r.decidedAt)c.append(el("div","mini",(r.status==="approved"?"אושר":"נדחה")+(r.decidedByName?' ע"י '+r.decidedByName:"")+" · "+fmtG(key(new Date(r.decidedAt)))));
       if(canDecide){const row=el("div","row2");
         if(r.status!=="approved"){const a=el("button","approve","אישור");a.type="button";a.onclick=()=>decide(r,"approved",base);row.append(a);}
@@ -3533,6 +3538,13 @@ const top=el("div","top");
     return a+" – "+fmtG(to)+(r.toTime?" \u2066"+r.toTime+"\u2069":"");
   }
   // out right now? respects the leave time on the first day and the return time on the last day
+  // back early: the request now ends today at this minute, so he counts as present again everywhere
+  async function returnReq(r,base){
+    const d=new Date(),hm=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+    const ok=await patch((base||"requests")+"/"+r.id,{to:todayKey(),toTime:hm,returnedAt:Date.now(),returnedByName:(me&&me.name)||""});
+    if(ok){const s=soldierById(r.soldierId);toast((s?s.name:"החייל")+" חזר לנוכחות");}
+  }
+  function retBtn(r,base){const b=el("button","retbtn","↩ החזרה לנוכחות");b.type="button";b.onclick=e=>{e.stopPropagation();b.disabled=true;returnReq(r,base);};return b;}
   function reqOutNow(r){
     const t=todayKey();if(!r.from||r.from>t||(r.to||r.from)<t)return false;
     const d=new Date(),hm=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
@@ -4204,11 +4216,11 @@ const top=el("div","top");
     const ul=$("abList");ul.textContent="";
     const rows=absEv().filter(x=>onDay(x,abDay)).map(x=>({x,s:soldiers.find(z=>z.id===x.soldierId)}));
     vis(requests).filter(r=>r.status==="approved"&&r.from&&r.from<=abDay&&(r.to||r.from)>=abDay).forEach(r=>{
-      rows.push({x:{id:"rq-"+r.id,absType:'בקש"צ',allDay:true,date:r.from,to:r.to||r.from,note:r.reason,req:true},s:soldiers.find(z=>z.id===r.soldierId)});});
+      rows.push({x:{id:"rq-"+r.id,absType:'בקש"צ',allDay:true,date:r.from,to:r.to||r.from,note:r.reason,req:true,r,ret:r.returnedAt&&(r.to||r.from)===abDay?(r.toTime||""):null},s:soldiers.find(z=>z.id===r.soldierId)});});
     const ord={now:0,later:1,"":2,done:3};
     rows.sort((a,b)=>(ord[absStatus(a.x,abDay)]-ord[absStatus(b.x,abDay)])||((a.x.start||"").localeCompare(b.x.start||""))||((a.s&&a.s.name)||"").localeCompare((b.s&&b.s.name)||"","he"));
     rows.forEach(({x,s})=>{
-      const st=absStatus(x,abDay);
+      const st=x.ret!=null?"done":absStatus(x,abDay);
       const li=el("li","abrow"+(st?" st-"+st:""));
       const tag=el("span","abtag",x.absType||"");tag.dataset.t=x.req?"req":(AB_TYPES.indexOf(x.absType)>=0?String(AB_TYPES.indexOf(x.absType)):(allAbTypes().includes(x.absType)?"x":"o"));
       const info=el("div","info");
@@ -4216,6 +4228,8 @@ const top=el("div","top");
       const when=x.allDay?(x.to&&x.to!==x.date?dr(x.date,x.to):"כל היום"):(tr(x.start,x.end)+(x.to&&x.to!==x.date?" · עד "+ltr(fmtG(x.to)):""));
       info.append(el("div","n3",when+(durText(x)&&!x.allDay?" · "+durText(x):"")+(x.allDay&&x.to&&x.to!==x.date?" · "+durText(x):"")));
       if(x.note)info.append(el("div","n3",x.note));
+      if(x.ret!=null)info.append(el("div","n3 retd","↩ חזר לנוכחות"+(x.ret?" ב-\u2066"+x.ret+"\u2069":"")));
+      if(x.req&&abDay===todayKey()&&reqOutNow(x.r))info.append(retBtn(x.r,"requests"));
       const stTxt={now:"כעת",later:"מ-"+ltr(x.start||""),done:"הסתיים"}[st];
       const right=el("div","abside");right.append(tag);if(stTxt)right.append(el("span","abst",stTxt));
       li.append(right,info);
