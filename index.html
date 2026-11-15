@@ -3432,14 +3432,20 @@ const top=el("div","top");
       [...C.entries()].sort((a,b)=>a[1].n.localeCompare(b[1].n,"he")).forEach(([k,v])=>{const o=el("option",null,v.n+" ("+v.c+")");o.value=k;ws.append(o);});
       ws.value=C.has(wv)?wv:"";}
     const who=$("vfWho").value;
-    const list=bySq.filter(w=>!who||whoKey(w)===who)
+    // the same item (type + number) twice on the same person shows once, with ×2
+    const dupN=new Map();
+    const list=(()=>{const seen=new Map(),out=[];bySq.filter(w=>!who||whoKey(w)===who).forEach(w=>{
+        const k=String(w.num||"").trim()?wType(w.type)+"|"+String(w.num).trim()+"|"+whoKey(w):null;
+        if(k&&seen.has(k)){const f=seen.get(k);dupN.set(f.id,(dupN.get(f.id)||1)+1);return;}
+        if(k)seen.set(k,w);out.push(w);});return out;})()
       .sort((a,b)=>((ownerOf(a)||{}).name||"ת").localeCompare((ownerOf(b)||{}).name||"ת","he")||String(a.num).localeCompare(String(b.num)));
     const here=[],away=[];list.forEach(w=>{const r=w.owner&&!w.ownerMember?awayInfo(w.owner):null;r?away.push({w,r}):here.push(w);});
     const row=(w,inner)=>{const ic=el("div","wicon");svgSet(ic,weaponIcon(w.type));const o=ownerOf(w);
       const info=el("div","info"),who=o?o.name:"לא חתום";
       // all items: the type is the big line and the name is small; one type: the name is big
-      if(ty==="*")info.append(el("div","n1",wType(w.type)),el("div","n3",[who,w.num,o&&o.squad?"כיתה "+o.squad:""].filter(Boolean).join(" · ")));
-      else info.append(el("div","n1",who),el("div","n3",[w.num,o&&o.squad?"כיתה "+o.squad:""].filter(Boolean).join(" · ")));
+      const xn=dupN.get(w.id)?" ×"+dupN.get(w.id):"";
+      if(ty==="*")info.append(el("div","n1",wType(w.type)+xn),el("div","n3",[who,w.num,o&&o.squad?"כיתה "+o.squad:""].filter(Boolean).join(" · ")));
+      else info.append(el("div","n1",who+xn),el("div","n3",[w.num,o&&o.squad?"כיתה "+o.squad:""].filter(Boolean).join(" · ")));
       {const of=openFaults(w);if(of.length){const d=el("div","faultline","⚠ "+of.map(f=>f.desc).join(" · "));d.title=d.textContent;info.append(d);}}inner.append(ic,info);
     };
     const vfLight=()=>{const m=getMarks(mk);progress($("vfBar"),$("vfCount"),list.filter(w=>m.has(w.id)).length,list.length);};
