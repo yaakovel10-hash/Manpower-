@@ -4765,7 +4765,7 @@ const top=el("div","top");
     return {cols,rows:key.length?R.filter(r=>key.some(i=>r[i])):R,top:0,hMed:0};
   }
   // reading the photo with Gemini (Firebase AI Logic): understands skewed photos of a screen, merged cells, colours…
-  let aiModel=null;
+  let aiModel=null,aiErr="";
   async function aiReady(){
     if(aiModel)return aiModel;
     if(!RECAPTCHA_SITE_KEY)throw new Error("no-key");
@@ -4897,11 +4897,11 @@ const top=el("div","top");
     const st=$("ftIStatus");
     try{
       let W;
-      let T0=null;
+      let T0=null;aiErr="";
       if(/\.(xlsx|xls|csv)$/i.test(f.name)||/sheet|excel|csv/i.test(f.type)){st.textContent="קורא את הגיליון…";T0=await sheetTable(f);W=[];}
       else if(/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)){st.textContent="קורא את ה־PDF…";W=await pdfWords(f);
         if(W.length<10){st.textContent="ה־PDF סרוק כתמונה, מזהה טקסט…";throw new Error("scanned");}}
-      else if(RECAPTCHA_SITE_KEY&&await (async()=>{st.textContent="קורא את הטבלה (AI)…";try{T0=await aiTable(f);W=[];return !!T0;}catch(e){console.warn("ai table",e);T0=null;return false;}})()){}
+      else if(RECAPTCHA_SITE_KEY&&await (async()=>{st.textContent="קורא את הטבלה (AI)…";try{T0=await aiTable(f);W=[];return !!T0;}catch(e){console.warn("ai table",e);T0=null;aiErr=String(e&&(e.message||e.code)||e).slice(0,140);return false;}})()){}
       else{st.textContent="מזהה את הטבלה בתמונה… (בפעם הראשונה זה לוקח קצת יותר)";W=await ocrWords(f,p=>{st.textContent="מזהה את הטבלה בתמונה… "+p+"%";});}
       const Ws=Array.isArray(W[0])?W:[W],Ts=T0?[T0]:Ws.map(fitTable),T=Ts[0];
       if(T)T.cols.forEach((c,i)=>{const heb=h=>(String(h||"").match(/[\u0590-\u05ff]/g)||[]).length;
@@ -4917,7 +4917,7 @@ const top=el("div","top");
       if(dc>=0){const C={};T.rows.forEach(r=>{const m=String(r[dc]||"").match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})$/);if(m){const k=m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");C[k]=(C[k]||0)+1;}});
         const b=Object.entries(C).sort((a,b)=>b[1]-a[1])[0];if(b)date=b[0];}
       $("ftIDate").value=date;
-      st.textContent="נמצאו "+T.rows.length+" שורות. בדקו מה יש בכל עמודה ואת השיוך לחיילים, ואז שמרו.";
+      st.textContent=(T0&&!W.length&&!/\.(xlsx|xls|csv)$/i.test(f.name)?"✨ נקרא בעזרת AI. ":"")+"נמצאו "+T.rows.length+" שורות. בדקו מה יש בכל עמודה ואת השיוך לחיילים, ואז שמרו."+(aiErr?" (הקריאה החכמה לא הצליחה: "+aiErr+")":"");
       $("ftIBody").hidden=false;$("ftIClose2").hidden=true;ftIRender();
     }catch(err){console.warn(err);st.textContent=err&&err.message==="scanned"?"ה־PDF הזה סרוק כתמונה. צלמו את הטבלה (צילום מסך) ובחרו את התמונה.":"לא הצלחתי לקרוא את הקובץ. בדקו שיש חיבור לאינטרנט ונסו שוב.";}
   };
