@@ -2610,9 +2610,46 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!best.trim())throw new Error("empty");
     return {title,text:best};
   }
+  // WhatsApp/Notes style list: "1. name – 1234567" followed by lines "* צ' נשק: 617775"
+  function parseListText(txt){
+    const lines=String(txt||"").replace(/\r/g,"").split("\n").map(l=>l.replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069\ufffc]/g,"").replace(/\\([.\-*#])/g,"$1").trim());
+    const out=[];let cur=null;
+    lines.forEach(l=>{
+      if(!l)return;
+      const h=l.match(/^(\d{1,3})\s*[.)]\s*(.+)$/);
+      if(h&&!/^צ\s*['׳`’]/.test(h[2])){
+        const body=h[2].trim(),pidM=body.match(/(?:^|[\s–—\-:])(\d{7})(?!\d)/);
+        let name=body,pid="";
+        if(pidM){pid=pidM[1];name=body.replace(pidM[0]," ");}
+        else{const parts=body.split(/\s+[–—-]\s+/);if(parts.length>1)name=parts[parts.length-1];} // "ממ פיקודית – סבג" → the name is after the dash
+        name=name.replace(/[–—\-:,]+/g," ").replace(/\s+/g," ").trim();
+        cur={pid,name,phone:"",weapons:[],role:pidM?"":body.split(/\s+[–—-]\s+/)[0].trim()};out.push(cur);return;}
+      const w=l.replace(/^[*•·\-]+\s*/,"").match(/^(?:צ\s*['׳`’]\s*)?([^:：\-–—]+?)\s*[:：\-–—]\s*(.*)$/);
+      if(w&&cur){const type=w[1].replace(/^צ\s*['׳`’]\s*/,"").trim(),num=w[2].trim().replace(/\s+/g,"");
+        if(!type||!num||/^חסר|^אין$|^-+$/.test(num))return;
+        if(!/[0-9A-Za-z]/.test(num))return;
+        cur.weapons.push({type,num});}
+    });
+    return out.filter(r=>r.name||r.pid);
+  }
+  function importListText(txt){
+    const L=parseListText(txt);if(L.length<2)return false;
+    impRows=[];impItems=[];impMode="soldiers";showErr("impErr","");
+    const seen=new Set();
+    L.forEach(r=>{
+      if(!r.pid){const ex=vis(soldiers).find(s=>sameName(s.name||"",r.name));if(ex&&ex.num)r.pid=ex.num;}
+      if(r.pid&&seen.has(r.pid))return;if(r.pid)seen.add(r.pid);
+      const dup=!!r.pid&&vis(soldiers).some(s=>s.num===r.pid);
+      impRows.push(Object.assign(r,{dup,on:!!r.pid&&(!!r.name||dup)}));});
+    typeMap={};impRows.forEach(r=>r.weapons.forEach(w=>{if(!(w.type in typeMap))typeMap[w.type]=w.type;}));
+    const nw=impRows.reduce((n,r)=>n+r.weapons.length,0),noPid=impRows.filter(r=>!r.pid);
+    $("impStatus").textContent="נמצאו "+impRows.length+" חיילים ו-"+nw+' פריטי אמל"ח. בדקו את השמות וסוגי הנשק לפני השמירה.'+(noPid.length?" ל"+noPid.map(r=>r.name).join(", ")+" אין מספר אישי: כתבו אותו בשורה כדי לכלול אותו.":"");
+    renderImp();return true;
+  }
   const showPaste=(hint)=>{$("impPasteBox").hidden=false;$("impPasteBtn").hidden=true;if(hint)$("impPasteHint").textContent=hint;};
   $("impPasteBtn").onclick=()=>{showPaste();$("impText").focus();};
   $("impTextGo").onclick=async()=>{const t=$("impText").value;if(!t.trim()){$("impText").focus();return;}
+    if(importListText(t))return;
     await importFrom(async()=>textToPages(t),"לא הצלחתי להבין את הטקסט. בדקו שיש בו שמות ומספרים אישיים או מספרי אמל\"ח.");};
   $("impUrlGo").onclick=async()=>{
     const u=$("impUrl").value.trim();if(!/icloud\.com\/notes\//.test(u)){showErr("impErr","זה לא קישור של פתק Apple. הקישור נראה כך: icloud.com/notes/…");return;}
@@ -2622,6 +2659,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!note){showPaste("Apple לא מאפשרת לקרוא את הפתק הזה ישירות. פותחים את הקישור, לוחצים לחיצה ארוכה ← \"בחירת הכל\" ← \"העתקה\", ומדביקים כאן:");
       try{window.open(u,"_blank");}catch(_){}return;}
     $("impText").value=note.text;showPaste("נקרא מהפתק"+(note.title?" \""+note.title+"\"":"")+". אפשר לתקן כאן ולקרוא שוב:");
+    if(importListText(note.text))return;
     await importFrom(async()=>textToPages(note.text),"קראתי את הפתק אבל לא מצאתי בו שמות ומספרים. בדקו את הטקסט למטה.");
   };
   $("impAll").onclick=()=>{impRows.forEach(r=>r.on=true);impItems.forEach(r=>r.on=true);renderImp();};
