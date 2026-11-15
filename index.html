@@ -1051,8 +1051,8 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>כושר</h1><span class="count" id="ftCount"></span><button class="pencil wa" type="button" id="ftWa" aria-label="שליחת התוצאות בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
     <div class="rqtabs" id="ftTabs"><button type="button" data-t="res">תוצאות</button><button type="button" data-t="prog">התקדמות</button></div>
     <div id="ftResTab">
-      <div class="row2" id="ftBtns"><button class="primary" id="ftNew" type="button">+ מדידה חדשה</button><label class="ghost filebtn" for="ftFile">📥 ייבוא מתמונה / PDF</label></div>
-      <input type="file" id="ftFile" accept="image/*,application/pdf,.pdf" hidden>
+      <div class="row2" id="ftBtns"><button class="primary" id="ftNew" type="button">+ מדידה חדשה</button><label class="ghost filebtn" for="ftFile">📥 ייבוא מקובץ / תמונה</label></div>
+      <input type="file" id="ftFile" accept="image/*,application/pdf,.pdf,.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
       <div class="add" id="ftImp" hidden>
         <b>ייבוא תוצאות מטבלה</b>
         <span class="mini" id="ftIStatus"></span>
@@ -4704,6 +4704,32 @@ const top=el("div","top");
     return {cols:out,rows:rows2,top,hMed};
   }
 
+  // Excel / CSV: the table is read exactly as it is (no guessing like in a photo)
+  async function sheetTable(file){
+    if(!window.XLSX)await loadScript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js");
+    const wb=XLSX.read(await file.arrayBuffer(),{type:"array",cellDates:false});
+    let best=null;
+    wb.SheetNames.forEach(n=>{const g=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:""}).map(r=>r.map(c=>String(c==null?"":c).trim()));
+      // header = first line with 3+ words that is followed by lines of data
+      for(let i=0;i<Math.min(g.length,30);i++){const h=g[i];if(h.filter(c=>/[\u0590-\u05ffA-Za-z]{2,}/.test(c)).length<3)continue;
+        const data=g.slice(i+1).filter(r=>r.some(c=>c));if(data.filter(r=>r.filter(c=>/\d/.test(c)).length>=2).length<2)continue;
+        if(!best||data.length>best.rows.length)best={head:h,rows:data};break;}});
+    if(!best)return null;
+    const n=Math.max(best.head.length,...best.rows.map(r=>r.length));
+    const rows=best.rows.map(r=>Array.from({length:n},(_,i)=>r[i]||"")).filter(r=>r.some(c=>c));
+    const cols=[];for(let i=0;i<n;i++){const vals=rows.map(r=>r[i]).filter(Boolean);if(!vals.length&&!best.head[i])continue;
+      const kind=vals.filter(v=>/^\d{1,2}[\/.]\d{1,2}[\/.]\d{2,4}$/.test(v)).length>vals.length*0.5?"date":
+        vals.filter(v=>/^\d{6,9}$/.test(v)).length>vals.length*0.5?"pid":
+        vals.filter(v=>/^(\d{1,2}:)?\d{1,3}:\d{2}(\.\d+)?$/.test(v)).length>vals.length*0.5?"time":
+        vals.filter(v=>/^-?\d+(\.\d+)?$/.test(v)).length>vals.length*0.5?"num":
+        (vals.filter(v=>/[\u0590-\u05ff]{2,}/.test(v)&&!/\d/.test(v)).length>vals.length*0.6&&new Set(vals).size>vals.length*0.6)?"name":"other";
+      cols.push({i,head:best.head[i]||"",kind,samples:vals.slice(0,4)});}
+    // keep only the used columns, renumbered
+    const idx=cols.map(c=>c.i);cols.forEach((c,j)=>c.i=j);
+    const R=rows.map(r=>idx.map(i=>r[i]));
+    const key=cols.filter(c=>c.kind==="name"||c.kind==="pid").map(c=>c.i);
+    return {cols,rows:key.length?R.filter(r=>key.some(i=>r[i])):R,top:0,hMed:0};
+  }
   // pick the soldier for a personal number read by OCR (digits may be missing or extra)
   function matchPid(t){
     const d=String(t||"").replace(/\D/g,"");if(d.length<5)return null;
@@ -4806,10 +4832,12 @@ const top=el("div","top");
     const st=$("ftIStatus");
     try{
       let W;
-      if(/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)){st.textContent="קורא את ה־PDF…";W=await pdfWords(f);
+      let T0=null;
+      if(/\.(xlsx|xls|csv)$/i.test(f.name)||/sheet|excel|csv/i.test(f.type)){st.textContent="קורא את הגיליון…";T0=await sheetTable(f);W=[];}
+      else if(/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)){st.textContent="קורא את ה־PDF…";W=await pdfWords(f);
         if(W.length<10){st.textContent="ה־PDF סרוק כתמונה, מזהה טקסט…";throw new Error("scanned");}}
       else{st.textContent="מזהה את הטבלה בתמונה… (בפעם הראשונה זה לוקח קצת יותר)";W=await ocrWords(f,p=>{st.textContent="מזהה את הטבלה בתמונה… "+p+"%";});}
-      const Ws=Array.isArray(W[0])?W:[W],Ts=Ws.map(fitTable),T=Ts[0];
+      const Ws=Array.isArray(W[0])?W:[W],Ts=T0?[T0]:Ws.map(fitTable),T=Ts[0];
       if(T)T.cols.forEach((c,i)=>{const heb=h=>(String(h||"").match(/[\u0590-\u05ff]/g)||[]).length;
         Ts.forEach(t=>{const h=t&&t.cols.length===T.cols.length&&t.cols[i].head;if(heb(h)>heb(c.head))c.head=h;});});
       if(!T||!T.rows.length){st.textContent="לא מצאתי טבלה עם תוצאות. נסו תמונה ישרה וחדה יותר, שבה רואים את כל השורות.";return;}
