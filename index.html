@@ -138,6 +138,17 @@ h2.sec{font-family:var(--display);font-weight:400;font-size:20px;margin:18px 0 8
 .req .top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .req .when{font-weight:700}
 .req .who{font-weight:800;font-size:17px;color:var(--accent);text-decoration:none}
+.ftshead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 8px}.ftshead b{font-size:19px;display:block}
+.ftrows li{display:flex;align-items:center;gap:10px}.ftrows .info{flex:1;min-width:0}.ftrows .n1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ftrows input{width:96px;flex:none;text-align:center;direction:ltr;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;padding:8px 6px}
+.ftrows li.saved input{border-color:var(--ok)}
+.ftrows .ph{font-size:12px;color:var(--muted)}
+#ftProg>li{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center}#ftProg>li .info{min-width:0}
+.ftv{direction:ltr;font-weight:800;font-size:18px;font-variant-numeric:tabular-nums;text-align:left}
+.ftd{font-size:13px;font-weight:700;direction:ltr;text-align:left}.ftd.up{color:var(--ok)}.ftd.dn{color:var(--danger)}.ftd.eq{color:var(--muted)}
+.ftspark{grid-column:1/-1;width:100%;height:30px;display:block}
+.fthist{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px;color:var(--muted);direction:rtl}.fthist span b{direction:ltr;display:inline-block;color:var(--fg)}
+.ftpb{font-size:11px;font-weight:800;color:var(--warn);margin-inline-start:6px}
 .rqtabs{display:flex;gap:6px;margin:12px 0 4px}.rqtabs button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:8px 4px;font:inherit;font-weight:700;font-size:14px}.rqtabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .req.out{border-color:var(--ok)}
 .req .notes{color:var(--muted);font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -468,7 +479,7 @@ header.top .pid .num{text-shadow:0 1px 0 var(--hi)}
 .tile .t{text-shadow:0 1px 0 var(--hi)}
 .tile .c{color:color-mix(in srgb,var(--tc) 65%,var(--fg));font-weight:700}
 .tile:active{transform:translateY(2px) scale(.985);box-shadow:inset 0 1px 0 var(--hi),0 6px 14px -10px var(--shadow)}
-.tile.t-green{--tc:var(--ok)}.tile.t-yellow{--tc:var(--warn)}.tile.t-sand{--tc:var(--sand)}.tile.t-steel{--tc:var(--steel)}.tile.t-plum{--tc:var(--plum)}.tile.t-red{--tc:var(--danger)}.tile.t-olive{--tc:var(--olive)}.tile.t-teal{--tc:var(--teal)}.tile.t-navy{--tc:var(--navy)}.t-rose{--tc:#c2577a}
+.tile.t-green{--tc:var(--ok)}.tile.t-yellow{--tc:var(--warn)}.tile.t-sand{--tc:var(--sand)}.tile.t-steel{--tc:var(--steel)}.tile.t-plum{--tc:var(--plum)}.tile.t-red{--tc:var(--danger)}.tile.t-olive{--tc:var(--olive)}.tile.t-teal{--tc:var(--teal)}.tile.t-navy{--tc:var(--navy)}.t-rose{--tc:#c2577a}.t-cyan{--tc:#3f9fb5}
 .swatches{display:flex;gap:10px;flex-wrap:wrap;padding-top:4px}
 .sw{width:38px;height:38px;border-radius:50%;border:3px solid var(--surface);background:var(--sw);box-shadow:0 0 0 1px var(--line),0 3px 8px -3px var(--shadow);cursor:pointer;padding:0}
 .sw.on{box-shadow:0 0 0 3px var(--fg),0 3px 8px -3px var(--shadow)}
@@ -711,7 +722,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <button class="pencil homegear" id="setBtn" type="button" aria-expanded="false" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </div>
     </header>
-    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="setShowReqs" data-k="reqs"> בקש"צים</label><label class="allday"><input type="checkbox" id="setShowMed" data-k="med"> רפואה</label></div>
+    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="setShowReqs" data-k="reqs"> בקש"צים</label><label class="allday"><input type="checkbox" id="setShowMed" data-k="med"> רפואה</label><label class="allday"><input type="checkbox" id="setShowFit" data-k="fit"> כושר</label></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <nav class="tiles" id="homeTiles">
@@ -764,6 +775,10 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         </svg>
         <span class="t">היעדרויות</span><span class="c" id="cntAb">—</span>
       </a>
+      <a class="tile t-cyan" href="#fit" id="tileFit">
+        <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><circle cx="38" cy="11" r="5" fill="var(--accent)" fill-opacity=".35"/><path d="M27 24l9-4 7 7 7 2"/><path d="M36 20l-5 15 9 7-2 14"/><path d="M31 35l-6 9H14"/><path d="M8 30h10M4 38h9M10 46h8" opacity=".6"/></svg>
+        <span class="t">כושר</span><span class="c" id="cntFt">—</span>
+      </a>
       <a class="tile t-olive" href="#nmr" id="tileNmr">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 36h52l-4-10H40l-4-6H18l-4 6H8z" fill="var(--accent)" fill-opacity=".25"/><path d="M30 20v-6h14"/><rect x="4" y="36" width="56" height="12" rx="6"/><circle cx="14" cy="42" r="3"/><circle cx="25" cy="42" r="3"/><circle cx="36" cy="42" r="3"/><circle cx="48" cy="42" r="3"/></svg>
         <span class="t">נמ"ר</span><span class="c" id="cntNm">—</span>
@@ -789,7 +804,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <span class="mini">ממלאים מלמעלה למטה, עד הרמה של המסגרת. למשל לפלוגה: חטיבה, גדוד ופלוגה, בלי מחלקה וכיתה. מי שנכנס בקישור של מסגרת רואה את כל מה שמתחתיה.</span>
       <div class="unitf" id="uNew"></div>
       <div class="f">רובריקות שיופיעו במסגרת<span class="mini">ברירת מחדל לכל המפקדים במסגרת. כל מפקד יכול לשנות לעצמו בהגדרות.</span>
-        <div class="tilechk"><label class="allday"><input type="checkbox" id="nuT-nmr" checked> נמ"ר</label><label class="allday"><input type="checkbox" id="nuT-veh" checked> רכב</label><label class="allday"><input type="checkbox" id="nuT-gaps" checked> פערים</label><label class="allday"><input type="checkbox" id="nuT-orbat" checked> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="nuT-reqs" checked> בקש"צים</label><label class="allday"><input type="checkbox" id="nuT-med" checked> רפואה</label></div></div>
+        <div class="tilechk"><label class="allday"><input type="checkbox" id="nuT-nmr" checked> נמ"ר</label><label class="allday"><input type="checkbox" id="nuT-veh" checked> רכב</label><label class="allday"><input type="checkbox" id="nuT-gaps" checked> פערים</label><label class="allday"><input type="checkbox" id="nuT-orbat" checked> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="nuT-reqs" checked> בקש"צים</label><label class="allday"><input type="checkbox" id="nuT-med" checked> רפואה</label><label class="allday"><input type="checkbox" id="nuT-fit" checked> כושר</label></div></div>
       <p class="err" id="unErr" hidden></p>
       <div class="row2"><button class="primary" type="submit">פתיחה</button><button class="ghost" type="button" id="cancelU">ביטול</button></div>
     </form>
@@ -1011,6 +1026,39 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     <label class="searchbox"><input type="search" id="mdQ" placeholder="חיפוש חייל או סיבה…" autocomplete="off"></label>
     <div id="mdList" style="margin-top:10px"></div>
     <div class="empty" id="mdEmpty" hidden></div>
+  </section>
+
+  <section id="v-fit" hidden>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>כושר</h1><span class="count" id="ftCount"></span><button class="pencil wa" type="button" id="ftWa" aria-label="שליחת התוצאות בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
+    <div class="rqtabs" id="ftTabs"><button type="button" data-t="res">תוצאות</button><button type="button" data-t="prog">התקדמות</button></div>
+    <div id="ftResTab">
+      <button class="primary" id="ftNew" type="button">+ מדידה חדשה</button>
+      <form class="add" id="ftForm" hidden>
+        <label class="f">פעילות<select id="ftAct"></select></label>
+        <div id="ftCustom" hidden>
+          <label class="f">שם הפעילות<input type="text" id="ftCName" maxlength="40" placeholder="למשל: ריצת 5 ק&quot;מ"></label>
+          <label class="f">מה מודדים<select id="ftCType"><option value="time">זמן (פחות = טוב יותר)</option><option value="count">כמות חזרות (יותר = טוב יותר)</option><option value="num">מספר אחר (יותר = טוב יותר)</option></select></label>
+        </div>
+        <label class="f">תאריך<input type="date" id="ftDate" required></label>
+        <p class="err" id="ftErr" hidden></p>
+        <div class="row2"><button class="primary" type="submit">התחלת הזנה</button><button class="ghost" type="button" id="ftCancel">ביטול</button></div>
+      </form>
+      <div id="ftSess" hidden>
+        <div class="ftshead"><div><b id="ftSTitle"></b><span class="mini" id="ftSSub"></span></div><button class="ghost sm" type="button" id="ftSClose">סיום</button></div>
+        <div class="wfilter"><select id="ftSquad" aria-label="כיתה"></select></div>
+        <p class="mini" id="ftSHint"></p>
+        <ul class="list ftrows" id="ftRows"></ul>
+        <button class="linkbtn muted" type="button" id="ftSDel">מחיקת המדידה</button>
+      </div>
+      <h2 class="sec" id="ftHistH">מדידות קודמות</h2>
+      <ul class="list" id="ftHist"></ul>
+      <div class="empty" id="ftEmpty" hidden>עוד אין מדידות. לוחצים על "+ מדידה חדשה", בוחרים פעילות ומזינים לכל חייל את התוצאה.</div>
+    </div>
+    <div id="ftProgTab" hidden>
+      <div class="wfilter"><select id="ftPAct" aria-label="פעילות"></select><select id="ftPSquad" aria-label="כיתה"></select></div>
+      <p class="mini" id="ftPHint"></p>
+      <ul class="list" id="ftProg"></ul>
+    </div>
   </section>
 
   <section id="v-gaps" hidden>
@@ -1579,7 +1627,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   function pathOf(unitId){const u=unitById(unitId);return u?Object.assign({},u.path):null;}
 
   /* ---------- screens ---------- */
-  const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat","v-zr","v-reqs","v-med"];
+  const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat","v-zr","v-reqs","v-med","v-fit"];
   // big lists of a screen you left are emptied (they're rebuilt when you come back), so the page stays light
   const HEAVY={"v-weapons":["listW"],"v-zr":["zrBox"],"v-verify":["vfList"],"v-soldiers":["listS"],"v-gaps":["gpS","gpW"],"v-reqs":["rqList"],"v-med":["mdList"]};
   function show(ids){
@@ -1612,6 +1660,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(h==="gaps"){show(["v-gaps"]);renderGaps();return;}
     if(h==="reqs"){show(["v-reqs"]);renderReqList();return;}
     if(h==="med"){show(["v-med"]);renderMedList();return;}
+    if(h==="fit"){show(["v-fit"]);renderFit();return;}
     if(h==="zreport"){show(["v-zr"]);renderZR();return;}
     if(h==="orbat"){show(["v-orbat"]);renderOrbat();return;}
     if(h==="nmr"||h==="veh"){setVk(h);show(["v-nmr"]);renderNmr();return;}
@@ -1828,7 +1877,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     document.addEventListener("pointerdown",e=>{if(nav.classList.contains("editing")&&!e.target.closest("#homeTiles"))exit();});
     addEventListener("hashchange",exit);
   }
-  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"],["orbat","מבנה וארגון לקרב","tileOrbat","setShowOrbat"],["reqs",'בקש"צים',"tileReqs","setShowReqs"],["med","רפואה","tileMed","setShowMed"]];
+  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"],["orbat","מבנה וארגון לקרב","tileOrbat","setShowOrbat"],["reqs",'בקש"צים',"tileReqs","setShowReqs"],["med","רפואה","tileMed","setShowMed"],["fit","כושר","tileFit","setShowFit"]];
   // default for a tile: the closest unit (own unit, then its parents) that set it; otherwise shown
   function unitTileDefault(k){
     let u=me&&me.unitId?unitById(me.unitId):null;
@@ -4303,6 +4352,128 @@ const top=el("div","top");
   const renderReqList=reqScreen({v:"v-reqs",P:"rq",Q:"q",cnt:"cntRq",badge:"rqBadge",form:"formRQ",open:"openRQ",cancel:"cancelRQ",src:()=>vis(requests),base:"requests",title:'בקש"צים',noun:'בקש"צים',toastNoun:'הבקש"צ'});
   const renderMedList=reqScreen({v:"v-med",P:"md",Q:"mq",cnt:"cntMd",badge:"mdBadge",form:"formMD",open:"openMD",cancel:"cancelMD",src:medEv,base:"events",title:"רפואה",noun:"פניות",toastNoun:"הפנייה הרפואית",extra:{kind:"med"}});
 
+  /* ---------- כושר: fitness results and each soldier's progress ---------- */
+  // better: "low" = less is better (times), "high" = more is better
+  const FIT_PRESETS=[["ריצת 3 ק\"מ","time"],["ריצת 2 ק\"מ","time"],["ריצת 1 ק\"מ","time"],["ספרינטים","time"],["מתח","count"],["שכיבות סמיכה","count"],["כפיפות בטן","count"],["מקבילים","count"]];
+  const fitEv=()=>visRO(events).filter(x=>x.kind==="fit");
+  const fitBetter=t=>t==="time"?"low":"high";
+  function fitActs(){const m=new Map();FIT_PRESETS.forEach(([n,t])=>m.set(n,t));fitEv().forEach(x=>{if(x.act&&!m.has(x.act))m.set(x.act,x.mtype||"count");});return m;}
+  function parseFit(v,t){v=String(v||"").trim().replace(",",".");if(!v)return null;
+    if(t==="time"){let m=v.match(/^(\d{1,3})[:.'’ ](\d{1,2})$/);if(m)return +m[1]*60+ +m[2];
+      if(/^\d{3,4}$/.test(v))return +v.slice(0,-2)*60+ +v.slice(-2);if(/^\d{1,2}$/.test(v))return +v*60;return null;}
+    const n=Number(v);return isFinite(n)&&n>=0?n:null;}
+  const fmtFit=(v,t)=>v==null?"":t==="time"?Math.floor(v/60)+":"+String(Math.round(v%60)).padStart(2,"0"):String(+v.toFixed(2));
+  let ftTab="res",ftOpen=null;
+  // all measurements of one activity, oldest first: [{date,v,at}] per soldier
+  function fitSeries(act){const M=new Map();
+    fitEv().filter(x=>x.act===act).sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.at||0)-(b.at||0)).forEach(x=>{
+      Object.entries(x.results||{}).forEach(([sid,v])=>{if(v==null||v==="")return;if(!M.has(sid))M.set(sid,[]);M.get(sid).push({date:x.date,v:+v,id:x.id});});});
+    return M;}
+  function renderFit(){
+    const E=fitEv();
+    {const last=E.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.at||0)-(a.at||0))[0];
+      $("cntFt").textContent=last?last.act+" · "+fmtG(last.date).slice(0,-5):"אין מדידות";}
+    if($("v-fit").hidden)return;
+    $("ftCount").textContent=E.length||"";
+    $("ftTabs").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.t===ftTab));
+    $("ftResTab").hidden=ftTab!=="res";$("ftProgTab").hidden=ftTab!=="prog";
+    if(ftTab==="res")renderFitRes();else renderFitProg();
+  }
+  function fitSoldiers(sq){return visRO(soldiers).filter(s=>!isCmdSoldier(s)&&(sq==="*"||(s.squad||"")===sq)).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));}
+  function renderFitRes(){
+    const E=fitEv().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.at||0)-(a.at||0));
+    const cur=ftOpen&&E.find(x=>x.id===ftOpen);if(ftOpen&&!cur)ftOpen=null;
+    $("ftSess").hidden=!cur;$("ftNew").hidden=!!cur||!$("ftForm").hidden;
+    if(cur)renderFitSess(cur);
+    const ul=$("ftHist");ul.textContent="";
+    E.filter(x=>x!==cur).forEach(x=>{const n=Object.values(x.results||{}).filter(v=>v!=null&&v!=="").length;
+      const li=el("li","tap");const info=el("div","info");info.append(el("div","n1",x.act),el("div","n3",fmtG(x.date)+" · "+n+" תוצאות"+(x.byName?" · "+x.byName:"")));
+      li.append(info,el("span","chev","‹"));li.onclick=()=>{ftOpen=x.id;renderFit();scrollTo({top:0,behavior:"smooth"});};ul.append(li);});
+    $("ftHistH").hidden=!E.filter(x=>x!==cur).length;$("ftEmpty").hidden=E.length>0||!$("ftForm").hidden;
+  }
+  function renderFitSess(x){
+    const t=x.mtype||fitActs().get(x.act)||"count";
+    $("ftSTitle").textContent=x.act;$("ftSSub").textContent=" · "+fmtG(x.date)+(t==="time"?" · זמן בדקות:שניות":"");
+    $("ftSHint").textContent=t==="time"?"כותבים זמן כמו 12:30 (או 1230). התוצאה נשמרת מיד, ואפשר להזין כמה מפקדים במקביל.":"כותבים את המספר. התוצאה נשמרת מיד, ואפשר להזין כמה מפקדים במקביל.";
+    const sq=squadSelect($("ftSquad"));const ul=$("ftRows");
+    if(ul.contains(document.activeElement)&&ul.dataset.id===x.id){ // don't rebuild under the typing finger; just refresh values
+      ul.querySelectorAll("input").forEach(inp=>{if(inp!==document.activeElement){const v=(x.results||{})[inp.dataset.sid];inp.value=fmtFit(v==null||v===""?null:+v,t);}});return;}
+    ul.dataset.id=x.id;ul.textContent="";
+    const ser=fitSeries(x.act);
+    const prevOf=sid=>{const L=(ser.get(sid)||[]).filter(p=>p.id!==x.id&&(p.date<x.date||(p.date===x.date)));return L[L.length-1];};
+    const S=fitSoldiers(sq);
+    S.forEach((s,i)=>{const li=el("li");const info=el("div","info");info.append(el("div","n1",s.name));
+      const pv=prevOf(s.id);info.append(el("div","ph",pv?"קודם: "+fmtFit(pv.v,t)+" ("+fmtG(pv.date).slice(0,-5)+")":(s.squad?"כיתה "+s.squad:"")));
+      const inp=el("input");inp.type="text";inp.inputMode=t==="time"?"decimal":"decimal";inp.placeholder=t==="time"?"דק:שנ":"—";inp.dataset.sid=s.id;
+      const v=(x.results||{})[s.id];inp.value=fmtFit(v==null||v===""?null:+v,t);if(inp.value)li.classList.add("saved");
+      inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const nx=ul.querySelectorAll("input")[i+1];if(nx)nx.focus();else inp.blur();}};
+      inp.onchange=()=>{const raw=inp.value.trim();
+        if(!raw){li.classList.remove("saved");patch("events/"+x.id,{["results."+s.id]:FV().delete()});return;}
+        const val=parseFit(raw,t);if(val==null){toast(t==="time"?"זמן לא תקין. כותבים למשל 12:30":"מספר לא תקין");inp.select();return;}
+        inp.value=fmtFit(val,t);li.classList.add("saved");patch("events/"+x.id,{["results."+s.id]:val});};
+      li.append(info,inp);ul.append(li);});
+    if(!S.length)ul.append(el("li","mini","אין חיילים בכיתה הזאת."));
+  }
+  function renderFitProg(){
+    const A=fitActs(),sel=$("ftPAct"),pv=sel.value;sel.textContent="";
+    const used=[...new Set(fitEv().map(x=>x.act))];
+    used.forEach(a=>{const o=el("option",null,a);o.value=a;sel.append(o);});
+    const ul=$("ftProg");ul.textContent="";ul.className="list ftprog";
+    if(!used.length){sel.hidden=true;$("ftPHint").textContent="עוד אין מדידות. אחרי שמזינים תוצאות, כאן רואים את ההתקדמות של כל חייל.";return;}
+    sel.hidden=false;sel.value=used.includes(pv)?pv:used[0];
+    const act=sel.value,t=A.get(act)||"count",better=fitBetter(t),sq=squadSelect($("ftPSquad"));
+    const ser=fitSeries(act);const isBetter=(a,b)=>better==="low"?a<b:a>b;
+    $("ftPHint").textContent=(better==="low"?"זמן נמוך יותר = שיפור.":"יותר = שיפור.")+" ▲ ירוק = השתפר מהמדידה הקודמת, ▼ אדום = ירד. לוחצים על חייל כדי לראות את כל המדידות.";
+    const rows=fitSoldiers(sq).map(s=>({s,L:ser.get(s.id)||[]}));
+    rows.sort((a,b)=>{if(!a.L.length||!b.L.length)return b.L.length-a.L.length;const x=a.L[a.L.length-1].v,y=b.L[b.L.length-1].v;return better==="low"?x-y:y-x;});
+    rows.forEach(({s,L})=>{const li=el("li","tap");const info=el("div","info");const n1=el("div","n1",s.name);info.append(n1);
+      const right=el("div");
+      if(!L.length){info.append(el("div","n3","אין מדידות"));li.append(info,right);ul.append(li);return;}
+      const last=L[L.length-1],prev=L[L.length-2],first=L[0],best=L.reduce((m,p)=>isBetter(p.v,m.v)?p:m,L[0]);
+      if(L.length>1&&best===last)n1.append(el("span","ftpb","שיא אישי"));
+      info.append(el("div","n3",L.length+" מדידות"+(L.length>1?" · מההתחלה: "+fmtDelta(last.v-first.v,t,better):"")));
+      right.append(el("div","ftv",fmtFit(last.v,t)));
+      if(prev){const d=last.v-prev.v,good=isBetter(last.v,prev.v),eq=d===0;right.append(el("div","ftd "+(eq?"eq":good?"up":"dn"),(eq?"= ":good?"▲ ":"▼ ")+fmtFit(Math.abs(d),t)));}
+      li.append(info,right);
+      if(L.length>1)li.append(spark(L.map(p=>p.v),better));
+      const h=el("div","fthist");h.hidden=true;L.slice().reverse().forEach(p=>{const sp=el("span",null,fmtG(p.date).slice(0,-5)+" ");sp.append(el("b",null,fmtFit(p.v,t)));h.append(sp);});li.append(h);
+      li.onclick=()=>{h.hidden=!h.hidden;};ul.append(li);});
+  }
+  function fmtDelta(d,t,better){if(!d)return "ללא שינוי";const good=better==="low"?d<0:d>0;return (good?"השתפר ב־":"ירד ב־")+fmtFit(Math.abs(d),t);}
+  // small trend line; "up" on screen always means better
+  function spark(V,better){const ns="http://www.w3.org/2000/svg",svg=document.createElementNS(ns,"svg");svg.setAttribute("viewBox","0 0 100 30");svg.setAttribute("preserveAspectRatio","none");svg.classList.add("ftspark");
+    const mn=Math.min(...V),mx=Math.max(...V),r=mx-mn||1;const Y=v=>{const k=(v-mn)/r;return 4+22*(better==="low"?k:1-k);};
+    const pts=V.map((v,i)=>(V.length===1?50:i*100/(V.length-1)).toFixed(1)+","+Y(v).toFixed(1)).join(" ");
+    const pl=document.createElementNS(ns,"polyline");pl.setAttribute("points",pts);pl.setAttribute("fill","none");pl.setAttribute("stroke","var(--accent)");pl.setAttribute("stroke-width","2");pl.setAttribute("vector-effect","non-scaling-stroke");
+    svg.append(pl);return svg;}
+  $("ftTabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;ftTab=b.dataset.t;renderFit();};
+  $("ftPAct").onchange=renderFitProg;$("ftPSquad").onchange=renderFitProg;$("ftSquad").onchange=()=>{$("ftRows").dataset.id="";renderFitRes();};
+  function fillFitActs(){const sel=$("ftAct");sel.textContent="";fitActs().forEach((t,n)=>{const o=el("option",null,n);o.value=n;sel.append(o);});const o=el("option",null,"+ פעילות אחרת…");o.value="__new";sel.append(o);}
+  $("ftAct").onchange=()=>{$("ftCustom").hidden=$("ftAct").value!=="__new";};
+  $("ftNew").onclick=()=>{fillFitActs();$("ftCustom").hidden=true;$("ftDate").value=todayKey();showErr("ftErr","");$("ftForm").hidden=false;$("ftNew").hidden=true;$("ftEmpty").hidden=true;};
+  $("ftCancel").onclick=()=>{$("ftForm").hidden=true;renderFit();};
+  $("ftForm").onsubmit=async e=>{e.preventDefault();
+    const unit=writeUnit();if(!unit)return showErr("ftErr","אין מסגרת פתוחה.");
+    let act=$("ftAct").value,mtype=fitActs().get(act);
+    if(act==="__new"){act=$("ftCName").value.trim();mtype=$("ftCType").value;if(!act)return showErr("ftErr","כתבו שם לפעילות.");}
+    const date=$("ftDate").value;if(!date)return showErr("ftErr","בחרו תאריך.");
+    const id=newId();const ok=await write("events/"+id,{kind:"fit",soldierId:"",unit,act,mtype,date,results:{},addedBy:uid,byName:(me&&me.name)||"",at:Date.now()},"ftErr");
+    if(ok){$("ftForm").hidden=true;ftOpen=id;renderFit();}
+  };
+  $("ftSClose").onclick=()=>{if(document.activeElement)document.activeElement.blur();setTimeout(()=>{ftOpen=null;renderFit();},50);};
+  $("ftSDel").onclick=()=>{const b=$("ftSDel");if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="ללחוץ שוב כדי למחוק";setTimeout(()=>{b.classList.remove("armed");b.textContent="מחיקת המדידה";},3000);return;}
+    const id=ftOpen;ftOpen=null;remove("events/"+id);b.classList.remove("armed");b.textContent="מחיקת המדידה";renderFit();};
+  $("ftWa").onclick=()=>{
+    const E=fitEv().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.at||0)-(a.at||0));
+    const x=(ftOpen&&E.find(z=>z.id===ftOpen))||E[0];if(!x){toast("אין תוצאות לשליחה");return;}
+    const t=x.mtype||"count",better=fitBetter(t);
+    const R=Object.entries(x.results||{}).filter(([,v])=>v!=null&&v!=="").map(([sid,v])=>({s:soldierById(sid),v:+v})).filter(r=>r.s)
+      .sort((a,b)=>better==="low"?a.v-b.v:b.v-a.v);
+    if(!R.length){toast("אין תוצאות במדידה הזאת");return;}
+    const L=["*"+x.act+(viewName()?" – "+viewName():"")+"*",fmtG(x.date),""];R.forEach((r,i)=>L.push((i+1)+". "+r.s.name+" – "+fmtFit(r.v,t)));
+    sendWA(L.join("\n"));
+  };
+
   /* ---------- מבנה וארגון לקרב ---------- */
   const FIG='<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a7 6 0 0 1 14 0z" fill="currentColor" fill-opacity=".25"/><path d="M7 11h18"/><circle cx="16" cy="14" r="4"/><path d="M8 29c0-5 3.5-8 8-8s8 3 8 8"/><path d="M22 20l6-5"/></svg>';
   let obTab="iron",obSel=null,obSaveT=null;
@@ -4699,7 +4870,7 @@ const top=el("div","top");
     renderQueued=true;
     requestAnimationFrame(()=>{renderQueued=false;try{renderAllNow();}catch(e){console.warn("render",e);}});
   }
-  const SNAP_IDS=["meName","meRole","meUnit","meId","cntAt","cntVf","cntSc","scTP","scTN","scTPP","scTNN","cntAb","cntWr","cntNm","cntOb","cntGp","cntVh","cntRq","rqBadge","cntMd","mdBadge","cntMine","pendBadge","gapBadge","faultBadge","openUnits","viewWrap"];
+  const SNAP_IDS=["meName","meRole","meUnit","meId","cntAt","cntVf","cntSc","scTP","scTN","scTPP","scTNN","cntAb","cntWr","cntNm","cntOb","cntGp","cntVh","cntRq","rqBadge","cntMd","mdBadge","cntFt","cntMine","pendBadge","gapBadge","faultBadge","openUnits","viewWrap"];
   let lastSnap="";
   function saveHomeSnap(){
     try{const t={};SNAP_IDS.forEach(id=>{const e=$(id);if(e)t[id]=[id==="openUnits"||id==="viewWrap"?null:e.textContent,e.hidden];});
@@ -4709,7 +4880,7 @@ const top=el("div","top");
   }
   // which data each screen shows; a screen is redrawn only when one of these changed
   let verS=0,verW=0,verE=0,verR=0,verM=0,verU=0,verT=0,verMe=0,verSeen=0,dataVer=0,membersKey="",meKey="";
-  const SCREEN_DEPS={"v-weapons":"wsmu","v-zr":"wsmu","v-orbat":"se","v-soldiers":"swremu","v-gaps":"sw","v-wear":"es","v-nmr":"e","v-nmrd":"e","v-mine":"wm","v-units":"umtx","v-attend":"sermua","v-verify":"wsermua"};
+  const SCREEN_DEPS={"v-weapons":"wsmu","v-zr":"wsmu","v-orbat":"se","v-soldiers":"swremu","v-gaps":"sw","v-wear":"es","v-fit":"se","v-nmr":"e","v-nmrd":"e","v-mine":"wm","v-units":"umtx","v-attend":"sermua","v-verify":"wsermua"};
   const lastSig={};const lastSigReset=()=>{for(const k in lastSig)delete lastSig[k];};
   function screenSig(id){
     const dep=SCREEN_DEPS[id],d=new Date();
@@ -4731,7 +4902,7 @@ const top=el("div","top");
     renderMe();R("v-soldiers",renderS);R("v-weapons",renderW);
     if(curSoldier)R("v-soldier",renderDetail);
     if(!$("v-units").hidden)R("v-units",renderUnits);
-    R("v-mine",renderMine);R("v-attend",renderAttend);R("v-verify",renderVerify);R("v-sched",renderSched);R("v-absent",renderAbsent);R("v-wear",renderWear);R("v-nmr",renderNmr);R("v-nmrd",renderNmrD);R("v-gaps",renderGaps);R("v-orbat",renderOrbat);R("v-zr",renderZR);R("v-reqs",renderReqList);R("v-med",renderMedList);
+    R("v-mine",renderMine);R("v-attend",renderAttend);R("v-verify",renderVerify);R("v-sched",renderSched);R("v-absent",renderAbsent);R("v-wear",renderWear);R("v-nmr",renderNmr);R("v-nmrd",renderNmrD);R("v-gaps",renderGaps);R("v-orbat",renderOrbat);R("v-zr",renderZR);R("v-reqs",renderReqList);R("v-med",renderMedList);R("v-fit",renderFit);
     renderHomeCounts();
   }
   function renderHomeCounts(){
