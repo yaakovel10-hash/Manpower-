@@ -148,6 +148,9 @@ h2.sec{font-family:var(--display);font-weight:400;font-size:20px;margin:18px 0 8
 .ftd{font-size:13px;font-weight:700;direction:ltr;text-align:left}.ftd.up{color:var(--ok)}.ftd.dn{color:var(--danger)}.ftd.eq{color:var(--muted)}
 .ftspark{grid-column:1/-1;width:100%;height:30px;display:block}
 .fthist{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px;color:var(--muted);direction:rtl}.fthist span b{direction:ltr;display:inline-block;color:var(--fg)}
+.ftpt{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 4px 2px 10px}
+.ftx{border:0;background:none;color:var(--danger);font:inherit;font-size:12px;font-weight:700;padding:2px 6px;cursor:pointer}.ftx.armed{background:var(--danger);color:#fff;border-radius:999px}
+.fthist{gap:6px!important}
 .ftpb{font-size:11px;font-weight:800;color:var(--warn);margin-inline-start:6px}
 .impnote{display:grid;gap:8px;margin:10px 0}.impnote .row2{grid-template-columns:1fr auto}.impnote input{min-width:0}#impPasteBox{display:grid;gap:8px}#impPasteBox[hidden]{display:none}
 .rqtabs{display:flex;gap:6px;margin:12px 0 4px}.rqtabs button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:8px 4px;font:inherit;font-weight:700;font-size:14px}.rqtabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -4495,7 +4498,7 @@ const top=el("div","top");
     const ul=$("ftHist");ul.textContent="";
     E.filter(x=>x!==cur).forEach(x=>{const n=Object.values(x.results||{}).filter(v=>v!=null&&v!=="").length;
       const li=el("li","tap");const info=el("div","info");info.append(el("div","n1",x.act),el("div","n3",fmtG(x.date)+" · "+n+" תוצאות"+(x.byName?" · "+x.byName:"")));
-      li.append(info,el("span","chev","‹"));li.onclick=()=>{ftOpen=x.id;renderFit();scrollTo({top:0,behavior:"smooth"});};ul.append(li);});
+      li.append(info,delBtn(()=>remove("events/"+x.id)));li.onclick=()=>{ftOpen=x.id;renderFit();scrollTo({top:0,behavior:"smooth"});};ul.append(li);});
     $("ftHistH").hidden=!E.filter(x=>x!==cur).length;$("ftEmpty").hidden=E.length>0||!$("ftForm").hidden;
   }
   function renderFitSess(x){
@@ -4543,7 +4546,13 @@ const top=el("div","top");
       if(prev){const d=last.v-prev.v,good=isBetter(last.v,prev.v),eq=d===0;right.append(el("div","ftd "+(eq?"eq":good?"up":"dn"),(eq?"= ":good?"▲ ":"▼ ")+fmtFit(Math.abs(d),t)));}
       li.append(info,right);
       if(L.length>1)li.append(spark(L.map(p=>p.v),better));
-      const h=el("div","fthist");h.hidden=true;L.slice().reverse().forEach(p=>{const sp=el("span",null,fmtG(p.date).slice(0,-5)+" ");sp.append(el("b",null,fmtFit(p.v,t)));h.append(sp);});li.append(h);
+      // every measurement of this soldier; ✕ removes a result that was entered by mistake
+      const h=el("div","fthist");h.hidden=true;L.slice().reverse().forEach(p=>{const sp=el("span","ftpt",fmtG(p.date).slice(0,-5)+" ");sp.append(el("b",null,fmtFit(p.v,t)));
+        const x=el("button","ftx","✕");x.type="button";x.setAttribute("aria-label","מחיקת התוצאה");
+        x.onclick=e=>{e.stopPropagation();if(!x.classList.contains("armed")){x.classList.add("armed");x.textContent="למחוק?";setTimeout(()=>{x.classList.remove("armed");x.textContent="✕";},3000);return;}
+          sp.remove();patch("events/"+p.id,{["results."+s.id]:FV().delete()});};
+        sp.append(x);h.append(sp);});
+      li.append(h);
       li.onclick=()=>{h.hidden=!h.hidden;};ul.append(li);});
   }
   function fmtDelta(d,t,better){if(!d)return "ללא שינוי";const good=better==="low"?d<0:d>0;return (good?"השתפר ב־":"ירד ב־")+fmtFit(Math.abs(d),t);}
