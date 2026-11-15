@@ -3102,8 +3102,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     rq.forEach(q=>{
       const r=el("div","strow");
       r.append(el("span","awaytag",'בקש"צ'),el("span","sttext",(q.reason||"")+" · חוזר "+fmtG(q.to||q.from)+(q.toTime?" ב-\u2066"+q.toTime+"\u2069":"")));
-      const go=el("button","ghost sm","לבקש\"צ");go.type="button";go.onclick=()=>{setTab("req");renderDetail();};
-      r.append(go);box.append(r);
+      const back=el("button","approve sm","החזרה לנוכחות");back.type="button";
+      back.onclick=()=>{back.disabled=true;returnReq(q,"requests");};
+      r.append(back);box.append(r);
     });
     const add=el("button","ghost sm stadd","+ תורנות / היעדרות");add.type="button";
     add.onclick=()=>{location.hash="absent";setTimeout(()=>{$("openAB").click();const sel=$("abSoldier");if([...sel.options].some(o=>o.value===s.id))sel.value=s.id;},60);};
@@ -3174,7 +3175,6 @@ const top=el("div","top");
       if(r.notes)c.append(el("div","notes",r.notes));
       {const who=reqBy(r);c.append(el("div","mini","✍️ הוזן ע\"י "+(who||"לא ידוע")+(r.at?" · "+fmtG(key(new Date(r.at))):"")));}
       if(r.returnedAt)c.append(el("div","mini","↩ חזר לנוכחות ב-\u2066"+(r.toTime||"")+"\u2069 · "+fmtG(r.to||"")+(r.returnedByName?' (ע"י '+r.returnedByName+")":"")));
-      if(r.status==="approved"&&reqOutNow(r))c.append(retBtn(r,base));
       if(r.status!=="pending"&&r.decidedAt)c.append(el("div","mini",(r.status==="approved"?"אושר":"נדחה")+(r.decidedByName?' ע"י '+r.decidedByName:"")+" · "+fmtG(key(new Date(r.decidedAt)))));
       if(canDecide){const row=el("div","row2");
         if(r.status!=="approved"){const a=el("button","approve","אישור");a.type="button";a.onclick=()=>decide(r,"approved",base);row.append(a);}
