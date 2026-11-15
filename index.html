@@ -118,6 +118,14 @@ h2.sec{font-family:var(--display);font-weight:400;font-size:20px;margin:18px 0 8
 .dots{display:flex;gap:2px;min-height:6px}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--info)}
 .dot.r{background:var(--warn)}
+.day .hol{font-size:10px;line-height:1.1;font-weight:700;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.day.sel .hol,.day.today .hol{color:inherit}
+.day.holy{background:color-mix(in srgb,var(--accent) 9%,var(--surface))}
+.list li.zcard,.zcard{list-style:none;grid-template-columns:1fr;align-items:stretch;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:10px 14px;margin:6px 0 4px;display:grid;gap:8px}
+.zcard .hols{display:flex;flex-wrap:wrap;gap:6px}.zcard .hols span{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--fg);border-radius:999px;padding:3px 10px;font-weight:700;font-size:14px}
+.zcard .shb{font-weight:800;font-size:16px;display:flex;gap:8px;align-items:baseline}.zcard .shb b{direction:ltr;unicode-bidi:isolate;color:var(--accent);font-size:18px}
+.zcard .zt{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center}.zcard .zt div{display:grid;gap:1px}.zcard .zt span{font-size:11px;color:var(--muted)}.zcard .zt b{direction:ltr;font-size:16px;font-variant-numeric:tabular-nums}
+.zcard .zloc{font-size:11px;color:var(--muted);text-align:center}
 .dayhead{font-family:var(--display);font-size:18px;margin:16px 0 4px}
 /* requests */
 .pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:1px 9px;border:1px solid currentColor}
@@ -778,7 +786,14 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 
   <!-- SCHEDULE -->
   <section id="v-sched" hidden>
-    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>לו"ז</h1><span class="count" id="scCount"></span></div>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>לו"ז</h1><span class="count" id="scCount"></span><button class="pencil" type="button" id="scSetBtn" aria-label="הגדרות לוח שנה"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
+    <form class="add" id="scSet" hidden>
+      <label class="f">מיקום לזמני היום ולשבת<select id="scLoc"></select></label>
+      <span class="mini" id="scLocNote"></span>
+      <label class="allday"><input type="checkbox" id="scShowHol" checked> חגים ומועדים</label>
+      <label class="allday"><input type="checkbox" id="scShowZ" checked> זמני היום, כניסת ויציאת שבת</label>
+      <button class="ghost" type="button" id="scSetDone">סגירה</button>
+    </form>
     <div class="row2"><button class="primary" type="button" id="openSE">+ הוספת אירוע</button><button class="ghost" type="button" id="openSP">📋 הדבקת לו"ז</button></div>
     <form class="add" id="formSP" hidden>
       <label class="f">מדביקים את הלו"ז (שורה לכל אירוע, שעה בהתחלה)<textarea id="spText" rows="8" placeholder="לו&quot;ז למחר:&#10;4:35 - השכמה&#10;6:25 - הזנקה&#10;12:00 - ארוחת צהריים"></textarea></label>
@@ -3502,6 +3517,89 @@ const top=el("div","top");
     const b=el("button","linkbtn",scAll?"הסתרת הלו\"ז המלא":"הצגת כל הלו\"ז ("+P.length+")");b.type="button";b.onclick=()=>{scAll=!scAll;renderSched();};li.append(b);
     return li;
   }
+
+  /* ---------- Jewish calendar: holidays, Shabbat times, sun times (all computed on the phone) ---------- */
+  const CAL_LOCS=[["ירושלים",31.778,35.235,40],["תל אביב",32.085,34.781,20],["חיפה",32.794,34.99,30],["באר שבע",31.252,34.791,20],["אילת",29.558,34.952,20],["צפת",32.965,35.496,20],["טבריה",32.795,35.531,20],["קריית שמונה",33.207,35.57,20],["נהריה",33.006,35.098,20],["כרמיאל",32.919,35.304,20],["עפולה",32.608,35.289,20],["קצרין",32.993,35.69,20],["נתניה",32.332,34.86,20],["פתח תקווה",32.087,34.887,20],["ראשון לציון",31.964,34.804,20],["מודיעין",31.898,35.01,20],["בית שמש",31.747,34.988,30],["אשדוד",31.804,34.655,20],["אשקלון",31.669,34.571,20],["שדרות",31.525,34.596,20],["אריאל",32.106,35.187,20],["חברון / קריית ארבע",31.532,35.099,20],["דימונה",31.069,35.033,20],["מצפה רמון",30.61,34.801,20]];
+  let calCfg={loc:0,hol:true,z:true,gps:null};
+  try{Object.assign(calCfg,JSON.parse(localStorage.getItem("calCfg")||"{}"));}catch(_){}
+  const saveCal=()=>{try{localStorage.setItem("calCfg",JSON.stringify(calCfg));}catch(_){}};
+  const calLoc=()=>calCfg.loc==="gps"&&calCfg.gps?["המיקום שלי",calCfg.gps[0],calCfg.gps[1],20]:CAL_LOCS[calCfg.loc]||CAL_LOCS[0];
+  let hFull;try{hFull=new Intl.DateTimeFormat("en-u-ca-hebrew",{day:"numeric",month:"long"});}catch(_){}
+  function hmd(d){if(!hFull)return null;const p=hFull.formatToParts(d);return {m:(p.find(x=>x.type==="month")||{}).value,d:parseInt((p.find(x=>x.type==="day")||{}).value,10)};}
+  const addD=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+  // holidays in Israel for one day; .yt = a day of rest (yom tov)
+  function holidays(dt){
+    const h=hmd(dt);if(!h)return [];const {m,d}=h,w=dt.getDay(),L=[],add=(n,yt)=>L.push({n,yt:!!yt});
+    const adar=m==="Adar"||m==="Adar II";
+    if(m==="Tishri"){if(d===1||d===2)add("ראש השנה",1);if((d===3&&w!==6)||(d===4&&w===0))add("צום גדליה");if(d===9)add("ערב יום כיפור");if(d===10)add("יום כיפור",1);
+      if(d===14)add("ערב סוכות");if(d===15)add("סוכות",1);if(d>=16&&d<=20)add("חול המועד סוכות");if(d===21)add("הושענא רבה");if(d===22)add("שמחת תורה",1);}
+    if(m==="Elul"&&d===29)add("ערב ראש השנה");
+    if(m==="Kislev"&&d===24)add("ערב חנוכה");
+    if(m==="Kislev"&&d>=25)add("חנוכה – נר "+gem(d-24).replace(/[״׳]/g,""));
+    if(m==="Tevet"&&d<=3){const kl=hmd(addD(dt,-d)).d,n=kl-24+d;if(n<=8)add("חנוכה – נר "+gem(n).replace(/[״׳]/g,""));}
+    if(m==="Tevet"&&d===10)add("צום עשרה בטבת");
+    if(m==="Shevat"&&d===15)add("ט״ו בשבט");
+    if(m==="Adar I"&&d===14)add("פורים קטן");
+    if(adar){if((d===13&&w!==6)||(d===11&&w===4))add("תענית אסתר");if(d===14)add("פורים");if(d===15)add("שושן פורים");}
+    if(m==="Nisan"){if(d===14)add("ערב פסח");if(d===15)add("פסח",1);if(d>=16&&d<=20)add("חול המועד פסח");if(d===21)add("שביעי של פסח",1);
+      if((d===27&&w!==5&&w!==0)||(d===26&&w===4)||(d===28&&w===1))add("יום השואה");}
+    if(m==="Iyar"){if((d===4&&w===2)||(d===3&&w===3)||(d===2&&w===3)||(d===5&&w===1))add("יום הזיכרון");
+      if((d===5&&w===3)||(d===4&&w===4)||(d===3&&w===4)||(d===6&&w===2))add("יום העצמאות");
+      if(d===18)add("ל״ג בעומר");if(d===28)add("יום ירושלים");}
+    if(m==="Sivan"){if(d===5)add("ערב שבועות");if(d===6)add("שבועות",1);}
+    if(m==="Tamuz"&&((d===17&&w!==6)||(d===18&&w===0)))add("צום י״ז בתמוז");
+    if(m==="Av"){if((d===9&&w!==6)||(d===10&&w===0))add("תשעה באב");if(d===15)add("ט״ו באב");}
+    if((d===30)||(d===1&&m!=="Tishri"))add("ראש חודש");
+    return L;
+  }
+  const isRest=dt=>dt.getDay()===6||holidays(dt).some(x=>x.yt);
+  // sunrise/sunset style event: zenith in degrees (90.833 = sunrise/sunset), returns a Date or null
+  function sunEv(dt,lat,lon,zen,rise){
+    const R=Math.PI/180,y=dt.getFullYear(),N=Math.round((Date.UTC(y,dt.getMonth(),dt.getDate())-Date.UTC(y,0,0))/864e5);
+    const lh=lon/15,t=N+((rise?6:18)-lh)/24,M=0.9856*t-3.289;
+    let Lg=(M+1.916*Math.sin(M*R)+0.02*Math.sin(2*M*R)+282.634)%360;if(Lg<0)Lg+=360;
+    let RA=Math.atan(0.91764*Math.tan(Lg*R))/R;RA=(RA+360)%360;RA+=Math.floor(Lg/90)*90-Math.floor(RA/90)*90;RA/=15;
+    const sd=0.39782*Math.sin(Lg*R),cd=Math.cos(Math.asin(sd)),ch=(Math.cos(zen*R)-sd*Math.sin(lat*R))/(cd*Math.cos(lat*R));
+    if(ch>1||ch<-1)return null;
+    let H=rise?360-Math.acos(ch)/R:Math.acos(ch)/R;H/=15;
+    let UT=(H+RA-0.06571*t-6.622-lh)%24;if(UT<0)UT+=24;
+    return new Date(Date.UTC(y,dt.getMonth(),dt.getDate())+UT*36e5);
+  }
+  let hmFmt;try{hmFmt=new Intl.DateTimeFormat("en-GB",{hour:"2-digit",minute:"2-digit",hour12:false,timeZone:"Asia/Jerusalem"});}catch(_){hmFmt=new Intl.DateTimeFormat("en-GB",{hour:"2-digit",minute:"2-digit",hour12:false});}
+  const zhm=d=>d?hmFmt.format(d):"—";
+  function zmanim(dt){
+    const [nm,lat,lon,cl]=calLoc();
+    const sunset=sunEv(dt,lat,lon,90.833,false);
+    return {nm,cl,dawn:sunEv(dt,lat,lon,106.1,true),rise:sunEv(dt,lat,lon,90.833,true),set:sunset,tzeit:sunEv(dt,lat,lon,98.5,false),
+      candles:sunset?new Date(sunset.getTime()-cl*6e4):null};
+  }
+  function zCard(k){
+    const dt=parseKey(k),li=el("li","zcard");
+    const H=calCfg.hol?holidays(dt):[];
+    if(H.length){const h=el("div","hols");H.forEach(x=>h.append(el("span",null,x.n)));li.append(h);}
+    if(calCfg.z){
+      const z=zmanim(dt),rest=isRest(dt),next=isRest(addD(dt,1));
+      const nextH=holidays(addD(dt,1)).some(x=>x.yt),nextS=addD(dt,1).getDay()===6,curH=holidays(dt).some(x=>x.yt),curS=dt.getDay()===6;
+      const lbl=(s,h)=>s&&h?"שבת וחג":s?"שבת":"חג";
+      if(!rest&&next){const r=el("div","shb");r.append(el("span",null,"🕯️ כניסת "+lbl(nextS,nextH)),el("b",null,zhm(z.candles)));li.append(r);}
+      if(rest&&!next){const r=el("div","shb");r.append(el("span",null,"✨ יציאת "+lbl(curS,curH)),el("b",null,zhm(z.tzeit)));li.append(r);}
+      const g=el("div","zt");[["עלות השחר",z.dawn],["הנץ החמה (זריחה)",z.rise],["שקיעה",z.set],["צאת הכוכבים",z.tzeit]].forEach(([a,b])=>{const c=el("div");c.append(el("span",null,a),el("b",null,zhm(b)));g.append(c);});
+      li.append(g,el("div","zloc","📍 "+z.nm+" · זמנים מחושבים, ייתכן הפרש של דקה"));
+    }
+    return (H.length||calCfg.z)?li:null;
+  }
+  {const sel=$("scLoc");CAL_LOCS.forEach((c,i)=>{const o=el("option",null,c[0]);o.value=i;sel.append(o);});const og=el("option",null,"📍 המיקום הנוכחי שלי");og.value="gps";sel.append(og);}
+  const syncCalSet=()=>{$("scLoc").value=String(calCfg.loc);$("scShowHol").checked=calCfg.hol;$("scShowZ").checked=calCfg.z;$("scLocNote").textContent=calCfg.loc==="gps"&&calCfg.gps?"לפי המיקום שנשמר בטלפון":"";};
+  $("scSetBtn").onclick=()=>{const p=$("scSet");p.hidden=!p.hidden;syncCalSet();};
+  $("scSetDone").onclick=()=>{$("scSet").hidden=true;};$("scSet").onsubmit=e=>e.preventDefault();
+  $("scShowHol").onchange=e=>{calCfg.hol=e.target.checked;saveCal();renderSched();};
+  $("scShowZ").onchange=e=>{calCfg.z=e.target.checked;saveCal();renderSched();};
+  $("scLoc").onchange=e=>{const v=e.target.value;
+    if(v!=="gps"){calCfg.loc=Number(v);saveCal();syncCalSet();renderSched();return;}
+    if(!navigator.geolocation){toast("אין גישה למיקום בטלפון הזה");syncCalSet();return;}
+    $("scLocNote").textContent="מאתר מיקום…";
+    navigator.geolocation.getCurrentPosition(p=>{calCfg.loc="gps";calCfg.gps=[+p.coords.latitude.toFixed(3),+p.coords.longitude.toFixed(3)];saveCal();syncCalSet();renderSched();toast("המיקום נשמר");},
+      ()=>{toast("לא הצלחתי לקבל מיקום. בדקו שהרשאת המיקום פתוחה.");syncCalSet();},{enableHighAccuracy:false,timeout:15000,maximumAge:6e5});};
   function renderSched(){
     if($("v-sched").hidden)return;
     const first=new Date(scY,scM,1),last=new Date(scY,scM+1,0);
@@ -3514,18 +3612,20 @@ const top=el("div","top");
     const tk=key(new Date());
     for(let d=1;d<=last.getDate();d++){
       const dt=new Date(scY,scM,d),k=key(dt);
-      const b=el("button","day"+(k===tk?" today":"")+(k===scSel?" sel":""));b.type="button";
+      const HL=calCfg.hol?holidays(dt).filter(x=>x.n!=="ראש חודש"):[];
+      const b=el("button","day"+(k===tk?" today":"")+(k===scSel?" sel":"")+(HL.some(x=>x.yt)?" holy":""));b.type="button";
       const hh=heb(dt),top=el("div");top.append(el("span","gd",d));
       const dots=el("div","dots");
       U.filter(x=>onDay(x,k)).slice(0,4).forEach(x=>{const s=el("span","dot");s.style.background=x.color||EV_COLORS[0];dots.append(s);});
       if(A.some(x=>onDay(x,k)))dots.append(el("span","dot ab"));
-      b.append(top,el("div","hd",hh?gem(hh.day):""),dots);
+      b.append(top,el("div","hd",hh?gem(hh.day):""));if(HL.length)b.append(el("div","hol",HL[0].n.replace(/ – נר .*/,"")));b.append(dots);
       b.setAttribute("aria-label",d+" "+GM[scM]+(hh?", "+hebFull(dt):""));
       b.onclick=()=>{scSel=k;renderSched();};g.append(b);
     }
     const sd=parseKey(scSel);
     $("scDayHead").textContent="יום "+DOWL[sd.getDay()]+", "+fmtG(scSel)+(hParts?" · "+hebFull(sd):"");
     const ul=$("scDay");ul.textContent="";
+    {const zc=zCard(scSel);if(zc)ul.append(zc);}
     const all=U.filter(x=>onDay(x,scSel)).sort((a,b)=>(a.start||"").localeCompare(b.start||""));
     const P=all.filter(x=>x.src==="paste"&&x.start);
     const list=all.filter(x=>!P.includes(x));
