@@ -216,6 +216,9 @@ a.approvals.mine{margin-top:14px;font-size:17px}
 .tiles:not(.three)>.tile:has(.cpn:not([hidden])){gap:3px;padding-block:10px}
 .tiles:not(.three)>.tile:has(.cpn:not([hidden])) svg{width:56px;height:56px;margin-bottom:4px}
 .tiles:not(.three)>.tile:has(.cpn:not([hidden])) .t{font-size:19px;line-height:1.1;margin-bottom:2px}
+.tile .lzw{display:flex;flex-direction:column;align-items:center;gap:3px;max-width:100%}
+.tile .lzw:has(.cpn:not([hidden])){-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.25),#000 42%,#000 58%,rgba(0,0,0,.25));mask-image:linear-gradient(to bottom,rgba(0,0,0,.25),#000 42%,#000 58%,rgba(0,0,0,.25))}
+.tile .lzw .cpn{opacity:.9}
 #tileOrbat .t{font-size:18px;line-height:1.05;text-align:center}
 html,body{overflow-x:clip}
 #homeTiles{position:relative}
@@ -740,7 +743,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
           <rect x="8" y="12" width="48" height="44" rx="5" fill="var(--accent)" fill-opacity=".25"/><path d="M8 24h48M20 6v12M44 6v12"/>
           <circle cx="22" cy="36" r="3"/><circle cx="34" cy="36" r="3"/><circle cx="22" cy="46" r="3"/><path d="M40 44l4 4 7-8"/>
         </svg>
-        <span class="t">לו"ז</span><span class="cpn" id="scTP" hidden></span><span class="c" id="cntSc">—</span><span class="cpn" id="scTN" hidden></span>
+        <span class="t">לו"ז</span><span class="lzw"><span class="cpn" id="scTP" hidden></span><span class="c" id="cntSc">—</span><span class="cpn" id="scTN" hidden></span></span>
       </a>
       <a class="tile t-teal" href="#absent">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
