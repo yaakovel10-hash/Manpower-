@@ -219,6 +219,10 @@ a.approvals.mine{margin-top:14px;font-size:17px}
 .tile .lzw{display:flex;flex-direction:column;align-items:center;gap:3px;max-width:100%}
 .tile .lzw:has(.cpn:not([hidden])){-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.25),#000 42%,#000 58%,rgba(0,0,0,.25));mask-image:linear-gradient(to bottom,rgba(0,0,0,.25),#000 42%,#000 58%,rgba(0,0,0,.25))}
 .tile .lzw .cpn{opacity:.9}
+.tile .lzw .cpn.far{font-size:10px;opacity:.5;line-height:1.1}
+.tile .lzw:has(.far:not([hidden])){gap:2px;-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.08),rgba(0,0,0,.6) 22%,#000 42%,#000 58%,rgba(0,0,0,.6) 78%,rgba(0,0,0,.08));mask-image:linear-gradient(to bottom,rgba(0,0,0,.08),rgba(0,0,0,.6) 22%,#000 42%,#000 58%,rgba(0,0,0,.6) 78%,rgba(0,0,0,.08))}
+.tiles:not(.three)>.tile:has(.far:not([hidden])) svg{width:44px;height:44px;margin-bottom:2px}
+.tiles:not(.three)>.tile:has(.far:not([hidden])) .t{font-size:18px;margin-bottom:0}
 #scAddRow[hidden]{display:none!important}
 #tileOrbat .t{font-size:18px;line-height:1.05;text-align:center}
 html,body{overflow-x:clip}
@@ -744,7 +748,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
           <rect x="8" y="12" width="48" height="44" rx="5" fill="var(--accent)" fill-opacity=".25"/><path d="M8 24h48M20 6v12M44 6v12"/>
           <circle cx="22" cy="36" r="3"/><circle cx="34" cy="36" r="3"/><circle cx="22" cy="46" r="3"/><path d="M40 44l4 4 7-8"/>
         </svg>
-        <span class="t">לו"ז</span><span class="lzw"><span class="cpn" id="scTP" hidden></span><span class="c" id="cntSc">—</span><span class="cpn" id="scTN" hidden></span></span>
+        <span class="t">לו"ז</span><span class="lzw"><span class="cpn far" id="scTPP" hidden></span><span class="cpn" id="scTP" hidden></span><span class="c" id="cntSc">—</span><span class="cpn" id="scTN" hidden></span><span class="cpn far" id="scTNN" hidden></span></span>
       </a>
       <a class="tile t-teal" href="#absent">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
@@ -4615,7 +4619,7 @@ const top=el("div","top");
     renderQueued=true;
     requestAnimationFrame(()=>{renderQueued=false;try{renderAllNow();}catch(e){console.warn("render",e);}});
   }
-  const SNAP_IDS=["meName","meRole","meUnit","meId","cntAt","cntVf","cntSc","scTP","scTN","cntAb","cntWr","cntNm","cntOb","cntGp","cntVh","cntRq","rqBadge","cntMd","mdBadge","cntMine","pendBadge","gapBadge","faultBadge","openUnits","viewWrap"];
+  const SNAP_IDS=["meName","meRole","meUnit","meId","cntAt","cntVf","cntSc","scTP","scTN","scTPP","scTNN","cntAb","cntWr","cntNm","cntOb","cntGp","cntVh","cntRq","rqBadge","cntMd","mdBadge","cntMine","pendBadge","gapBadge","faultBadge","openUnits","viewWrap"];
   let lastSnap="";
   function saveHomeSnap(){
     try{const t={};SNAP_IDS.forEach(id=>{const e=$(id);if(e)t[id]=[id==="openUnits"||id==="viewWrap"?null:e.textContent,e.hidden];});
@@ -4635,6 +4639,8 @@ const top=el("div","top");
     {const t=key(new Date()),ue=unitEv().filter(x=>onDay(x,t)).length,ab=absEv().filter(x=>onDay(x,t)).length+vis(requests).filter(r=>r.status==="approved"&&r.from&&r.from<=t&&(r.to||r.from)>=t).length;
      const P=unitEv().filter(x=>x.src==="paste"&&x.start&&onDay(x,t)).sort((a,b)=>a.start.localeCompare(b.start)),pos=P.length?nowPos(P,t):null;
      {const cur=pos&&pos.cur>=0&&pos.label==="עכשיו"?pos.cur:-1,pv=cur>0?P[cur-1]:null,nx=cur>=0?P[cur+1]:(pos&&pos.label==="בקרוב"?P[1]:null);
+      const pp=cur>1?P[cur-2]:null,nn=cur>=0?P[cur+2]:(pos&&pos.label==="בקרוב"?P[2]:null),ln=x=>x?x.start+" "+x.title:"";
+      $("scTPP").hidden=!pp;$("scTPP").textContent=ln(pp);$("scTNN").hidden=!nn;$("scTNN").textContent=ln(nn);
       $("scTP").hidden=!pv;$("scTP").textContent=pv?pv.start+" "+pv.title:"";$("scTN").hidden=!nx;$("scTN").textContent=nx?nx.start+" "+nx.title:"";}
      $("cntSc").textContent=pos&&pos.cur>=0&&pos.label==="עכשיו"?"עכשיו: "+P[pos.cur].title:pos&&pos.label==="בקרוב"?"בקרוב: "+P[0].title:(ue?ue+" אירועים היום":"אין אירועים היום");$("cntAb").textContent=ab?ab+" היום":"אין היום";}
     {const S=vis(soldiers).filter(s=>!isCmdSoldier(s)),here=S.filter(s=>!awayInfo(s.id)),m=getMarks(rollKey("att"));
