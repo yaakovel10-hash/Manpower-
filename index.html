@@ -274,6 +274,20 @@ html,body{overflow-x:clip}
 .tilebar{position:fixed;top:calc(env(safe-area-inset-top) + 10px);left:16px;right:16px;max-width:560px;margin:0 auto;z-index:30;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--accent);box-shadow:0 10px 24px -12px var(--shadow)}
 .tilebar[hidden]{display:none}
 .tilechk{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin-top:6px}
+.bkopen{margin-top:4px}
+.bkover{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.bkover[hidden]{display:none}
+.bkcard{background:var(--surface);color:var(--fg);width:100%;max-width:560px;max-height:86vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px));display:grid;gap:10px}
+.bkhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bkhead b{font-size:18px}
+.bkx{background:none;border:0;font-size:20px;color:var(--muted);padding:4px 8px}
+.bkrow{display:grid;gap:2px;text-align:start;width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--fg);font:inherit}
+.bkrow b{font-size:15px}.bkrow .mini{font-size:13px}
+.bkrow.none{opacity:.55}
+.bknames{margin:0;padding-inline-start:20px;max-height:34vh;overflow:auto;font-size:14px}
+.bkfile{display:block;text-align:center;cursor:pointer}
+.undobar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--fg);color:var(--bg);border-radius:999px;padding:6px 6px 6px 16px;display:flex;align-items:center;gap:12px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.undobar button{background:var(--accent);color:var(--accent-fg);border:0;border-radius:999px;padding:8px 14px;font:inherit;font-weight:700}
 .setpanel{display:grid;gap:8px;margin-top:10px;padding:12px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
 .pid{display:flex;flex-direction:column;align-items:flex-start}
 .homegear{margin-top:10px;margin-inline-start:0}
@@ -749,7 +763,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
         <button class="pencil homegear" id="setBtn" type="button" aria-expanded="false" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </div>
     </header>
-    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="setShowReqs" data-k="reqs"> בקש"צים</label><label class="allday"><input type="checkbox" id="setShowMed" data-k="med"> רפואה</label><label class="allday"><input type="checkbox" id="setShowFit" data-k="fit"> כושר</label></div>
+    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="setShowReqs" data-k="reqs"> בקש"צים</label><label class="allday"><input type="checkbox" id="setShowMed" data-k="med"> רפואה</label><label class="allday"><input type="checkbox" id="setShowFit" data-k="fit"> כושר</label><button type="button" class="ghost bkopen" id="bkOpen">↺ שחזור חיילים ואמל"ח שנמחקו</button></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <nav class="tiles" id="homeTiles">
@@ -2200,16 +2214,128 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!bulkArm){d.textContent="למחוק "+ids.length+"? לחצו שוב";d.classList.add("armed");
       bulkArm=setTimeout(()=>{bulkArm=null;d.classList.remove("armed");renderBulk();},4000);return;}
     clearTimeout(bulkArm);bulkArm=null;d.classList.remove("armed");d.disabled=true;d.textContent="מוחק…";
-    const ops=[];
+    const ops=[],isS=bulk.k==="s",idSet=new Set(ids);
+    const gone={at:Date.now(),reason:"לפני מחיקה של "+ids.length+(isS?" חיילים":' אמל"ח'),soldiers:isS?soldiers.filter(x=>idSet.has(x.id)):[],weapons:isS?weapons.filter(w=>idSet.has(w.owner)):weapons.filter(w=>idSet.has(w.id))};
+    await bkSave(gone.reason);
     if(bulk.k==="s"){
       ids.forEach(id=>{ops.push(b=>b.delete(fs.doc("soldiers/"+id)));
         const sn=(soldiers.find(x=>x.id===id)||{}).name||"";
         weapons.filter(w=>w.owner===id).forEach(w=>ops.push(b=>b.update(fs.doc("weapons/"+w.id),{owner:"",prevOwnerName:sn})));});
     }else ids.forEach(id=>ops.push(b=>b.delete(fs.doc("weapons/"+id))));
-    try{for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await qc(b.commit());}setBulk(null);}
+    try{for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await qc(b.commit());}setBulk(null);undoBar((isS?"נמחקו "+ids.length+" חיילים":'נמחקו '+ids.length+' אמל"ח'),gone);}
     catch(e){console.warn(e);d.disabled=false;d.textContent="המחיקה נכשלה";setTimeout(renderBulk,2500);}
   };
   addEventListener("hashchange",()=>{if(bulk.k)setBulk(null);});
+  /* ---- backups: copies of the soldiers and weapons kept on this phone, so a mistaken delete can be brought back ---- */
+  const BK="mp-backups",BK_KEEP=30;
+  const bkKey=at=>location.origin+"/mp-bk/"+at;
+  async function bkSave(reason){
+    try{
+      if(!("caches" in window)||!soldiersLoaded||(!soldiers.length&&!weapons.length))return;
+      const at=Date.now(),c=await caches.open(BK);
+      const body=JSON.stringify({at,reason,by:(me&&me.name)||"",soldiers,weapons});
+      await c.put(new Request(bkKey(at)),new Response(body,{headers:{"content-type":"application/json"}}));
+      const ks=(await c.keys()).map(r=>({r,at:+r.url.split("/").pop()||0})).sort((a,b)=>b.at-a.at);
+      for(const k of ks.slice(BK_KEEP))await c.delete(k.r);
+    }catch(e){console.warn("backup",e);}
+  }
+  async function bkList(){
+    try{if(!("caches" in window))return [];const c=await caches.open(BK);const out=[];
+      for(const r of await c.keys()){try{const j=await (await c.match(r)).json();if(j&&(j.soldiers||j.weapons))out.push(j);}catch(_){}}
+      return out.sort((a,b)=>(b.at||0)-(a.at||0));}catch(_){return [];}
+  }
+  // an automatic copy about once an hour while the app is open and up to date
+  let bkLast=0;try{bkLast=+localStorage.getItem("bkLast")||0;}catch(_){}
+  function bkTick(){
+    if(!ready||!soldiersLoaded||!navigator.onLine||Date.now()-bkLast<3600e3)return;
+    bkLast=Date.now();try{localStorage.setItem("bkLast",String(bkLast));}catch(_){}
+    bkSave("גיבוי אוטומטי");
+  }
+  setInterval(bkTick,60e3);setTimeout(bkTick,15e3);
+  // what in a backup no longer exists: only that comes back, nothing that exists is overwritten
+  function bkPlan(bk){
+    const haveS=new Set(soldiers.map(x=>x.id)),haveW=new Map(weapons.map(x=>[x.id,x]));
+    const ok=x=>x&&x.id&&(!x.unit||inScope(x.unit));
+    const S=(bk.soldiers||[]).filter(x=>ok(x)&&!haveS.has(x.id));
+    const W=(bk.weapons||[]).filter(x=>ok(x)&&!haveW.has(x.id));
+    const back=new Set(S.map(x=>x.id));
+    // weapons that stayed but lost their owner when the soldier was deleted: give them back to him
+    const L=(bk.weapons||[]).filter(x=>x&&x.owner&&back.has(x.owner)&&haveW.has(x.id)&&!haveW.get(x.id).owner);
+    return {S,W,L};
+  }
+  async function bkApply({S,W,L}){
+    const clean=x=>{const o={};for(const k in x)if(k!=="id"&&typeof x[k]!=="function")o[k]=x[k];o.addedBy=uid;o.restoredAt=Date.now();return o;};
+    const ops=[];
+    S.forEach(x=>ops.push(b=>b.set(fs.doc("soldiers/"+x.id),clean(x))));
+    W.forEach(x=>ops.push(b=>b.set(fs.doc("weapons/"+x.id),clean(x))));
+    L.forEach(x=>ops.push(b=>b.update(fs.doc("weapons/"+x.id),{owner:x.owner,prevOwnerName:firebase.firestore.FieldValue.delete()})));
+    for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));const r=await qc(b.commit());if(r===false)throw new Error("נכשל");}
+  }
+  function undoBar(msg,gone){
+    let u=$("undoBar");if(u)u.remove();
+    u=document.createElement("div");u.id="undoBar";u.className="undobar";
+    const t=document.createElement("span");t.textContent=msg;
+    const b=document.createElement("button");b.type="button";b.textContent="ביטול";
+    b.onclick=async()=>{b.disabled=true;b.textContent="מחזיר…";
+      try{await bkApply(bkPlan(gone));u.remove();toast("הוחזר");}catch(e){console.warn(e);b.disabled=false;b.textContent="נסו שוב";}};
+    u.append(t,b);document.body.append(u);
+    setTimeout(()=>{if(u.isConnected&&!b.disabled)u.remove();},12000);
+  }
+  const bkWhen=at=>{const d=new Date(at),p=n=>String(n).padStart(2,"0");return p(d.getDate())+"/"+p(d.getMonth()+1)+" "+p(d.getHours())+":"+p(d.getMinutes());};
+  async function bkOpenUI(){
+    let o=$("bkOver");
+    if(!o){o=document.createElement("div");o.id="bkOver";o.className="bkover";document.body.append(o);o.addEventListener("click",e=>{if(e.target===o)o.hidden=true;});}
+    o.hidden=false;o.textContent="";
+    const card=document.createElement("div");card.className="bkcard";o.append(card);
+    const head=document.createElement("div");head.className="bkhead";
+    const ttl=document.createElement("b");ttl.textContent='שחזור חיילים ואמל"ח';
+    const x=document.createElement("button");x.className="bkx";x.type="button";x.textContent="✕";x.setAttribute("aria-label","סגירה");x.onclick=()=>{o.hidden=true;};
+    head.append(ttl,x);card.append(head);
+    const body=document.createElement("div");body.style.display="grid";body.style.gap="8px";card.append(body);
+    const mini=t=>{const m=document.createElement("div");m.className="mini";m.textContent=t;return m;};
+    const showPlan=(bk,label)=>{
+      body.textContent="";const P=bkPlan(bk);
+      const h=document.createElement("b");h.textContent=label;body.append(h);
+      if(!P.S.length&&!P.W.length&&!P.L.length){body.append(mini("כל מה שבגיבוי הזה כבר קיים — אין מה להחזיר."));}
+      else{
+        body.append(mini("יוחזרו "+P.S.length+" חיילים ו-"+P.W.length+' אמל"ח'+(P.L.length?" (ועוד "+P.L.length+' אמל"ח יחזרו לבעלים שלהם)':"")+". שום דבר קיים לא יידרס."));
+        const ul=document.createElement("ul");ul.className="bknames";
+        P.S.slice().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"he")).forEach(s=>{const li=document.createElement("li");li.textContent=(s.name||"(ללא שם)")+(s.squad?" · "+s.squad:"");ul.append(li);});
+        P.W.forEach(w=>{const li=document.createElement("li");li.textContent=[w.type,w.num].filter(Boolean).join(" ")||'אמל"ח';ul.append(li);});
+        body.append(ul);
+        const go=document.createElement("button");go.type="button";go.className="primary";go.textContent="החזר";
+        go.onclick=async()=>{if(!navigator.onLine){toast("צריך אינטרנט כדי לשחזר");return;}
+          go.disabled=true;go.textContent="מחזיר…";
+          try{await bkApply(P);body.textContent="";const d=document.createElement("b");d.textContent="✓ הוחזרו "+P.S.length+" חיילים ו-"+P.W.length+' אמל"ח';body.append(d);}
+          catch(e){console.warn(e);go.disabled=false;go.textContent="השחזור נכשל — נסו שוב";}};
+        body.append(go);
+      }
+      const back=document.createElement("button");back.type="button";back.className="ghost";back.textContent="חזרה לרשימה";back.onclick=list;body.append(back);
+    };
+    const fileBtn=()=>{
+      const l=document.createElement("label");l.className="ghost bkfile btn";l.textContent="שחזור מקובץ גיבוי";
+      const f=document.createElement("input");f.type="file";f.accept=".json,application/json";f.hidden=true;l.append(f);
+      f.onchange=async()=>{const fl=f.files[0];if(!fl)return;try{const j=JSON.parse(await fl.text());if(!j||!(j.soldiers||j.weapons))throw 0;showPlan(j,"קובץ: "+fl.name);}catch(_){toast("זה לא קובץ גיבוי");}};
+      return l;
+    };
+    async function list(){
+      body.textContent="";body.append(mini("גיבויים שנשמרו בטלפון הזה. בוחרים גיבוי ורואים מה ממנו כבר לא קיים — רק זה יוחזר."));
+      const all=await bkList();
+      if(!all.length)body.append(mini("עוד אין גיבויים בטלפון הזה. מעכשיו נשמר גיבוי אוטומטי כל שעה, ותמיד לפני מחיקה מרובה."));
+      all.forEach(bk=>{
+        const P=bkPlan(bk),n=P.S.length+P.W.length;
+        const r=document.createElement("button");r.type="button";r.className="bkrow"+(n?"":" none");
+        const b=document.createElement("b");b.textContent=bkWhen(bk.at)+" · "+(bk.reason||"גיבוי");
+        r.append(b,mini((bk.soldiers||[]).length+" חיילים, "+(bk.weapons||[]).length+' אמל"ח · '+(n?"חסרים עכשיו: "+P.S.length+" חיילים, "+P.W.length+' אמל"ח':"הכול קיים")));
+        r.onclick=()=>showPlan(bk,bkWhen(bk.at)+" · "+(bk.reason||"גיבוי"));
+        body.append(r);
+      });
+      body.append(fileBtn());
+    }
+    list();
+  }
+  $("bkOpen").onclick=bkOpenUI;
+
   function renderS(){
     if($("v-soldiers").hidden){counts();return;}
     const q=$("qS").value.trim().toLowerCase(),ul=$("listS");ul.textContent="";if(bulk.k==="s")bulk.vis=[];

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>שחזור מהזיכרון</title>
+<style>
+:root{--bg:#f1f0e8;--surface:#fbfaf4;--fg:#22241c;--muted:#6b6d5c;--line:#cfcdb9;--accent:#4f5b2e;--accent-fg:#f5f4e8;--danger:#a3372a;--ok:#2f7a3c}
+@media (prefers-color-scheme:dark){:root{--bg:#1a1b16;--surface:#24261f;--fg:#ecebdf;--muted:#a3a491;--line:#3a3c31;--accent:#9bab62;--accent-fg:#1a1b16;--danger:#e0705f;--ok:#6cc27a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;padding:20px 16px 40px}
+main{max-width:520px;margin:0 auto;display:grid;gap:14px}
+h1{font-size:22px;margin:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.st{font-weight:700}
+.ok{color:var(--ok)}.bad{color:var(--danger)}
+.mini{color:var(--muted);font-size:14px}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 16px;background:var(--accent);color:var(--accent-fg);width:100%}
+button.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+button:disabled{opacity:.5}
+ol{margin:6px 0 0;padding-inline-start:22px}
+ul.names{margin:6px 0 0;padding-inline-start:20px;max-height:260px;overflow:auto}
+</style>
+</head>
+<body>
+<main>
+  <h1>שחזור מהזיכרון של הטלפון</h1>
+  <div class="card" id="where"></div>
+  <div class="card">
+    <ol>
+      <li>לפני שנכנסתם לכאן: סגרו לגמרי את אפליקציית כוח האדם (גם מהאפליקציות האחרונות).</li>
+      <li>אחרי שהדף הזה נטען — העבירו את הטלפון ל<b>מצב טיסה</b>.</li>
+      <li>לחצו "קרא מהזיכרון".</li>
+    </ol>
+  </div>
+  <div class="card"><div class="st" id="st">טוען…</div><div class="mini" id="sub"></div></div>
+  <button id="read" disabled>קרא מהזיכרון</button>
+  <div class="card" id="res" hidden>
+    <div class="st" id="resT"></div>
+    <ul class="names" id="names"></ul>
+  </div>
+  <button id="share" hidden>שליחת קובץ הגיבוי (וואטסאפ / מייל)</button>
+  <button class="ghost" id="dl" hidden>שמירת קובץ הגיבוי בטלפון</button>
+  <div class="card" id="next" hidden>
+    <b>מה עכשיו?</b>
+    <ol>
+      <li>הגיבוי נשמר גם בטלפון הזה וגם בקובץ.</li>
+      <li>אפשר לצאת ממצב טיסה.</li>
+      <li>שלחו את הקובץ למנהל. המנהל פותח את האפליקציה ← ⚙︎ הגדרות ← "שחזור נתונים שנמחקו" ← "שחזור מקובץ גיבוי".</li>
+      <li>או: פתחו כאן את האפליקציה ← ⚙︎ הגדרות ← "שחזור נתונים שנמחקו" ← בוחרים את הגיבוי "מהזיכרון של הטלפון".</li>
+    </ol>
+  </div>
+</main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const st=(t,c)=>{$("st").textContent=t;$("st").className="st "+(c||"");};
+  // if this page shows at all, the saved copy of the app did not take over (it would have opened instead), so nothing gets synced
+  $("where").innerHTML='<span class="ok st">✓ הדף עובד בנפרד מהאפליקציה — בטוח להמשיך.</span>';
+  if(!window.firebase){st("לא נטען. בדקו חיבור לאינטרנט ונסו שוב (בלי מצב טיסה).","bad");return;}
+  firebase.initializeApp({
+    apiKey:"AIzaSyC-g0AaFEYJQrqTbq11R5kl0-yEKPdSi8c",
+    authDomain:"soldier-management-76628.firebaseapp.com",
+    projectId:"soldier-management-76628",
+    storageBucket:"soldier-management-76628.firebasestorage.app",
+    messagingSenderId:"621410368808",
+    appId:"1:621410368808:web:bd299df15b021a6367641d"
+  });
+  const fs=firebase.firestore();
+  let ready=false,blob=null,fname="",perr="";
+  fs.enablePersistence({synchronizeTabs:true})
+    .catch(e=>{console.warn(e);perr=(e&&e.code)||"";})
+    .then(()=>fs.disableNetwork()) // never talk to the server from here: only read what the phone remembers
+    .then(()=>{ready=true;$("read").disabled=false;st("מוכן. עברו למצב טיסה ולחצו \"קרא מהזיכרון\".");$("sub").textContent="הדף מנותק מהשרת, כך ששום דבר לא יימחק מהזיכרון.";})
+    .catch(e=>st("שגיאה: "+(e&&e.message||e),"bad"));
+  const clean=d=>{const o=Object.assign({id:d.id},d.data());return JSON.parse(JSON.stringify(o));};
+  $("read").onclick=async()=>{
+    if(!ready)return;$("read").disabled=true;st("קורא…");
+    try{
+      const [s,w]=await Promise.all([fs.collection("soldiers").get({source:"cache"}),fs.collection("weapons").get({source:"cache"})]);
+      const soldiers=s.docs.map(clean),weapons=w.docs.map(clean);
+      if(!soldiers.length&&!weapons.length){st("לא נמצא כלום בזיכרון של הטלפון הזה."+(perr?" ("+perr+" — ודאו שהאפליקציה סגורה לגמרי ונסו שוב)":""),"bad");$("read").disabled=false;return;}
+      const at=Date.now();
+      const data={at,reason:"מהזיכרון של הטלפון",source:"cache",soldiers,weapons};
+      const json=JSON.stringify(data);
+      try{const c=await caches.open("mp-backups");await c.put(new Request(location.origin+"/mp-bk/"+at),new Response(json,{headers:{"content-type":"application/json"}}));}catch(e){console.warn(e);}
+      try{localStorage.setItem("mp-recover",json);}catch(_){}
+      blob=new Blob([json],{type:"application/json"});
+      const d=new Date(at),p=n=>String(n).padStart(2,"0");
+      fname="gibui-"+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"-"+p(d.getHours())+p(d.getMinutes())+".json";
+      st("✓ נמצאו "+soldiers.length+" חיילים ו-"+weapons.length+" אמל\"ח","ok");
+      $("sub").textContent="";
+      $("res").hidden=false;$("resT").textContent="החיילים שנמצאו:";
+      const ul=$("names");ul.textContent="";
+      soldiers.slice().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"he")).forEach(x=>{const li=document.createElement("li");li.textContent=(x.name||"(ללא שם)")+(x.squad?" · "+x.squad:"");ul.append(li);});
+      $("share").hidden=!(navigator.canShare&&navigator.canShare({files:[new File([blob],fname,{type:"application/json"})]}));
+      $("dl").hidden=false;$("next").hidden=false;
+    }catch(e){console.warn(e);st("שגיאה בקריאה: "+(e&&e.message||e),"bad");$("read").disabled=false;}
+  };
+  $("share").onclick=()=>{navigator.share({files:[new File([blob],fname,{type:"application/json"})],title:"גיבוי כוח אדם"}).catch(()=>{});};
+  $("dl").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname;document.body.append(a);a.click();a.remove();};
+})();
+</script>
+</body>
+</html>
