@@ -79,19 +79,23 @@ ul.names{margin:6px 0 0;padding-inline-start:20px;max-height:260px;overflow:auto
   $("read").onclick=async()=>{
     if(!ready)return;$("read").disabled=true;st("קורא…");
     try{
-      const [s,w]=await Promise.all([fs.collection("soldiers").get({source:"cache"}),fs.collection("weapons").get({source:"cache"})]);
-      const soldiers=s.docs.map(clean),weapons=w.docs.map(clean);
-      if(!soldiers.length&&!weapons.length){st("לא נמצא כלום בזיכרון של הטלפון הזה."+(perr?" ("+perr+" — ודאו שהאפליקציה סגורה לגמרי ונסו שוב)":""),"bad");$("read").disabled=false;return;}
+      // everything the app keeps: soldiers (with their gaps and notes), weapons, events (absences, schedule, fitness…), requests, units and members
+      const COLS=["soldiers","weapons","events","requests","units","members"];
+      const snaps=await Promise.all(COLS.map(c=>fs.collection(c).get({source:"cache"}).catch(()=>null)));
+      const all={};COLS.forEach((c,i)=>{all[c]=snaps[i]?snaps[i].docs.map(clean):[];});
+      const soldiers=all.soldiers,weapons=all.weapons;
+      if(!COLS.some(c=>all[c].length)){st("לא נמצא כלום בזיכרון של הטלפון הזה."+(perr?" ("+perr+" — ודאו שהאפליקציה סגורה לגמרי ונסו שוב)":""),"bad");$("read").disabled=false;return;}
       const at=Date.now();
-      const data={at,reason:"מהזיכרון של הטלפון",source:"cache",soldiers,weapons};
+      const data=Object.assign({at,reason:"מהזיכרון של הטלפון",source:"cache"},all);
       const json=JSON.stringify(data);
       try{const c=await caches.open("mp-backups");await c.put(new Request(location.origin+"/mp-bk/"+at),new Response(json,{headers:{"content-type":"application/json"}}));}catch(e){console.warn(e);}
       try{localStorage.setItem("mp-recover",json);}catch(_){}
       blob=new Blob([json],{type:"application/json"});
       const d=new Date(at),p=n=>String(n).padStart(2,"0");
       fname="gibui-"+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+"-"+p(d.getHours())+p(d.getMinutes())+".json";
-      st("✓ נמצאו "+soldiers.length+" חיילים ו-"+weapons.length+" אמל\"ח","ok");
-      $("sub").textContent="";
+      const ev=all.events,kinds={};ev.forEach(e=>{kinds[e.kind||"other"]=(kinds[e.kind||"other"]||0)+1;});
+      st("✓ נשמר הכול מהזיכרון","ok");
+      $("sub").textContent=soldiers.length+" חיילים (כולל פערים והערות) · "+weapons.length+' אמל"ח · '+ev.length+" אירועים (היעדרויות, לו\"ז, כושר ועוד) · "+all.requests.length+' בקש"צים ורפואה';
       $("res").hidden=false;$("resT").textContent="החיילים שנמצאו:";
       const ul=$("names");ul.textContent="";
       soldiers.slice().sort((a,b)=>String(a.name||"").localeCompare(String(b.name||""),"he")).forEach(x=>{const li=document.createElement("li");li.textContent=(x.name||"(ללא שם)")+(x.squad?" · "+x.squad:"");ul.append(li);});
