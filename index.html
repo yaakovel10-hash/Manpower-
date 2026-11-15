@@ -158,7 +158,11 @@ h2.sec{font-family:var(--display);font-weight:400;font-size:20px;margin:18px 0 8
 .ftigrid table{border-collapse:collapse;width:100%;font-size:14px}.ftigrid th{font-size:12px;color:var(--muted);text-align:right;padding:6px;white-space:nowrap}
 .ftigrid td{padding:4px;border-top:1px solid var(--line)}.ftigrid select{min-width:120px;padding:6px;font-size:14px}.ftigrid input{width:70px;padding:6px;text-align:center;direction:ltr;font-size:14px}
 .ftigrid tr.skip td{opacity:.45}.ftigrid tr.isnew select{border-color:var(--warn)}.ftigrid .ftnm{width:100%;margin-top:4px;text-align:right;direction:rtl}.ftigrid tr.nomatch select{border-color:var(--danger)}
-.ftchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.ftchips .chip{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;font-weight:700}.ftchips .chip.add{border-style:dashed;color:var(--accent)}
+.ftchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.ftchips .chip{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;font-weight:700}.ftchips .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+#ftDCards>li.ftcathead{display:flex!important;align-items:center;gap:8px;padding:6px 2px 10px;border:0}.ftcathead b{flex:1;font-size:19px}.ftcathead .pencil svg{width:20px;height:20px}
+#ftDCards>li.ftrank{display:grid!important;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 6px}
+.ftrank .rk{color:var(--muted);font-weight:700;text-align:center;font-variant-numeric:tabular-nums}.ftrank .nm{font-size:17px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ftrank .rv{font-size:19px;direction:ltr;font-variant-numeric:tabular-nums;color:var(--accent)}
+.ftchips .chip.add{border-style:dashed;color:var(--accent)}
 #ftDCards>li.ftcard{display:block!important;padding:12px 14px}
 .fttop{display:grid;grid-template-columns:minmax(0,1fr) 92px 44px;align-items:center;gap:10px}.fttop b{font-size:18px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ftpcol{display:flex;justify-content:center}
 .ftpass{font-weight:800;font-size:14px;border-radius:999px;padding:3px 12px}.ftpass.ok{background:color-mix(in srgb,var(--ok) 22%,transparent);color:var(--ok)}.ftpass.no{background:color-mix(in srgb,var(--danger) 22%,transparent);color:var(--danger)}
@@ -4534,7 +4538,7 @@ const top=el("div","top");
     if(ftTab==="res")renderFitRes();else renderFitProg();
   }
   function fitSoldiers(sq){return visRO(soldiers).filter(s=>!isCmdSoldier(s)&&(sq==="*"||(s.squad||"")===sq)).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));}
-  let ftDay=null;
+  let ftDay=null,ftDayAct=null;
   function renderFitRes(){
     const E=fitEv().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.at||0)-(a.at||0));
     const cur=ftOpen&&E.find(x=>x.id===ftOpen);if(ftOpen&&!cur)ftOpen=null;
@@ -4560,7 +4564,9 @@ const top=el("div","top");
     $("ftDTitle").textContent="מבחן כושר";$("ftDSub").textContent=" · "+fmtG(d);
     const acts=X.slice().sort((a,b)=>fitRank(a.act)-fitRank(b.act));
     const ch=$("ftDActs");ch.textContent="";
-    acts.forEach(x=>{const b=el("button","chip",(x.act===FIT_PASS?"עבר/לא עבר":x.act)+" ✎");b.type="button";b.onclick=()=>{ftOpen=x.id;renderFit();scrollTo({top:0});};ch.append(b);});
+    if(ftDayAct&&!acts.some(x=>x.id===ftDayAct))ftDayAct=null;
+    // tapping a category shows everyone's result in it; tap again (or ✕) to go back to the soldier cards
+    acts.forEach(x=>{const b=el("button","chip"+(ftDayAct===x.id?" on":""),x.act===FIT_PASS?"עבר/לא עבר":x.act);b.type="button";b.onclick=()=>{ftDayAct=ftDayAct===x.id?null:x.id;renderFitRes();};ch.append(b);});
     const add=el("button","chip add","+ קטגוריה");add.type="button";add.onclick=()=>{$("ftNew").click();$("ftDate").value=d;};ch.append(add);
     const sids=new Set();X.forEach(x=>Object.keys(x.results||{}).forEach(k=>sids.add(k)));
     const pass=X.find(x=>x.act===FIT_PASS),score=X.find(x=>x.act===FIT_SCORE);
@@ -4568,6 +4574,17 @@ const top=el("div","top");
     const S=[...sids].map(id=>soldierById(id)).filter(Boolean).filter(s=>!q||(s.name||"").includes(q))
       .sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
     const ul=$("ftDCards");ul.textContent="";
+    if(ftDayAct){const x=acts.find(z=>z.id===ftDayAct),t=x.mtype||A.get(x.act)||"count",better=fitBetter(t);
+      const hd=el("li","ftcathead");hd.append(el("b",null,x.act===FIT_PASS?"עבר / לא עבר":x.act));
+      const pen=el("button","pencil sm");pen.type="button";pen.setAttribute("aria-label","עריכת "+x.act);pen.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/></svg>';pen.onclick=()=>{ftOpen=x.id;renderFit();scrollTo({top:0});};
+      const cl=el("button","ghost sm","✕");cl.type="button";cl.setAttribute("aria-label","חזרה לכל החיילים");cl.onclick=()=>{ftDayAct=null;renderFitRes();};
+      hd.append(pen,cl);ul.append(hd);
+      const L=S.map(s=>({s,v:(x.results||{})[s.id]})).sort((a,b)=>{const ea=a.v==null||a.v==="",eb=b.v==null||b.v==="";if(ea!==eb)return ea?1:-1;if(ea)return 0;return t==="pass"?b.v-a.v:better==="low"?a.v-b.v:b.v-a.v;});
+      L.forEach(({s,v},i)=>{const li=el("li","ftrank");const has=!(v==null||v==="");
+        li.append(el("span","rk",has&&t!=="pass"?String(i+1):""),el("span","nm",s.name));
+        if(t==="pass"&&has)li.append(el("span","ftpass "+(+v?"ok":"no"),+v?"עבר":"לא עבר"));else li.append(el("b","rv",has?fmtFit(+v,t):"—"));
+        ul.append(li);});
+      return;}
     S.forEach(s=>{const li=el("li","ftcard tap"+(ftOpenCards.has(d+s.id)?" open":""));
       const top=el("div","fttop");top.append(el("b",null,s.name));
       const pv=pass?(pass.results||{})[s.id]:null;
@@ -4583,7 +4600,7 @@ const top=el("div","top");
       ul.append(li);});
     if(!S.length)ul.append(el("li","mini",q?"לא נמצא.":"אין תוצאות ביום הזה."));
   }
-  $("ftDBack").onclick=()=>{ftDay=null;renderFit();};
+  $("ftDBack").onclick=()=>{ftDay=null;ftDayAct=null;renderFit();};
   $("ftDQ").oninput=()=>renderFitRes();
   function renderFitSess(x){
     const t=x.mtype||fitActs().get(x.act)||"count";
