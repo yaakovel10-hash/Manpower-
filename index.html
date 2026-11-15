@@ -149,6 +149,7 @@ h2.sec{font-family:var(--display);font-weight:400;font-size:20px;margin:18px 0 8
 .ftspark{grid-column:1/-1;width:100%;height:30px;display:block}
 .fthist{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13px;color:var(--muted);direction:rtl}.fthist span b{direction:ltr;display:inline-block;color:var(--fg)}
 .ftpb{font-size:11px;font-weight:800;color:var(--warn);margin-inline-start:6px}
+.impnote{display:grid;gap:8px;margin:10px 0}.impnote .row2{grid-template-columns:1fr auto}.impnote input{min-width:0}#impPasteBox{display:grid;gap:8px}#impPasteBox[hidden]{display:none}
 .rqtabs{display:flex;gap:6px;margin:12px 0 4px}.rqtabs button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:8px 4px;font:inherit;font-weight:700;font-size:14px}.rqtabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .req.out{border-color:var(--ok)}
 .req .notes{color:var(--muted);font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -1217,6 +1218,16 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
       <label class="f">מסגרת לחיילים שיתווספו<select id="impUnit"></select></label>
       <label class="ghost filebtn" for="impFile">בחירת קובץ PDF</label>
       <input type="file" id="impFile" accept="application/pdf,.pdf" hidden>
+      <div class="impnote">
+        <span class="mini">או מפתק של Apple (הפתקים באייפון):</span>
+        <div class="row2"><input type="text" inputmode="url" id="impUrl" placeholder="הדבקת קישור icloud.com/notes/…" autocomplete="off" dir="ltr"><button class="ghost" type="button" id="impUrlGo">קריאת הפתק</button></div>
+        <div id="impPasteBox" hidden>
+          <span class="mini" id="impPasteHint">פותחים את הפתק, לוחצים לחיצה ארוכה ← "בחירת הכל" ← "העתקה", ומדביקים כאן:</span>
+          <textarea id="impText" rows="6" placeholder="הטקסט מהפתק"></textarea>
+          <button class="ghost" type="button" id="impTextGo">קריאת הטקסט</button>
+        </div>
+        <button class="linkbtn" type="button" id="impPasteBtn">או הדבקת טקסט מהפתק</button>
+      </div>
       <p class="mini" id="impStatus"></p>
       <div id="impTools" class="ubtns" hidden>
         <button class="linkbtn" type="button" id="impAll">סימון הכול</button>
@@ -2532,12 +2543,15 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     };
     row.append(go,no);box.append(row);
   };
-  $("impClose").onclick=()=>{$("impPanel").hidden=true;$("openImp").hidden=false;impRows=[];impItems=[];impMode="soldiers";typeMap={};$("impFile").value="";$("impStatus").textContent="";renderImp();};
+  $("impClose").onclick=()=>{$("impPasteBox").hidden=true;$("impPasteBtn").hidden=false;$("impText").value="";$("impUrl").value="";$("impPanel").hidden=true;$("openImp").hidden=false;impRows=[];impItems=[];impMode="soldiers";typeMap={};$("impFile").value="";$("impStatus").textContent="";renderImp();};
   $("impFile").onchange=async e=>{
     const f=e.target.files[0];if(!f)return;
-    impRows=[];impItems=[];impMode="soldiers";renderImp();showErr("impErr","");$("impStatus").textContent="קורא את הקובץ…";
+    await importFrom(()=>readPdf(f),"לא הצלחתי לקרוא את הקובץ. ודאו שזה PDF תקין ושיש חיבור לאינטרנט.");
+  };
+  async function importFrom(getPages,failMsg){
+    impRows=[];impItems=[];impMode="soldiers";renderImp();showErr("impErr","");$("impStatus").textContent="קורא…";
     try{
-      const pages=await readPdf(f);
+      const pages=await getPages();
       const mx=parseMatrix(pages);
       if(mx.length){
         impItems=mx.slice().sort((a,b)=>a.type.localeCompare(b.type,"he"));impMode="items";impRows=[];
@@ -2552,8 +2566,63 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       typeMap={};impRows.forEach(r=>r.weapons.forEach(w=>{if(!(w.type in typeMap))typeMap[w.type]=w.type;}));
       const nw=impRows.reduce((n,r)=>n+r.weapons.length,0);
       $("impStatus").textContent=impRows.length?"נמצאו "+impRows.length+" חיילים"+(nw?" ו-"+nw+' פריטי אמל"ח':"")+". בדקו את השמות וסוגי הנשק לפני השמירה.":"לא נמצאו בקובץ שורות עם מספר אישי של 7 ספרות. ייתכן שהקובץ סרוק כתמונה.";
-    }catch(err){console.warn(err);$("impStatus").textContent="";showErr("impErr","לא הצלחתי לקרוא את הקובץ. ודאו שזה PDF תקין ושיש חיבור לאינטרנט.");}
+    }catch(err){console.warn(err);$("impStatus").textContent="";showErr("impErr",failMsg);}
     renderImp();
+  }
+  /* ---------- import from an Apple Notes shared link (or text copied from the note) ---------- */
+  // text lines -> the same positioned "pages" the PDF reader produces (columns right-to-left, like a Hebrew table)
+  function textToPages(txt){
+    const lines=String(txt||"").replace(/\r/g,"").split("\n").map(l=>l.replace(/[\u200e\u200f\u202a-\u202e\u2066-\u2069\ufffc]/g,"").trim()).filter(Boolean);
+    const items=[];
+    lines.forEach((l,li)=>{
+      let cells=l.includes("\t")?l.split("\t"):l.includes("|")?l.split("|"):l.split(/\s{2,}|\s[-–—]\s|,\s*/);
+      const tab=l.includes("\t")||l.includes("|");
+      cells=cells.map(c=>c.trim());if(!tab)cells=cells.filter(Boolean); // in a table an empty cell keeps its column
+      if(cells.filter(Boolean).length===1&&!tab){ // one-space separated: keep names together, split numbers off
+        cells=(l.match(/\d[\d-]*|[^\d\s][^\d]*?(?=\s\d|$)/g)||[l]).map(c=>c.trim()).filter(Boolean);}
+      cells.forEach((c,ci)=>{if(c)items.push({s:c,x:1000-ci*90,w:Math.min(80,c.length*6),y:20000-li*14,h:10});});
+    });
+    return [items];
+  }
+  // shared notes are public CloudKit records; the note body is a gzip'd protobuf
+  async function readAppleNote(url){
+    const m=String(url).match(/icloud\.com\/notes\/([A-Za-z0-9_-]+)/);if(!m)throw new Error("bad-link");
+    const r=await fetch("https://ckdatabasews.icloud.com/database/1/com.apple.notes/production/public/records/resolve",{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify({shortGUIDs:[{value:m[1]}]})});
+    if(!r.ok)throw new Error("http "+r.status);
+    const j=await r.json();const rec=j&&j.results&&j.results[0]&&j.results[0].rootRecord;if(!rec||!rec.fields)throw new Error("no-record");
+    const f=rec.fields,b64=(f.TextDataEncrypted||f.TextData||{}).value;
+    let bytes=null;
+    if(b64){bytes=Uint8Array.from(atob(b64),c=>c.charCodeAt(0));}
+    else if(f.TextDataAsset&&f.TextDataAsset.value&&f.TextDataAsset.value.downloadURL){bytes=new Uint8Array(await (await fetch(f.TextDataAsset.value.downloadURL)).arrayBuffer());}
+    if(!bytes)throw new Error("no-body");
+    if(bytes[0]===0x1f&&bytes[1]===0x8b){const ds=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));bytes=new Uint8Array(await new Response(ds).arrayBuffer());}
+    // walk the protobuf and keep the longest readable text (that's the note body)
+    let best="";const dec=new TextDecoder("utf-8",{fatal:true});
+    const walk=(b,depth)=>{let i=0;const vint=()=>{let x=0,sh=0,c;do{c=b[i++];x+=(c&127)*Math.pow(2,sh);sh+=7;}while(c&128&&i<b.length);return x;};
+      try{while(i<b.length){const key=vint(),wt=key&7;
+        if(wt===0)vint();else if(wt===1)i+=8;else if(wt===5)i+=4;
+        else if(wt===2){const len=vint();const sub=b.subarray(i,i+len);i+=len;
+          try{const t=dec.decode(sub);if(t.length>best.length&&/[\u0590-\u05ff\w]/.test(t)&&!/[\x00-\x08]/.test(t))best=t;}catch(_){}
+          if(depth<6&&len>2)walk(sub,depth+1);}
+        else return;}}catch(_){}};
+    walk(bytes,0);
+    const title=f.TitleEncrypted&&f.TitleEncrypted.value?(()=>{try{return dec.decode(Uint8Array.from(atob(f.TitleEncrypted.value),c=>c.charCodeAt(0)));}catch(_){return "";}})():"";
+    if(!best.trim())throw new Error("empty");
+    return {title,text:best};
+  }
+  const showPaste=(hint)=>{$("impPasteBox").hidden=false;$("impPasteBtn").hidden=true;if(hint)$("impPasteHint").textContent=hint;};
+  $("impPasteBtn").onclick=()=>{showPaste();$("impText").focus();};
+  $("impTextGo").onclick=async()=>{const t=$("impText").value;if(!t.trim()){$("impText").focus();return;}
+    await importFrom(async()=>textToPages(t),"לא הצלחתי להבין את הטקסט. בדקו שיש בו שמות ומספרים אישיים או מספרי אמל\"ח.");};
+  $("impUrlGo").onclick=async()=>{
+    const u=$("impUrl").value.trim();if(!/icloud\.com\/notes\//.test(u)){showErr("impErr","זה לא קישור של פתק Apple. הקישור נראה כך: icloud.com/notes/…");return;}
+    const b=$("impUrlGo");b.disabled=true;b.textContent="קורא…";
+    let note=null;try{note=await readAppleNote(u);}catch(e){console.warn("apple note",e);}
+    b.disabled=false;b.textContent="קריאת הפתק";
+    if(!note){showPaste("Apple לא מאפשרת לקרוא את הפתק הזה ישירות. פותחים את הקישור, לוחצים לחיצה ארוכה ← \"בחירת הכל\" ← \"העתקה\", ומדביקים כאן:");
+      try{window.open(u,"_blank");}catch(_){}return;}
+    $("impText").value=note.text;showPaste("נקרא מהפתק"+(note.title?" \""+note.title+"\"":"")+". אפשר לתקן כאן ולקרוא שוב:");
+    await importFrom(async()=>textToPages(note.text),"קראתי את הפתק אבל לא מצאתי בו שמות ומספרים. בדקו את הטקסט למטה.");
   };
   $("impAll").onclick=()=>{impRows.forEach(r=>r.on=true);impItems.forEach(r=>r.on=true);renderImp();};
   $("impNone").onclick=()=>{impRows.forEach(r=>r.on=false);impItems.forEach(r=>r.on=false);renderImp();};
