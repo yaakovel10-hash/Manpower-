@@ -211,6 +211,12 @@ a.approvals.mine{margin-top:14px;font-size:17px}
 .wcfoot{display:flex;justify-content:space-between;align-items:center}
 .linkbtn.muted{color:var(--muted)}
 .tiles .tile[hidden]{display:none}
+/* all home tiles the same size; squeeze the content instead of growing */
+.tiles:not(.three)>.tile{height:192px;justify-content:center;overflow:hidden}
+.tiles:not(.three)>.tile:has(.cpn:not([hidden])){gap:3px;padding-block:10px}
+.tiles:not(.three)>.tile:has(.cpn:not([hidden])) svg{width:56px;height:56px;margin-bottom:4px}
+.tiles:not(.three)>.tile:has(.cpn:not([hidden])) .t{font-size:19px;line-height:1.1;margin-bottom:2px}
+#tileOrbat .t{font-size:18px;line-height:1.05;text-align:center}
 html,body{overflow-x:clip}
 #homeTiles{position:relative}
 #homeTiles .tile{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
