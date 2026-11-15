@@ -159,7 +159,7 @@ h2.sec{font-family:var(--display);font-weight:400;font-size:20px;margin:18px 0 8
 .ftigrid td{padding:4px;border-top:1px solid var(--line)}.ftigrid select{min-width:120px;padding:6px;font-size:14px}.ftigrid input{width:70px;padding:6px;text-align:center;direction:ltr;font-size:14px}
 .ftigrid tr.skip td{opacity:.45}.ftigrid tr.isnew select{border-color:var(--warn)}.ftigrid .ftnm{width:100%;margin-top:4px;text-align:right;direction:rtl}.ftigrid tr.nomatch select{border-color:var(--danger)}
 .ftchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.ftchips .chip{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;font-weight:700}.ftchips .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-#ftDCards>li.ftcathead{display:flex!important;align-items:center;gap:8px;padding:6px 2px 10px;border:0}.ftcathead b{flex:1;font-size:19px}.ftcathead .pencil svg{width:20px;height:20px}
+#ftDCards>li.ftcathead{display:flex!important;align-items:center;gap:8px;padding:6px 2px 10px;border:0}.ftcathead b{flex:1;font-size:19px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}.ftavg{font-size:14px;font-weight:700;color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent);border-radius:999px;padding:2px 10px}.ftcathead .pencil svg{width:20px;height:20px}
 #ftDCards>li.ftrank{display:grid!important;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 6px}
 .ftrank .rk{color:var(--muted);font-weight:700;text-align:center;font-variant-numeric:tabular-nums}.ftrank .nm{font-size:17px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ftrank .rv{font-size:19px;direction:ltr;font-variant-numeric:tabular-nums;color:var(--accent)}
 .ftchips .chip.add{border-style:dashed;color:var(--accent)}
@@ -4579,7 +4579,12 @@ const top=el("div","top");
       .sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
     const ul=$("ftDCards");ul.textContent="";
     if(ftDayAct){const x=acts.find(z=>z.id===ftDayAct),t=x.mtype||A.get(x.act)||"count",better=fitBetter(t);
-      const hd=el("li","ftcathead");hd.append(el("b",null,x.act===FIT_PASS?"עבר / לא עבר":x.act));
+      const hd=el("li","ftcathead");const ttl=el("b",null,x.act===FIT_PASS?"עבר / לא עבר":x.act);
+      // average of everyone who has a result (pass/fail: how many passed)
+      {const V=S.map(s=>(x.results||{})[s.id]).filter(v=>v!=null&&v!=="").map(Number).filter(v=>isFinite(v));
+        if(V.length){const avg=V.reduce((a,b)=>a+b,0)/V.length;
+          ttl.append(el("span","ftavg",t==="pass"?"עברו "+V.filter(v=>v===1).length+" מתוך "+V.length:"ממוצע "+(t==="time"?fmtFit(Math.round(avg),t):String(Math.round(avg*10)/10))+" · "+V.length+" חיילים"));}}
+      hd.append(ttl);
       const pen=el("button","pencil sm");pen.type="button";pen.setAttribute("aria-label","עריכת "+x.act);pen.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19z"/><path d="M14 7l3 3"/></svg>';pen.onclick=()=>{ftOpen=x.id;renderFit();scrollTo({top:0});};
       const cl=el("button","ghost sm","✕");cl.type="button";cl.setAttribute("aria-label","חזרה לכל החיילים");cl.onclick=()=>{ftDayAct=null;renderFitRes();};
       hd.append(pen,cl);ul.append(hd);
