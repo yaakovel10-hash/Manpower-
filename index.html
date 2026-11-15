@@ -157,7 +157,7 @@ h2.sec{font-family:var(--display);font-weight:400;font-size:20px;margin:18px 0 8
 .ftigrid{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
 .ftigrid table{border-collapse:collapse;width:100%;font-size:14px}.ftigrid th{font-size:12px;color:var(--muted);text-align:right;padding:6px;white-space:nowrap}
 .ftigrid td{padding:4px;border-top:1px solid var(--line)}.ftigrid select{min-width:120px;padding:6px;font-size:14px}.ftigrid input{width:70px;padding:6px;text-align:center;direction:ltr;font-size:14px}
-.ftigrid tr.skip td{opacity:.45}.ftigrid tr.nomatch select{border-color:var(--danger)}
+.ftigrid tr.skip td{opacity:.45}.ftigrid tr.isnew select{border-color:var(--warn)}.ftigrid .ftnm{width:100%;margin-top:4px;text-align:right;direction:rtl}.ftigrid tr.nomatch select{border-color:var(--danger)}
 .ftpb{font-size:11px;font-weight:800;color:var(--warn);margin-inline-start:6px}
 .impnote{display:grid;gap:8px;margin:10px 0}.impnote .row2{grid-template-columns:1fr auto}.impnote input{min-width:0}#impPasteBox{display:grid;gap:8px}#impPasteBox[hidden]{display:none}
 .rqtabs{display:flex;gap:6px;margin:12px 0 4px}.rqtabs button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:8px 4px;font:inherit;font-weight:700;font-size:14px}.rqtabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -4491,7 +4491,9 @@ const top=el("div","top");
   const fitBetter=t=>t==="time"?"low":"high";
   function fitActs(){const m=new Map();FIT_PRESETS.forEach(([n,t])=>m.set(n,t));fitEv().forEach(x=>{if(x.act&&!m.has(x.act))m.set(x.act,x.mtype||"count");});return m;}
   function parseFit(v,t){v=String(v||"").trim().replace(",",".");if(!v)return null;
-    if(t==="time"){let m=v.match(/^(\d{1,3})[:.'’ ](\d{1,2})$/);if(m)return +m[1]*60+ +m[2];
+    if(t==="time"){let m=v.match(/^(\d{1,2}):(\d{1,2}):(\d{1,2})(?:\.\d+)?$/);if(m)return +m[1]*3600+ +m[2]*60+ +m[3];
+      m=v.match(/^(\d{1,3}):(\d{1,2})\.(\d+)$/);if(m)return +m[1]*60+ +m[2];
+      m=v.match(/^(\d{1,3})[:.'’ ](\d{1,2})$/);if(m)return +m[1]*60+ +m[2];
       if(/^\d{3,4}$/.test(v))return +v.slice(0,-2)*60+ +v.slice(-2);if(/^\d{1,2}$/.test(v))return +v*60;return null;}
     const n=Number(v);return isFinite(n)&&n>=0?n:null;}
   const fmtFit=(v,t)=>v==null?"":t==="time"?Math.floor(v/60)+":"+String(Math.round(v%60)).padStart(2,"0"):String(+v.toFixed(2));
@@ -4596,7 +4598,11 @@ const top=el("div","top");
       P.forEach(p=>{const r=R[R.length-1];if(r&&Math.abs(p.y-r.y)<hMed*0.6){r.items.push(p);r.y=(r.y*(r.items.length-1)+p.y)/r.items.length;}else R.push({y:p.y,items:[p]});});return R;};
     // pick the rotation that lines the numbers up best
     let best=null;for(let k=-0.08;k<=0.0801;k+=0.004){const R=rowsFor(k);const sc=R.filter(r=>r.items.filter(p=>isNum(p.w.s)).length>=3).reduce((a,r)=>a+r.items.length**2,0);if(!best||sc>best.sc)best={k,R,sc};}
-    const R=best.R;R.forEach(r=>r.items.sort((a,b)=>b.x-a.x)); // right to left
+    const R=best.R;R.forEach(r=>{r.items.sort((a,b)=>b.x-a.x); // right to left
+      // words of one name ("אברהם כהן") are one cell
+      const M=[];r.items.forEach(p=>{const L=M[M.length-1];const txt=t=>/[\u0590-\u05ffA-Za-z]{2,}/.test(t)&&!/\d/.test(t);
+        if(L&&txt(L.w.s)&&txt(p.w.s)&&(L.w.x-(p.w.x+p.w.w))<hMed*1.3){L.w={...L.w,s:L.w.s+" "+p.w.s,x:p.w.x,w:L.w.x+L.w.w-p.w.x,cx:(p.w.x+L.w.x+L.w.w)/2};L.x=(L.x+p.x)/2;}
+        else M.push({...p,w:{...p.w}});});r.items=M;});
     const data=R.filter(r=>r.items.filter(p=>isNum(p.w.s)).length>=3);
     if(data.length<2)return null;
     // columns: cluster x of every cell in data rows
@@ -4605,7 +4611,8 @@ const top=el("div","top");
     const cols=[];xs.forEach(p=>{const c=cols.find(c=>Math.abs(c.x-p.x)<Math.max(wMed*0.7,hMed*1.5));if(c){c.n++;c.x+=(p.x-c.x)/c.n;}else cols.push({x:p.x,n:1});});
     cols.sort((a,b)=>b.x-a.x);
     const keep=cols.filter(c=>c.n>=Math.max(2,data.length*0.3));
-    const colOf=p=>{let bi=-1,bd=1e9;keep.forEach((c,i)=>{const d=Math.abs(c.x-p.x);if(d<bd){bd=d;bi=i;}});return bd<Math.max(wMed,hMed*2.5)?bi:-1;};
+    const colOf=p=>{let bi=-1,bd=1e9;const hw=/\d/.test(p.w.s)?0:p.w.w/2; // a long name: anywhere inside it counts
+      keep.forEach((c,i)=>{const d=Math.max(0,Math.abs(c.x-p.x)-hw);if(d<bd){bd=d;bi=i;}});return bd<Math.max(wMed,hMed*2.5)?bi:-1;};
     const rows=data.map(r=>{const cells=keep.map(()=>[]);r.items.forEach(p=>{const i=colOf(p);if(i>=0)cells[i].push(p.w.s);});return cells.map(c=>c.join(" "));});
     // header: words above the first data row
     const firstY=data[0].y,heads=keep.map(()=>[]);
@@ -4613,8 +4620,9 @@ const top=el("div","top");
     const out=keep.map((c,i)=>{const vals=rows.map(r=>r[i]).filter(Boolean);
       const kind=vals.filter(v=>/^\d{1,2}[\/.]\d{1,2}[\/.]\d{2,4}$/.test(v)).length>vals.length*0.5?"date":
         vals.filter(v=>/^\d{6,9}$/.test(v)).length>vals.length*0.5?"pid":
-        vals.filter(v=>/^\d{1,3}:\d{2}$/.test(v)).length>vals.length*0.5?"time":
+        vals.filter(v=>/^(\d{1,2}:)?\d{1,3}:\d{2}(\.\d+)?$/.test(v)).length>vals.length*0.5?"time":
         vals.filter(v=>/^\d+(\.\d+)?$/.test(v)).length>vals.length*0.5?"num":
+        (vals.filter(v=>/[\u0590-\u05ff]{2,}/.test(v)&&!/\d/.test(v)).length>vals.length*0.6&&new Set(vals).size>vals.length*0.6)?"name":
         "other";
       const hd=heads[i].filter(t=>/[\u0590-\u05ff]{2,}/.test(t)).join(" ");
       return {i,head:hd,kind,samples:vals.slice(0,4)};});
@@ -4628,6 +4636,16 @@ const top=el("div","top");
     m=S.filter(s=>s.num.includes(d)||d.includes(s.num));if(m.length===1)return m[0];
     const lev=(a,b)=>{const D=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=D[0];D[0]=i;for(let j=1;j<=b.length;j++){const t=D[j];D[j]=Math.min(D[j]+1,D[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t;}}return D[b.length];};
     m=S.filter(s=>lev(s.num,d)<=1);return m.length===1?m[0]:null;}
+  // pick the soldier by a name read from the table (OCR may miss a letter)
+  function matchName(t){
+    const norm=x=>String(x||"").replace(/["'׳״`.,()\-–]/g," ").replace(/\s+/g," ").trim();
+    const n=norm(t);if(n.replace(/\s/g,"").length<3)return null;
+    const S=visRO(soldiers);let m=S.filter(s=>norm(s.name)===n);if(m.length===1)return m[0];
+    const toks=x=>norm(x).split(" ").sort().join(" ");m=S.filter(s=>toks(s.name)===toks(n));if(m.length===1)return m[0];
+    m=S.filter(s=>sameName(s.name||"",n));if(m.length===1)return m[0];
+    const lev=(a,b)=>{const D=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=D[0];D[0]=i;for(let j=1;j<=b.length;j++){const q=D[j];D[j]=Math.min(D[j]+1,D[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=q;}}return D[b.length];};
+    if(n.length>=5){const sc=S.map(s=>({s,d:lev(norm(s.name),n)})).filter(x=>x.d<=2).sort((a,b)=>a.d-b.d);if(sc.length&&(sc.length===1||sc[0].d<sc[1].d))return sc[0].s;}
+    return null;}
   // photo → bigger, grey, stretched contrast (OCR reads it much better)
   async function prepImage(file){
     const img=await createImageBitmap(file);const sc=Math.min(2.2,Math.max(1,2400/Math.max(img.width,img.height)))*1.0;
@@ -4657,7 +4675,7 @@ const top=el("div","top");
     return "";}
   function ftIRender(){
     const A=fitActs(),box=$("ftIMap");box.textContent="";
-    ftI.cols.forEach((c,ci)=>{if(c.kind==="pid"||c.kind==="date")return;
+    ftI.cols.forEach((c,ci)=>{if(c.kind==="pid"||c.kind==="date"||c.kind==="name")return;
       const r=el("div","mrow");r.append(el("div",null,(c.head?"\""+c.head+"\"":"עמודה "+(ci+1))+(c.kind==="time"?" · זמנים":c.kind==="num"?" · מספרים":"")),el("div","smp",c.samples.join("  ·  ")));
       const sel=el("select");[["","לא לייבא"],...[...A.keys()].map(a=>[a,a]),["__new","+ פעילות חדשה…"]].forEach(([v,t])=>{const o=el("option",null,t);o.value=v;sel.append(o);});
       const cur=ftI.map[ci]||"";const isNew=cur.startsWith("new:");sel.value=isNew?"__new":cur;
@@ -4671,17 +4689,24 @@ const top=el("div","top");
     const t=el("table"),hr=el("tr");hr.append(el("th",null,"חייל"));used.forEach(ci=>hr.append(el("th",null,ftI.map[ci].replace(/^new:/,""))));t.append(hr);
     const S=visRO(soldiers).slice().sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
     let ok=0;
+    const nc=ftI.cols.findIndex(c=>c.kind==="name"),pc0=ftI.cols.findIndex(c=>c.kind==="pid");
     ftI.rows.forEach((row,ri)=>{const tr=el("tr");const sel=el("select");
       const o0=el("option",null,"— לא לייבא —");o0.value="";sel.append(o0);
+      const nm=nc>=0?(ftI.names[ri]!=null?ftI.names[ri]:row[nc]||""):"";
+      if(nm&&/[\u0590-\u05ff]{2,}/.test(nm)){const on=el("option",null,"➕ חייל חדש: "+nm);on.value="new";sel.append(on);}
       S.forEach(s=>{const o=el("option",null,s.name+(s.num?" · "+s.num:""));o.value=s.id;sel.append(o);});
       sel.value=ftI.sids[ri]||"";tr.classList.toggle("skip",!sel.value);tr.classList.toggle("nomatch",!sel.value&&!ftI.skipped[ri]);
-      if(sel.value)ok++;
+      if(sel.value)ok++;tr.classList.toggle("isnew",sel.value==="new");
       sel.onchange=()=>{ftI.sids[ri]=sel.value;ftI.skipped[ri]=!sel.value;ftIRender();};
-      const td=el("td");td.append(sel);const pc=ftI.cols.findIndex(c=>c.kind==="pid");if(pc>=0&&row[pc]){td.append(el("div","mini",row[pc]));}tr.append(td);
+      const td=el("td");td.append(sel);
+      if(sel.value==="new"){const ni=el("input");ni.type="text";ni.value=nm;ni.className="ftnm";ni.onchange=()=>{ftI.names[ri]=ni.value.trim();ftIRender();};td.append(ni);}
+      else{const info=[nc>=0&&row[nc]?row[nc]:"",pc0>=0&&row[pc0]?row[pc0]:""].filter(Boolean).join(" · ");if(info)td.append(el("div","mini",info));}
+      tr.append(td);
       used.forEach(ci=>{const inp=el("input");inp.type="text";inp.inputMode="decimal";inp.value=row[ci]||"";inp.onchange=()=>{row[ci]=inp.value.trim();};const d=el("td");d.append(inp);tr.append(d);});
       t.append(tr);});
     const g=$("ftIRows");g.textContent="";g.append(t);
-    $("ftIRowsHint").textContent=ok+" מתוך "+ftI.rows.length+" שורות שויכו לחיילים. שורה במסגרת אדומה: בחרו חייל או השאירו \"לא לייבא\". אפשר לתקן כל מספר שנקרא לא נכון.";
+    const nn=ftI.sids.filter(v=>v==="new").length;
+    $("ftIRowsHint").textContent=ok+" מתוך "+ftI.rows.length+" שורות שויכו לחיילים"+(nn?" ("+nn+" מהם חיילים חדשים שייווצרו – אפשר לשנות לחייל קיים או ל\"לא לייבא\")":"")+". שורה במסגרת אדומה: בחרו חייל או השאירו \"לא לייבא\". אפשר לתקן כל מספר שנקרא לא נכון.";
   }
   $("ftFile").onchange=async e=>{
     const f=e.target.files[0];e.target.value="";if(!f)return;
@@ -4697,7 +4722,9 @@ const top=el("div","top");
       ftI={cols:T.cols,rows:T.rows,map:[],types:{},sids:[],skipped:[]};
       T.cols.forEach((c,ci)=>{const g=guessAct(c);ftI.map[ci]=g;});
       const pc=T.cols.findIndex(c=>c.kind==="pid");
-      T.rows.forEach((r,ri)=>{const s=pc>=0?matchPid(r[pc]):null;ftI.sids[ri]=s?s.id:"";});
+      const nc=T.cols.findIndex(c=>c.kind==="name");ftI.names=[];
+      T.rows.forEach((r,ri)=>{let s=pc>=0?matchPid(r[pc]):null;if(!s&&nc>=0)s=matchName(r[nc]);
+        ftI.sids[ri]=s?s.id:(nc>=0&&/[\u0590-\u05ff]{2,}/.test(r[nc]||"")&&!/ללא שם/.test(r[nc])?"new":"");});
       const dc=T.cols.findIndex(c=>c.kind==="date");let date=todayKey();
       if(dc>=0){const C={};T.rows.forEach(r=>{const m=String(r[dc]||"").match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})$/);if(m){const k=m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");C[k]=(C[k]||0)+1;}});
         const b=Object.entries(C).sort((a,b)=>b[1]-a[1])[0];if(b)date=b[0];}
@@ -4712,7 +4739,18 @@ const top=el("div","top");
     if(!ftI)return;const unit=writeUnit();if(!unit)return showErr("ftIErr","אין מסגרת פתוחה.");
     const date=$("ftIDate").value;if(!date)return showErr("ftIErr","בחרו תאריך.");
     const used=ftI.cols.map((c,ci)=>ci).filter(ci=>ftI.map[ci]);if(!used.length)return showErr("ftIErr","בחרו לפחות עמודה אחת לייבוא.");
-    const A=fitActs();let n=0,bad=0;const btn=$("ftISave");btn.disabled=true;
+    const btn=$("ftISave");
+    const nc=ftI.cols.findIndex(c=>c.kind==="name"),pc=ftI.cols.findIndex(c=>c.kind==="pid");
+    const news=ftI.sids.map((v,ri)=>v==="new"?ri:-1).filter(ri=>ri>=0);
+    if(news.length&&!btn.classList.contains("armed")){btn.classList.add("armed");btn.textContent="ייווצרו "+news.length+" חיילים חדשים – ללחוץ שוב לאישור";
+      showErr("ftIErr","חיילים חדשים: "+news.map(ri=>ftI.names[ri]!=null?ftI.names[ri]:ftI.rows[ri][nc]).join(", "));
+      setTimeout(()=>{btn.classList.remove("armed");btn.textContent="שמירת התוצאות";},6000);return;}
+    btn.classList.remove("armed");btn.textContent="שמירת התוצאות";showErr("ftIErr","");
+    const A=fitActs();let n=0,bad=0;btn.disabled=true;
+    for(const ri of news){const name=(ftI.names[ri]!=null?ftI.names[ri]:ftI.rows[ri][nc]||"").trim();if(!name){ftI.sids[ri]="";continue;}
+      const num=pc>=0?String(ftI.rows[ri][pc]||"").replace(/\D/g,""):"";const id=newId();
+      const ok=await write("soldiers/"+id,{name,num:/^\d{7}$/.test(num)?num:"",phone:"",photo:"",squad:"",role:"חייל",unit,addedBy:uid,at:Date.now()},"ftIErr");
+      ftI.sids[ri]=ok?id:"";}
     for(const ci of used){
       const mp=ftI.map[ci],act=mp.startsWith("new:")?mp.slice(4):mp,mtype=mp.startsWith("new:")?(ftI.types[ci]||(ftI.cols[ci].kind==="time"?"time":"count")):(A.get(act)||"count");
       const res={};ftI.rows.forEach((r,ri)=>{const sid=ftI.sids[ri];if(!sid)return;const v=parseFit(r[ci],mtype);if(v==null){if(r[ci])bad++;return;}res[sid]=v;n++;});
