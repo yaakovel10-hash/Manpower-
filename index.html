@@ -151,6 +151,13 @@ h2.sec{font-family:var(--display);font-weight:400;font-size:20px;margin:18px 0 8
 .ftpt{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 4px 2px 10px}
 .ftx{border:0;background:none;color:var(--danger);font:inherit;font-size:12px;font-weight:700;padding:2px 6px;cursor:pointer}.ftx.armed{background:var(--danger);color:#fff;border-radius:999px}
 .fthist{gap:6px!important}
+#ftImp{display:grid;gap:8px}#ftImp[hidden]{display:none}#ftImp>b{font-size:17px}
+.ftimap{display:grid;gap:8px}.ftimap .mrow{display:grid;gap:4px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.ftimap .mrow .smp{font-size:12px;color:var(--muted);direction:ltr;text-align:right}.ftimap .mrow .cn{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ftigrid{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.ftigrid table{border-collapse:collapse;width:100%;font-size:14px}.ftigrid th{font-size:12px;color:var(--muted);text-align:right;padding:6px;white-space:nowrap}
+.ftigrid td{padding:4px;border-top:1px solid var(--line)}.ftigrid select{min-width:120px;padding:6px;font-size:14px}.ftigrid input{width:70px;padding:6px;text-align:center;direction:ltr;font-size:14px}
+.ftigrid tr.skip td{opacity:.45}.ftigrid tr.nomatch select{border-color:var(--danger)}
 .ftpb{font-size:11px;font-weight:800;color:var(--warn);margin-inline-start:6px}
 .impnote{display:grid;gap:8px;margin:10px 0}.impnote .row2{grid-template-columns:1fr auto}.impnote input{min-width:0}#impPasteBox{display:grid;gap:8px}#impPasteBox[hidden]{display:none}
 .rqtabs{display:flex;gap:6px;margin:12px 0 4px}.rqtabs button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:8px 4px;font:inherit;font-weight:700;font-size:14px}.rqtabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -1036,7 +1043,22 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
     <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>כושר</h1><span class="count" id="ftCount"></span><button class="pencil wa" type="button" id="ftWa" aria-label="שליחת התוצאות בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
     <div class="rqtabs" id="ftTabs"><button type="button" data-t="res">תוצאות</button><button type="button" data-t="prog">התקדמות</button></div>
     <div id="ftResTab">
-      <button class="primary" id="ftNew" type="button">+ מדידה חדשה</button>
+      <div class="row2" id="ftBtns"><button class="primary" id="ftNew" type="button">+ מדידה חדשה</button><label class="ghost filebtn" for="ftFile">📥 ייבוא מתמונה / PDF</label></div>
+      <input type="file" id="ftFile" accept="image/*,application/pdf,.pdf" hidden>
+      <div class="add" id="ftImp" hidden>
+        <b>ייבוא תוצאות מטבלה</b>
+        <span class="mini" id="ftIStatus"></span>
+        <div id="ftIBody" hidden>
+          <label class="f">תאריך המדידה<input type="date" id="ftIDate"></label>
+          <span class="mini">מה יש בכל עמודה? (מה שלא צריך – "לא לייבא")</span>
+          <div id="ftIMap" class="ftimap"></div>
+          <span class="mini" id="ftIRowsHint"></span>
+          <div class="ftigrid" id="ftIRows"></div>
+          <p class="err" id="ftIErr" hidden></p>
+          <div class="row2"><button class="primary" type="button" id="ftISave">שמירת התוצאות</button><button class="ghost" type="button" id="ftIClose">ביטול</button></div>
+        </div>
+        <button class="ghost" type="button" id="ftIClose2">סגירה</button>
+      </div>
       <form class="add" id="ftForm" hidden>
         <label class="f">פעילות<select id="ftAct"></select></label>
         <div id="ftCustom" hidden>
@@ -1663,7 +1685,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       if(!memberOk()){$("naTitle").textContent="המסגרת סגורה";$("naText").textContent="המסגרת שלך ("+(unitLabel(myUnit())||"לא נמצאה")+") סגורה כרגע. פנו למנהל המערכת, או פתחו קישור הצטרפות של מסגרת אחרת.";return show(["v-noaccess"]);}
     }
     const h=location.hash.replace("#","");
-    const sm=h.match(/^soldier-([A-Za-z0-9]+)$/);
+    const sm=h.match(/^soldier-(.+)$/);if(sm)sm[1]=decodeURIComponent(sm[1]); // ids can contain "-" or "_" (e.g. commanders added from the app)
     if(sm){if(curSoldier!==sm[1]){curSoldier=sm[1];setTab("tzalam");$("dEditForm").hidden=true;}show(["v-soldier"]);renderDetail();return;}
     curSoldier=null;
     if(h==="units"&&mgr()){show(["v-units"]);renderUnits();return;}
@@ -4493,7 +4515,7 @@ const top=el("div","top");
   function renderFitRes(){
     const E=fitEv().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.at||0)-(a.at||0));
     const cur=ftOpen&&E.find(x=>x.id===ftOpen);if(ftOpen&&!cur)ftOpen=null;
-    $("ftSess").hidden=!cur;$("ftNew").hidden=!!cur||!$("ftForm").hidden;
+    $("ftSess").hidden=!cur;$("ftBtns").hidden=!!cur||!$("ftForm").hidden||!$("ftImp").hidden;
     if(cur)renderFitSess(cur);
     const ul=$("ftHist");ul.textContent="";
     E.filter(x=>x!==cur).forEach(x=>{const n=Object.values(x.results||{}).filter(v=>v!=null&&v!=="").length;
@@ -4562,11 +4584,150 @@ const top=el("div","top");
     const pts=V.map((v,i)=>(V.length===1?50:i*100/(V.length-1)).toFixed(1)+","+Y(v).toFixed(1)).join(" ");
     const pl=document.createElementNS(ns,"polyline");pl.setAttribute("points",pts);pl.setAttribute("fill","none");pl.setAttribute("stroke","var(--accent)");pl.setAttribute("stroke-width","2");pl.setAttribute("vector-effect","non-scaling-stroke");
     svg.append(pl);return svg;}
+
+  /* --- כושר: import results from a photo or PDF of a results table --- */
+  // words: [{s,x,y,w,h}] (y grows downward). Finds the table even if the photo is slightly rotated.
+  function fitTable(words){
+    words=words.filter(w=>w.s&&w.s.trim()&&w.h>4).map(w=>({...w,s:w.s.trim().replace(/^[\[\]|(){}]+|[\[\]|(){}]+$/g,""),cx:w.x+w.w/2,cy:w.y+w.h/2})).filter(w=>w.s);
+    if(!words.length)return null;
+    const hMed=words.map(w=>w.h).sort((a,b)=>a-b)[Math.floor(words.length/2)];
+    const isNum=t=>/^[A-Za-z]?\d[\d:.\/,]*$/.test(t);
+    const rowsFor=k=>{const P=words.map(w=>({w,y:w.cy-k*w.cx,x:w.cx+k*w.cy})).sort((a,b)=>a.y-b.y);const R=[];
+      P.forEach(p=>{const r=R[R.length-1];if(r&&Math.abs(p.y-r.y)<hMed*0.6){r.items.push(p);r.y=(r.y*(r.items.length-1)+p.y)/r.items.length;}else R.push({y:p.y,items:[p]});});return R;};
+    // pick the rotation that lines the numbers up best
+    let best=null;for(let k=-0.08;k<=0.0801;k+=0.004){const R=rowsFor(k);const sc=R.filter(r=>r.items.filter(p=>isNum(p.w.s)).length>=3).reduce((a,r)=>a+r.items.length**2,0);if(!best||sc>best.sc)best={k,R,sc};}
+    const R=best.R;R.forEach(r=>r.items.sort((a,b)=>b.x-a.x)); // right to left
+    const data=R.filter(r=>r.items.filter(p=>isNum(p.w.s)).length>=3);
+    if(data.length<2)return null;
+    // columns: cluster x of every cell in data rows
+    const xs=[];data.forEach(r=>r.items.forEach(p=>xs.push(p)));xs.sort((a,b)=>b.x-a.x);
+    const wMed=xs.map(p=>p.w.w).sort((a,b)=>a-b)[Math.floor(xs.length/2)];
+    const cols=[];xs.forEach(p=>{const c=cols.find(c=>Math.abs(c.x-p.x)<Math.max(wMed*0.7,hMed*1.5));if(c){c.n++;c.x+=(p.x-c.x)/c.n;}else cols.push({x:p.x,n:1});});
+    cols.sort((a,b)=>b.x-a.x);
+    const keep=cols.filter(c=>c.n>=Math.max(2,data.length*0.3));
+    const colOf=p=>{let bi=-1,bd=1e9;keep.forEach((c,i)=>{const d=Math.abs(c.x-p.x);if(d<bd){bd=d;bi=i;}});return bd<Math.max(wMed,hMed*2.5)?bi:-1;};
+    const rows=data.map(r=>{const cells=keep.map(()=>[]);r.items.forEach(p=>{const i=colOf(p);if(i>=0)cells[i].push(p.w.s);});return cells.map(c=>c.join(" "));});
+    // header: words above the first data row
+    const firstY=data[0].y,heads=keep.map(()=>[]);
+    R.filter(r=>r.y<firstY).forEach(r=>r.items.forEach(p=>{const i=colOf(p);if(i>=0&&!isNum(p.w.s))heads[i].push(p.w.s);}));
+    const out=keep.map((c,i)=>{const vals=rows.map(r=>r[i]).filter(Boolean);
+      const kind=vals.filter(v=>/^\d{1,2}[\/.]\d{1,2}[\/.]\d{2,4}$/.test(v)).length>vals.length*0.5?"date":
+        vals.filter(v=>/^\d{6,9}$/.test(v)).length>vals.length*0.5?"pid":
+        vals.filter(v=>/^\d{1,3}:\d{2}$/.test(v)).length>vals.length*0.5?"time":
+        vals.filter(v=>/^\d+(\.\d+)?$/.test(v)).length>vals.length*0.5?"num":
+        "other";
+      const hd=heads[i].filter(t=>/[\u0590-\u05ff]{2,}/.test(t)).join(" ");
+      return {i,head:hd,kind,samples:vals.slice(0,4)};});
+    return {cols:out,rows};
+  }
+
+  // pick the soldier for a personal number read by OCR (digits may be missing or extra)
+  function matchPid(t){
+    const d=String(t||"").replace(/\D/g,"");if(d.length<5)return null;
+    const S=visRO(soldiers).filter(s=>s.num);let m=S.filter(s=>s.num===d);if(m.length===1)return m[0];
+    m=S.filter(s=>s.num.includes(d)||d.includes(s.num));if(m.length===1)return m[0];
+    const lev=(a,b)=>{const D=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=D[0];D[0]=i;for(let j=1;j<=b.length;j++){const t=D[j];D[j]=Math.min(D[j]+1,D[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t;}}return D[b.length];};
+    m=S.filter(s=>lev(s.num,d)<=1);return m.length===1?m[0]:null;}
+  // photo → bigger, grey, stretched contrast (OCR reads it much better)
+  async function prepImage(file){
+    const img=await createImageBitmap(file);const sc=Math.min(2.2,Math.max(1,2400/Math.max(img.width,img.height)))*1.0;
+    const c=document.createElement("canvas");c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);const g=c.getContext("2d");g.drawImage(img,0,0,c.width,c.height);
+    const id=g.getImageData(0,0,c.width,c.height),a=id.data,H=new Array(256).fill(0);
+    for(let i=0;i<a.length;i+=4){const v=Math.round(a[i]*0.3+a[i+1]*0.59+a[i+2]*0.11);a[i]=v;H[v]++;}
+    const n=a.length/4;let lo=0,hi=255,acc=0;while(acc<n*0.02&&lo<255)acc+=H[lo++];acc=0;while(acc<n*0.02&&hi>0)acc+=H[hi--];const r=Math.max(1,hi-lo);
+    for(let i=0;i<a.length;i+=4){const v=Math.max(0,Math.min(255,(a[i]-lo)*255/r));a[i]=a[i+1]=a[i+2]=v;}
+    g.putImageData(id,0,0);return c;}
+  let ocrWorker=null;
+  async function ocrWords(file,onP){
+    if(!window.Tesseract)await loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js");
+    if(!ocrWorker){ocrWorker=await Tesseract.createWorker(["heb","eng"],1,{logger:m=>{if(m&&m.status==="recognizing text")onP(Math.round((m.progress||0)*100));}});
+      await ocrWorker.setParameters({tessedit_pageseg_mode:"11"});}
+    const c=await prepImage(file);const {data}=await ocrWorker.recognize(c);
+    return (data.words||[]).filter(w=>w.confidence>10).map(w=>({s:w.text,x:w.bbox.x0,y:w.bbox.y0,w:w.bbox.x1-w.bbox.x0,h:w.bbox.y1-w.bbox.y0}));}
+  async function pdfWords(file){const pages=await readPdf(file);const W=[];let off=0;
+    pages.forEach(pg=>{let mx=0;pg.forEach(i=>{W.push({s:i.s,x:i.x,y:off-i.y-i.h,w:i.w,h:i.h});mx=Math.max(mx,i.y);});off+=mx+200;});return W;}
+  let ftI=null; // {cols,rows,map:[act|""],types:{},sids:[]}
+  const FT_GUESS=[[/מתח/,"מתח"],[/שכיב/,"שכיבות סמיכה"],[/בטן/,"כפיפות בטן"],[/מקביל/,"מקבילים"],[/ספרינט/,"ספרינטים"],[/3\s*ק|ריצ/,"ריצת 3 ק\"מ"],[/2\s*ק/,"ריצת 2 ק\"מ"]];
+  function guessAct(c){
+    if(c.kind==="pid"||c.kind==="date"||c.kind==="other")return "";
+    if(/ציון|הערכ|הער|קבוצ|שימוש|מס"?ד/.test(c.head))return "";
+    for(const [re,a] of FT_GUESS)if(re.test(c.head))return a;
+    if(/זריז/.test(c.head))return "new:זריזות";
+    if(c.kind==="time"){const v=c.samples.map(x=>parseFit(x,"time")).filter(x=>x!=null);const avg=v.reduce((a,b)=>a+b,0)/(v.length||1);if(avg>=480)return "ריצת 3 ק\"מ";}
+    return "";}
+  function ftIRender(){
+    const A=fitActs(),box=$("ftIMap");box.textContent="";
+    ftI.cols.forEach((c,ci)=>{if(c.kind==="pid"||c.kind==="date")return;
+      const r=el("div","mrow");r.append(el("div",null,(c.head?"\""+c.head+"\"":"עמודה "+(ci+1))+(c.kind==="time"?" · זמנים":c.kind==="num"?" · מספרים":"")),el("div","smp",c.samples.join("  ·  ")));
+      const sel=el("select");[["","לא לייבא"],...[...A.keys()].map(a=>[a,a]),["__new","+ פעילות חדשה…"]].forEach(([v,t])=>{const o=el("option",null,t);o.value=v;sel.append(o);});
+      const cur=ftI.map[ci]||"";const isNew=cur.startsWith("new:");sel.value=isNew?"__new":cur;
+      const cn=el("div","cn");cn.hidden=!isNew;const nm=el("input");nm.type="text";nm.placeholder="שם הפעילות";nm.value=isNew?cur.slice(4):(c.head||"");
+      const ty=el("select");[["time","זמן (פחות = טוב)"],["count","כמות (יותר = טוב)"]].forEach(([v,t])=>{const o=el("option",null,t);o.value=v;ty.append(o);});ty.value=ftI.types[ci]||(c.kind==="time"?"time":"count");
+      sel.onchange=()=>{ftI.map[ci]=sel.value==="__new"?"new:"+(nm.value.trim()||"פעילות"):sel.value;ftIRender();};
+      nm.onchange=()=>{ftI.map[ci]="new:"+(nm.value.trim()||"פעילות");};ty.onchange=()=>{ftI.types[ci]=ty.value;};
+      cn.append(nm,ty);r.append(sel,cn);box.append(r);});
+    // rows
+    const used=ftI.cols.map((c,ci)=>ci).filter(ci=>ftI.map[ci]);
+    const t=el("table"),hr=el("tr");hr.append(el("th",null,"חייל"));used.forEach(ci=>hr.append(el("th",null,ftI.map[ci].replace(/^new:/,""))));t.append(hr);
+    const S=visRO(soldiers).slice().sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
+    let ok=0;
+    ftI.rows.forEach((row,ri)=>{const tr=el("tr");const sel=el("select");
+      const o0=el("option",null,"— לא לייבא —");o0.value="";sel.append(o0);
+      S.forEach(s=>{const o=el("option",null,s.name+(s.num?" · "+s.num:""));o.value=s.id;sel.append(o);});
+      sel.value=ftI.sids[ri]||"";tr.classList.toggle("skip",!sel.value);tr.classList.toggle("nomatch",!sel.value&&!ftI.skipped[ri]);
+      if(sel.value)ok++;
+      sel.onchange=()=>{ftI.sids[ri]=sel.value;ftI.skipped[ri]=!sel.value;ftIRender();};
+      const td=el("td");td.append(sel);const pc=ftI.cols.findIndex(c=>c.kind==="pid");if(pc>=0&&row[pc]){td.append(el("div","mini",row[pc]));}tr.append(td);
+      used.forEach(ci=>{const inp=el("input");inp.type="text";inp.inputMode="decimal";inp.value=row[ci]||"";inp.onchange=()=>{row[ci]=inp.value.trim();};const d=el("td");d.append(inp);tr.append(d);});
+      t.append(tr);});
+    const g=$("ftIRows");g.textContent="";g.append(t);
+    $("ftIRowsHint").textContent=ok+" מתוך "+ftI.rows.length+" שורות שויכו לחיילים. שורה במסגרת אדומה: בחרו חייל או השאירו \"לא לייבא\". אפשר לתקן כל מספר שנקרא לא נכון.";
+  }
+  $("ftFile").onchange=async e=>{
+    const f=e.target.files[0];e.target.value="";if(!f)return;
+    $("ftImp").hidden=false;$("ftBtns").hidden=true;$("ftIBody").hidden=true;$("ftIClose2").hidden=false;showErr("ftIErr","");
+    const st=$("ftIStatus");
+    try{
+      let W;
+      if(/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)){st.textContent="קורא את ה־PDF…";W=await pdfWords(f);
+        if(W.length<10){st.textContent="ה־PDF סרוק כתמונה, מזהה טקסט…";throw new Error("scanned");}}
+      else{st.textContent="מזהה את הטבלה בתמונה… (בפעם הראשונה זה לוקח קצת יותר)";W=await ocrWords(f,p=>{st.textContent="מזהה את הטבלה בתמונה… "+p+"%";});}
+      const T=fitTable(W);
+      if(!T||!T.rows.length){st.textContent="לא מצאתי טבלה עם תוצאות. נסו תמונה ישרה וחדה יותר, שבה רואים את כל השורות.";return;}
+      ftI={cols:T.cols,rows:T.rows,map:[],types:{},sids:[],skipped:[]};
+      T.cols.forEach((c,ci)=>{const g=guessAct(c);ftI.map[ci]=g;});
+      const pc=T.cols.findIndex(c=>c.kind==="pid");
+      T.rows.forEach((r,ri)=>{const s=pc>=0?matchPid(r[pc]):null;ftI.sids[ri]=s?s.id:"";});
+      const dc=T.cols.findIndex(c=>c.kind==="date");let date=todayKey();
+      if(dc>=0){const C={};T.rows.forEach(r=>{const m=String(r[dc]||"").match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})$/);if(m){const k=m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");C[k]=(C[k]||0)+1;}});
+        const b=Object.entries(C).sort((a,b)=>b[1]-a[1])[0];if(b)date=b[0];}
+      $("ftIDate").value=date;
+      st.textContent="נמצאו "+T.rows.length+" שורות. בדקו מה יש בכל עמודה ואת השיוך לחיילים, ואז שמרו.";
+      $("ftIBody").hidden=false;$("ftIClose2").hidden=true;ftIRender();
+    }catch(err){console.warn(err);st.textContent=err&&err.message==="scanned"?"ה־PDF הזה סרוק כתמונה. צלמו את הטבלה (צילום מסך) ובחרו את התמונה.":"לא הצלחתי לקרוא את הקובץ. בדקו שיש חיבור לאינטרנט ונסו שוב.";}
+  };
+  const ftICloseF=()=>{ftI=null;$("ftImp").hidden=true;renderFit();};
+  $("ftIClose").onclick=ftICloseF;$("ftIClose2").onclick=ftICloseF;
+  $("ftISave").onclick=async()=>{
+    if(!ftI)return;const unit=writeUnit();if(!unit)return showErr("ftIErr","אין מסגרת פתוחה.");
+    const date=$("ftIDate").value;if(!date)return showErr("ftIErr","בחרו תאריך.");
+    const used=ftI.cols.map((c,ci)=>ci).filter(ci=>ftI.map[ci]);if(!used.length)return showErr("ftIErr","בחרו לפחות עמודה אחת לייבוא.");
+    const A=fitActs();let n=0,bad=0;const btn=$("ftISave");btn.disabled=true;
+    for(const ci of used){
+      const mp=ftI.map[ci],act=mp.startsWith("new:")?mp.slice(4):mp,mtype=mp.startsWith("new:")?(ftI.types[ci]||(ftI.cols[ci].kind==="time"?"time":"count")):(A.get(act)||"count");
+      const res={};ftI.rows.forEach((r,ri)=>{const sid=ftI.sids[ri];if(!sid)return;const v=parseFit(r[ci],mtype);if(v==null){if(r[ci])bad++;return;}res[sid]=v;n++;});
+      if(!Object.keys(res).length)continue;
+      const ex=fitEv().find(x=>x.act===act&&x.date===date);
+      if(ex){const upd={};Object.entries(res).forEach(([k,v])=>upd["results."+k]=v);await patch("events/"+ex.id,upd,"ftIErr");}
+      else await write("events/"+newId(),{kind:"fit",soldierId:"",unit,act,mtype,date,results:res,addedBy:uid,byName:(me&&me.name)||"",at:Date.now()},"ftIErr");
+    }
+    btn.disabled=false;toast("נשמרו "+n+" תוצאות"+(bad?" ("+bad+" ערכים לא תקינים דולגו)":""));ftICloseF();
+  };
   $("ftTabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;ftTab=b.dataset.t;renderFit();};
   $("ftPAct").onchange=renderFitProg;$("ftPSquad").onchange=renderFitProg;$("ftSquad").onchange=()=>{$("ftRows").dataset.id="";renderFitRes();};
   function fillFitActs(){const sel=$("ftAct");sel.textContent="";fitActs().forEach((t,n)=>{const o=el("option",null,n);o.value=n;sel.append(o);});const o=el("option",null,"+ פעילות אחרת…");o.value="__new";sel.append(o);}
   $("ftAct").onchange=()=>{$("ftCustom").hidden=$("ftAct").value!=="__new";};
-  $("ftNew").onclick=()=>{fillFitActs();$("ftCustom").hidden=true;$("ftDate").value=todayKey();showErr("ftErr","");$("ftForm").hidden=false;$("ftNew").hidden=true;$("ftEmpty").hidden=true;};
+  $("ftNew").onclick=()=>{fillFitActs();$("ftCustom").hidden=true;$("ftDate").value=todayKey();showErr("ftErr","");$("ftForm").hidden=false;$("ftBtns").hidden=true;$("ftEmpty").hidden=true;};
   $("ftCancel").onclick=()=>{$("ftForm").hidden=true;renderFit();};
   $("ftForm").onsubmit=async e=>{e.preventDefault();
     const unit=writeUnit();if(!unit)return showErr("ftErr","אין מסגרת פתוחה.");
