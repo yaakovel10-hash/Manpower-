@@ -59,6 +59,7 @@ header.top{display:flex;justify-content:space-between;align-items:flex-start;gap
 .three .tile svg{width:40px;height:40px}
 .tile .t{font-family:var(--display);font-size:22px}
 .three .tile .t{font-size:17px}
+.tile .cpn{font-size:11px;line-height:1.2;opacity:.55;color:color-mix(in srgb,var(--tc) 50%,var(--fg));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .tile .c{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .badge{position:absolute;top:6px;left:6px;background:var(--warn);color:#1b1a12;border-radius:999px;font-size:12px;font-weight:700;min-width:20px;padding:0 6px;text-align:center}
 .status{margin-top:18px;font-size:13px;color:var(--muted);text-align:center}
@@ -733,7 +734,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
           <rect x="8" y="12" width="48" height="44" rx="5" fill="var(--accent)" fill-opacity=".25"/><path d="M8 24h48M20 6v12M44 6v12"/>
           <circle cx="22" cy="36" r="3"/><circle cx="34" cy="36" r="3"/><circle cx="22" cy="46" r="3"/><path d="M40 44l4 4 7-8"/>
         </svg>
-        <span class="t">לו"ז</span><span class="c" id="cntSc">—</span>
+        <span class="t">לו"ז</span><span class="cpn" id="scTP" hidden></span><span class="c" id="cntSc">—</span><span class="cpn" id="scTN" hidden></span>
       </a>
       <a class="tile t-teal" href="#absent">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
@@ -4590,7 +4591,7 @@ const top=el("div","top");
     renderQueued=true;
     requestAnimationFrame(()=>{renderQueued=false;try{renderAllNow();}catch(e){console.warn("render",e);}});
   }
-  const SNAP_IDS=["meName","meRole","meUnit","meId","cntAt","cntVf","cntSc","cntAb","cntWr","cntNm","cntOb","cntGp","cntVh","cntRq","rqBadge","cntMd","mdBadge","cntMine","pendBadge","gapBadge","faultBadge","openUnits","viewWrap"];
+  const SNAP_IDS=["meName","meRole","meUnit","meId","cntAt","cntVf","cntSc","scTP","scTN","cntAb","cntWr","cntNm","cntOb","cntGp","cntVh","cntRq","rqBadge","cntMd","mdBadge","cntMine","pendBadge","gapBadge","faultBadge","openUnits","viewWrap"];
   let lastSnap="";
   function saveHomeSnap(){
     try{const t={};SNAP_IDS.forEach(id=>{const e=$(id);if(e)t[id]=[id==="openUnits"||id==="viewWrap"?null:e.textContent,e.hidden];});
@@ -4609,6 +4610,8 @@ const top=el("div","top");
     renderMine();renderAttend();renderVerify();renderSched();renderAbsent();renderWear();renderNmr();renderNmrD();renderGaps();renderOrbat();renderZR();renderReqList();renderMedList();
     {const t=key(new Date()),ue=unitEv().filter(x=>onDay(x,t)).length,ab=absEv().filter(x=>onDay(x,t)).length+vis(requests).filter(r=>r.status==="approved"&&r.from&&r.from<=t&&(r.to||r.from)>=t).length;
      const P=unitEv().filter(x=>x.src==="paste"&&x.start&&onDay(x,t)).sort((a,b)=>a.start.localeCompare(b.start)),pos=P.length?nowPos(P,t):null;
+     {const cur=pos&&pos.cur>=0&&pos.label==="עכשיו"?pos.cur:-1,pv=cur>0?P[cur-1]:null,nx=cur>=0?P[cur+1]:(pos&&pos.label==="בקרוב"?P[1]:null);
+      $("scTP").hidden=!pv;$("scTP").textContent=pv?pv.start+" "+pv.title:"";$("scTN").hidden=!nx;$("scTN").textContent=nx?nx.start+" "+nx.title:"";}
      $("cntSc").textContent=pos&&pos.cur>=0&&pos.label==="עכשיו"?"עכשיו: "+P[pos.cur].title:pos&&pos.label==="בקרוב"?"בקרוב: "+P[0].title:(ue?ue+" אירועים היום":"אין אירועים היום");$("cntAb").textContent=ab?ab+" היום":"אין היום";}
     {const S=vis(soldiers).filter(s=>!isCmdSoldier(s)),here=S.filter(s=>!awayInfo(s.id)),m=getMarks(rollKey("att"));
      $("cntAt").textContent=here.length+" בבסיס"+(S.length-here.length?" · "+(S.length-here.length)+" בבית":"")+(m.size?" · ✓"+here.filter(s=>m.has(s.id)).length:"");
