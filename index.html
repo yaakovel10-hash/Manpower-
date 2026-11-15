@@ -4550,7 +4550,7 @@ const top=el("div","top");
       const li=el("li","tap");const info=el("div","info");
       info.append(el("div","n1","מבחן כושר · "+fmtG(d)),el("div","n3",X.map(x=>x.act).sort((a,b)=>fitRank(a)-fitRank(b)).filter(a=>a!==FIT_PASS).join(" · ")));
       info.append(el("div","n3",sids.size+" חיילים"+(pass?" · עברו "+np+(nf?" · לא עברו "+nf:""):"")));
-      li.append(info,el("span","chev","‹"));li.onclick=()=>{ftDay=d;$("ftDQ").value="";renderFit();scrollTo({top:0});};ul.append(li);});
+      li.append(info,delBtn(()=>X.forEach(x=>remove("events/"+x.id))));li.onclick=()=>{ftDay=d;$("ftDQ").value="";renderFit();scrollTo({top:0});};ul.append(li);});
     $("ftHistH").hidden=!showList||!days.length;$("ftEmpty").hidden=E.length>0||!$("ftForm").hidden;
   }
   // a day of measurements: one card per soldier, tap to see every category
@@ -4656,7 +4656,11 @@ const top=el("div","top");
     const rowsFor=k=>{const P=words.map(w=>({w,y:w.cy-k*w.cx,x:w.cx+k*w.cy})).sort((a,b)=>a.y-b.y);const R=[];
       P.forEach(p=>{const r=R[R.length-1];if(r&&Math.abs(p.y-r.y)<hMed*0.6){r.items.push(p);r.y=(r.y*(r.items.length-1)+p.y)/r.items.length;}else R.push({y:p.y,items:[p]});});return R;};
     // pick the rotation that lines the numbers up best
-    let best=null;for(let k=-0.08;k<=0.0801;k+=0.004){const R=rowsFor(k);const sc=R.filter(r=>r.items.filter(p=>isNum(p.w.s)).length>=3).reduce((a,r)=>a+r.items.length**2,0);if(!best||sc>best.sc)best={k,R,sc};}
+    // tilt of the picture: the slope between each word and its nearest neighbour on the same line (median of all pairs)
+    const sl=[];words.forEach(a=>{let bb=null;words.forEach(b=>{const dx=a.cx-b.cx;if(dx<hMed*2.5||dx>hMed*22||Math.abs(a.cy-b.cy)>hMed*0.7)return;if(!bb||dx<bb.dx)bb={dx,dy:a.cy-b.cy};});if(bb)sl.push(bb.dy/bb.dx);});
+    sl.sort((x,y)=>x-y);let k0=sl.length>=6?sl[Math.floor(sl.length/2)]:0;if(Math.abs(k0)<0.004)k0=0;
+    // fine-tune around it (a narrow window, so neighbouring lines can never be glued together)
+    let best=null;for(let d=-0.012;d<=0.0121;d+=0.003){const k=k0+d,R=rowsFor(k);const sc=R.filter(r=>r.items.filter(p=>isNum(p.w.s)).length>=3).reduce((a,r)=>a+r.items.length**2,0)-Math.abs(d)*1e3;if(!best||sc>best.sc)best={k,R,sc};}
     const R=best.R;R.forEach(r=>{r.items.sort((a,b)=>b.x-a.x); // right to left
       // words of one name ("אברהם כהן") are one cell
       const M=[];r.items.forEach(p=>{const L=M[M.length-1];const txt=t=>/[\u0590-\u05ffA-Za-z]{2,}/.test(t)&&!/\d/.test(t);
