@@ -486,6 +486,10 @@ li.rollrow.off .rolltrack{opacity:.6;border-style:dashed;padding:6px 20px}
 .tiles{grid-template-columns:1fr 1fr}
 /* ---------- depth layer ---------- */
 body{background:var(--bg);min-height:100%}
+/* like a native app: a long press on text doesn't select it (or open search), taps don't flash blue; typing fields still work normally */
+html{-webkit-tap-highlight-color:transparent}
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select,[contenteditable]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 /* the soft glow behind the app lives on its own fixed layer, so scrolling doesn't repaint it */
 body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(var(--bg),transparent 90px),radial-gradient(130% 55% at 50% -8%,color-mix(in srgb,var(--accent) 16%,var(--bg)) 0%,var(--bg) 62%) var(--bg)}
 header.top{border-bottom:0;padding:16px 18px;border-radius:20px;background:linear-gradient(155deg,color-mix(in srgb,var(--accent) 22%,var(--surface)),color-mix(in srgb,var(--accent) 6%,var(--surface)) 70%);border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));box-shadow:inset 0 1px 0 var(--hi),0 14px 30px -18px var(--shadow),0 2px 6px -2px var(--shadow)}
