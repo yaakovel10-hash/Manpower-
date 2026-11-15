@@ -4672,10 +4672,18 @@ const top=el("div","top");
     const keep=cols.filter(c=>c.n>=Math.max(2,data.length*0.3));
     const colOf=p=>{let bi=-1,bd=1e9;const hw=/\d/.test(p.w.s)?0:p.w.w/2; // a long name: anywhere inside it counts
       keep.forEach((c,i)=>{const d=Math.max(0,Math.abs(c.x-p.x)-hw);if(d<bd){bd=d;bi=i;}});return bd<Math.max(wMed,hMed*2.5)?bi:-1;};
-    const rows=data.map(r=>{const cells=keep.map(()=>[]);r.items.forEach(p=>{const i=colOf(p);if(i>=0)cells[i].push(p.w.s);});return cells.map(c=>c.join(" "));});
-    // header: words above the first data row
-    const firstY=data[0].y,heads=keep.map(()=>[]);
-    R.filter(r=>r.y<firstY).forEach(r=>r.items.forEach(p=>{const i=colOf(p);if(i>=0&&!isNum(p.w.s))heads[i].push(p.w.s);}));
+    // rows where OCR missed some numbers still count if they sit in the table's columns
+    const firstY=data[0].y,lastY=data[data.length-1].y,heads=keep.map(()=>[]);
+    const fits=r=>r.items.filter(p=>colOf(p)>=0).length>=2&&r.items.some(p=>isNum(p.w.s)&&colOf(p)>=0);
+    const above=R.filter(r=>r.y<firstY).sort((a,b)=>b.y-a.y);
+    const extraTop=[];for(const r of above){if(fits(r))extraTop.push(r);else break;}
+    // header: the closest line above the table that has several words (not a title sentence further up)
+    const rest=above.filter(r=>!extraTop.includes(r));
+    const hebCells=r=>new Set(r.items.filter(p=>/[\u0590-\u05ff]{2,}/.test(p.w.s)).map(colOf).filter(i=>i>=0)).size;
+    const hRow=rest.find(r=>hebCells(r)>=3);
+    (hRow?[hRow]:rest.slice(0,2)).forEach(r=>r.items.forEach(p=>{const i=colOf(p);if(i>=0&&!isNum(p.w.s))heads[i].push(p.w.s);}));
+    const body=extraTop.reverse().concat(R.filter(r=>r.y>=firstY&&r.y<lastY+hMed*3&&(data.includes(r)||fits(r))));
+    const rows=body.map(r=>{const cells=keep.map(()=>[]);r.items.forEach(p=>{const i=colOf(p);if(i>=0)cells[i].push(p.w.s);});return cells.map(c=>c.join(" "));});
     const out=keep.map((c,i)=>{const vals=rows.map(r=>r[i]).filter(Boolean);
       const kind=vals.filter(v=>/^\d{1,2}[\/.]\d{1,2}[\/.]\d{2,4}$/.test(v)).length>vals.length*0.5?"date":
         vals.filter(v=>/^\d{6,9}$/.test(v)).length>vals.length*0.5?"pid":
@@ -4685,8 +4693,11 @@ const top=el("div","top");
         "other";
       const hd=heads[i].filter(t=>/[\u0590-\u05ff]{2,}/.test(t)).join(" ");
       return {i,head:hd,kind,samples:vals.slice(0,4)};});
-    const top=Math.min(...data[0].items.map(p=>p.w.y));
-    return {cols:out,rows,top,hMed};
+    const top=Math.min(...body[0].items.map(p=>p.w.y));
+    // a row without a name / personal number (a title bar, a stray line) isn't a soldier
+    const key=out.filter(c=>c.kind==="name"||c.kind==="pid").map(c=>c.i);
+    const rows2=key.length?rows.filter(r=>key.some(i=>r[i])):rows;
+    return {cols:out,rows:rows2,top,hMed};
   }
 
   // pick the soldier for a personal number read by OCR (digits may be missing or extra)
@@ -4708,7 +4719,7 @@ const top=el("div","top");
     return null;}
   // photo → bigger, grey, stretched contrast (OCR reads it much better)
   async function prepImage(file){
-    const img=await createImageBitmap(file);const sc=Math.min(2.2,Math.max(1,2400/Math.max(img.width,img.height)))*1.0;
+    const img=await createImageBitmap(file);const sc=Math.min(2,Math.max(1,1600/img.width,1400/img.height));
     const c=document.createElement("canvas");c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);const g=c.getContext("2d");g.drawImage(img,0,0,c.width,c.height);
     const id=g.getImageData(0,0,c.width,c.height),a=id.data,H=new Array(256).fill(0);
     for(let i=0;i<a.length;i+=4){const v=Math.round(a[i]*0.3+a[i+1]*0.59+a[i+2]*0.11);a[i]=v;H[v]++;}
@@ -4727,7 +4738,7 @@ const top=el("div","top");
     // (two strip heights; the caller keeps the clearer header for each column)
     const out=[W];
     try{const T=fitTable(W);if(T){const y1=Math.max(0,Math.round(T.top-2));
-      for(const k of [5.5,7]){const y0=Math.max(0,Math.round(T.top-T.hMed*k));if(y1-y0<8)continue;
+      for(const k of [4.5,6,8,11]){const y0=Math.max(0,Math.round(T.top-T.hMed*k));if(y1-y0<8)continue;
         const b=document.createElement("canvas");b.width=c.width;b.height=y1-y0;b.getContext("2d").drawImage(c,0,y0,c.width,y1-y0,0,0,c.width,y1-y0);
         const r=await ocrWorker.recognize(b);const H=toW(r.data,y0);
         if(H.some(w=>/[\u0590-\u05ff]{2,}/.test(w.s)))out.push(W.filter(w=>w.y+w.h<y0||w.y>=y1).concat(H));}}}catch(e){console.warn("header ocr",e);}
