@@ -225,11 +225,11 @@ a.approvals.mine{margin-top:14px;font-size:17px}
 .tiles:not(.three)>.tile:has(.far:not([hidden])) svg{width:44px;height:44px;margin-bottom:2px}
 .tiles:not(.three)>.tile:has(.far:not([hidden])) .t{font-size:18px;margin-bottom:0}
 
-/* לו"ז tile with the running schedule: icon next to the title, lines underneath */
-.tiles:not(.three)>.tile:has(.cpn:not([hidden])){display:grid;grid-template-columns:auto auto;justify-content:center;align-content:center;column-gap:8px;row-gap:6px}
-.tiles:not(.three)>.tile:has(.cpn:not([hidden])) svg{width:68px!important;height:68px!important;margin:0!important;align-self:center}
-.tiles:not(.three)>.tile:has(.cpn:not([hidden])) .t{font-size:22px!important;align-self:center;margin:0!important}
-.tiles:not(.three)>.tile:has(.cpn:not([hidden])) .lzw{grid-column:1/-1;justify-self:center}
+/* לו"ז tile with the running schedule: icon + title on top, the lines pinned to the bottom */
+.tiles:not(.three)>.tile:has(.cpn:not([hidden])){justify-content:flex-start;gap:2px!important;padding:12px 8px 8px!important}
+.tiles:not(.three)>.tile:has(.cpn:not([hidden])) svg{width:64px!important;height:64px!important;margin:0!important}
+.tiles:not(.three)>.tile:has(.cpn:not([hidden])) .t{font-size:20px!important;line-height:1.1;margin:0!important}
+.tiles:not(.three)>.tile:has(.cpn:not([hidden])) .lzw{margin-top:auto}
 #scAddRow[hidden]{display:none!important}
 #tileOrbat .t{font-size:18px;line-height:1.05;text-align:center}
 html,body{overflow-x:clip}
