@@ -160,7 +160,7 @@ h2.sec{font-family:var(--display);font-weight:400;font-size:20px;margin:18px 0 8
 .ftigrid tr.skip td{opacity:.45}.ftigrid tr.isnew select{border-color:var(--warn)}.ftigrid .ftnm{width:100%;margin-top:4px;text-align:right;direction:rtl}.ftigrid tr.nomatch select{border-color:var(--danger)}
 .ftchips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.ftchips .chip{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;font-weight:700}.ftchips .chip.add{border-style:dashed;color:var(--accent)}
 #ftDCards>li.ftcard{display:block!important;padding:12px 14px}
-.fttop{display:flex;align-items:center;gap:10px}.fttop b{font-size:18px;flex:1;min-width:0}
+.fttop{display:grid;grid-template-columns:minmax(0,1fr) 92px 44px;align-items:center;gap:10px}.fttop b{font-size:18px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ftpcol{display:flex;justify-content:center}
 .ftpass{font-weight:800;font-size:14px;border-radius:999px;padding:3px 12px}.ftpass.ok{background:color-mix(in srgb,var(--ok) 22%,transparent);color:var(--ok)}.ftpass.no{background:color-mix(in srgb,var(--danger) 22%,transparent);color:var(--danger)}
 .ftscore{font-weight:800;font-size:20px;min-width:40px;text-align:center;color:var(--accent);font-variant-numeric:tabular-nums}
 .ftcats{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}.ftcard.open .ftcats{display:grid}
@@ -4571,8 +4571,9 @@ const top=el("div","top");
     S.forEach(s=>{const li=el("li","ftcard tap"+(ftOpenCards.has(d+s.id)?" open":""));
       const top=el("div","fttop");top.append(el("b",null,s.name));
       const pv=pass?(pass.results||{})[s.id]:null;
-      if(pv===1||pv===0)top.append(el("span","ftpass "+(pv?"ok":"no"),pv?"עבר":"לא עבר"));
-      const sv=score?(score.results||{})[s.id]:null;if(sv!=null)top.append(el("span","ftscore",String(sv)));
+      // fixed columns: pass/fail always in one column, the score in the next (empty cells keep their place)
+      const pc=el("span","ftpcol");if(pv===1||pv===0)pc.append(el("span","ftpass "+(pv?"ok":"no"),pv?"עבר":"לא עבר"));top.append(pc);
+      const sv=score?(score.results||{})[s.id]:null;top.append(el("span","ftscore",sv!=null&&sv!==""?String(sv):""));
       li.append(top);
       const grid=el("div","ftcats");
       acts.filter(x=>x.act!==FIT_PASS).forEach(x=>{const v=(x.results||{})[s.id];const t=x.mtype||A.get(x.act)||"count";
