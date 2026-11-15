@@ -450,7 +450,9 @@ li.rollrow.ok.dragging .knob{left:6px}
 li.rollrow.off .rolltrack{opacity:.6;border-style:dashed;padding:6px 20px}
 .tiles{grid-template-columns:1fr 1fr}
 /* ---------- depth layer ---------- */
-body{background:linear-gradient(var(--bg),transparent 90px),radial-gradient(130% 55% at 50% -8%,color-mix(in srgb,var(--accent) 16%,var(--bg)) 0%,var(--bg) 62%) var(--bg);background-attachment:fixed;min-height:100%}
+body{background:var(--bg);min-height:100%}
+/* the soft glow behind the app lives on its own fixed layer, so scrolling doesn't repaint it */
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(var(--bg),transparent 90px),radial-gradient(130% 55% at 50% -8%,color-mix(in srgb,var(--accent) 16%,var(--bg)) 0%,var(--bg) 62%) var(--bg)}
 header.top{border-bottom:0;padding:16px 18px;border-radius:20px;background:linear-gradient(155deg,color-mix(in srgb,var(--accent) 22%,var(--surface)),color-mix(in srgb,var(--accent) 6%,var(--surface)) 70%);border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));box-shadow:inset 0 1px 0 var(--hi),0 14px 30px -18px var(--shadow),0 2px 6px -2px var(--shadow)}
 header.top .pid .num{text-shadow:0 1px 0 var(--hi)}
 .tile{--tc:var(--accent);position:relative;overflow:hidden;isolation:isolate;
@@ -623,9 +625,9 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 @media (prefers-reduced-motion:reduce){.tile:active{transform:none}}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -1411,6 +1413,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
 /* ================================================================ */
 
 (function(){
+  {const lc=String.prototype.localeCompare,C={};
+   String.prototype.localeCompare=function(b,loc,opt){if(opt||Array.isArray(loc))return lc.call(this,b,loc,opt);const k=loc||"";return (C[k]||(C[k]=new Intl.Collator(loc||undefined))).compare(this,b);};}
   const $=id=>document.getElementById(id);
   const el=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e;};
   let fs=null,auth=null,authUser=null,uid=null,isAdmin=false,isMaster=false,ready=false,editingMe=false;
@@ -1488,7 +1492,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     s=s.replace(/יה$/,"טו").replace(/יו$/,"טז");
     return s.length<2?s+"׳":s.slice(0,-1)+"״"+s.slice(-1);
   }
-  function heb(d){if(!hParts)return null;const p=hParts.formatToParts(d);const g=t=>parseInt((p.find(x=>x.type===t)||{}).value,10);return {day:g("day"),year:g("year"),month:hMonth.format(d)};}
+  const hebC=new Map();
+  function heb(d){const k=d.getFullYear()*400+d.getMonth()*32+d.getDate();if(hebC.has(k))return hebC.get(k);const r=heb0(d);hebC.set(k,r);return r;}
+  function heb0(d){if(!hParts)return null;const p=hParts.formatToParts(d);const g=t=>parseInt((p.find(x=>x.type===t)||{}).value,10);return {day:g("day"),year:g("year"),month:hMonth.format(d)};}
   function hebFull(d){const h=heb(d);return h?gem(h.day)+" ב"+h.month+" "+gem(h.year%1000):"";}
   function fmtG(k){const d=parseKey(k);return d.getDate()+"."+(d.getMonth()+1)+"."+d.getFullYear();}
 
@@ -1499,11 +1505,13 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(sid){a.href="#soldier-"+sid;a.addEventListener("pointerdown",e=>e.stopPropagation());a.onclick=e=>{e.stopPropagation();};}
     return a;
   }
+  const svgCache=new Map();
+  function svgSet(node,html){let t=svgCache.get(html);if(!t){t=document.createElement("template");t.innerHTML=html;svgCache.set(html,t);}node.textContent="";node.append(t.content.cloneNode(true));return node;}
   function profBtn(sid){
-    const b=el("a","profbtn");b.href="#soldier-"+sid;b.setAttribute("aria-label","כרטיס החייל");b.innerHTML=personSvg;
+    const b=el("a","profbtn");b.href="#soldier-"+sid;b.setAttribute("aria-label","כרטיס החייל");svgSet(b,personSvg);
     b.addEventListener("pointerdown",e=>e.stopPropagation());b.onclick=e=>e.stopPropagation();return b;
   }
-  function avatar(src,cls){if(src){const im=el("img","av "+(cls||""));im.src=src;im.alt="";return im;}const d=el("div","av "+(cls||""));d.innerHTML=personSvg;return d;}
+  function avatar(src,cls){if(src){const im=el("img","av "+(cls||""));im.src=src;im.alt="";return im;}const d=el("div","av "+(cls||""));svgSet(d,personSvg);return d;}
   function delBtn(onDel,label){
     label=label||"מחיקה";const b=el("button","del",label);b.type="button";
     let t;b.onclick=ev=>{ev.stopPropagation();
@@ -1535,7 +1543,10 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const c=visCache.get(arr);if(c&&c.k===k&&c.n===arr.length)return c.out.slice();
     const out=arr.filter(x=>inScope(x.unit)&&inView(x.unit));visCache.set(arr,{k,n:arr.length,out});return out.slice();
   };
-  const soldierById=id=>soldiers.find(s=>s.id===id&&inScope(s.unit)&&inView(s.unit));
+  // same as vis() but returns the cached array itself (callers must not change it)
+  const visRO=arr=>{const r=vis(arr),c=visCache.get(arr);return c&&c.n===arr.length?c.out:r;};
+  let sByIdC={a:null,k:null,m:null};
+  const soldierById=id=>{const a=visRO(soldiers);if(sByIdC.a!==a){sByIdC={a,m:new Map(a.map(s=>[s.id,s]))};}return sByIdC.m.get(id);};
   const errMsg=e=>e&&e.code==="permission-denied"?"אין לך הרשאה לפעולה הזו במסגרת הזו.":"השמירה נכשלה. בדקו חיבור לאינטרנט ונסו שוב.";
   /* offline: a write is kept on the phone and sent later, so don't wait for the server */
   let pending=0;
@@ -1568,7 +1579,13 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
 
   /* ---------- screens ---------- */
   const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat","v-zr","v-reqs","v-med"];
-  function show(ids){ALL.forEach(i=>$(i).hidden=!ids.includes(i));$("bootStatus").hidden=true;}
+  // big lists of a screen you left are emptied (they're rebuilt when you come back), so the page stays light
+  const HEAVY={"v-weapons":["listW"],"v-zr":["zrBox"],"v-verify":["vfList"],"v-soldiers":["listS"],"v-gaps":["gpS","gpW"],"v-reqs":["rqList"],"v-med":["mdList"]};
+  function show(ids){
+    ALL.forEach(i=>{const hide=!ids.includes(i),el_=$(i);
+      if(hide&&!el_.hidden&&HEAVY[i]){HEAVY[i].forEach(x=>{const n=$(x);if(n)n.textContent="";});}
+      el_.hidden=hide;});
+    $("bootStatus").hidden=true;}
   function route(){
     if(!ready)return;
     if(!authUser){
@@ -1708,7 +1725,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
 
   /* ---------- home ---------- */
   $("viewUnit").onchange=()=>{viewSel=$("viewUnit").value;try{localStorage.setItem("viewUnit",viewSel);}catch(_){}
-    closeCard&&closeCard();renderAll();};
+    closeCard&&closeCard();lastSigReset();renderAll();};
   function renderMe(){
     if(!me&&!mgr())return;
     HIDEABLE.forEach(([k,,t,c])=>{const sh=tileShown(k);$(t).hidden=!sh;$(c).checked=sh;});
@@ -2269,9 +2286,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     box.append(el("strong",null,'סוגי האמל"ח שזוהו בקובץ'),el("span","mini","אם שם של סוג יצא הפוך או לא נכון, תקנו אותו כאן והתיקון יחול על כל החיילים."));
     keys.forEach((k,i)=>{
       const r=el("div","typerow");
-      const ic=el("div","wicon sm");ic.innerHTML=weaponIcon(typeMap[k]);
+      const ic=el("div","wicon sm");svgSet(ic,weaponIcon(typeMap[k]));
       const inp=el("input");inp.type="text";inp.id="impt"+i;inp.value=wType(typeMap[k]);
-      inp.oninput=()=>{typeMap[k]=inp.value;ic.innerHTML=weaponIcon(inp.value);renderImp(true);};
+      inp.oninput=()=>{typeMap[k]=inp.value;svgSet(ic,weaponIcon(inp.value));renderImp(true);};
       const fl=el("button","ghost sm","⇄ הפיכה");fl.type="button";fl.title="הפיכת סדר האותיות";
       fl.onclick=()=>{typeMap[k]=flipHeb(wType(typeMap[k]));renderTypes();renderImp(true);};
       r.append(ic,inp,fl);box.append(r);
@@ -2374,7 +2391,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     $("impSave").textContent='שמירת '+on.length+' פריטי אמל"ח'+(nm?" ("+nm+" לא חתומים)":"");$("impSave").disabled=!on.length;
     let lastType=null;
     impItems.forEach((it,i)=>{
-      if(it.type!==lastType){lastType=it.type;const h=el("div","imphead");const ic=el("span","wicon sm");ic.innerHTML=weaponIcon(it.type);h.append(ic,el("b",null,wType(it.type)));box.append(h);}
+      if(it.type!==lastType){lastType=it.type;const h=el("div","imphead");const ic=el("span","wicon sm");svgSet(ic,weaponIcon(it.type));h.append(ic,el("b",null,wType(it.type)));box.append(h);}
       const d=el("div","impitem"+(it.owner?"":" noown"));
       const cb=el("input");cb.type="checkbox";cb.checked=it.on;cb.id="iic"+i;cb.onchange=()=>{it.on=cb.checked;renderItems();};
       const ty=el("input");ty.type="text";ty.value=wType(it.type);ty.id="iit"+i;ty.placeholder="סוג";ty.onchange=()=>{it.type=ty.value.trim()||"נשק";renderItems();};
@@ -2560,6 +2577,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(onTap)p.append(el("div","ipgo","לרשימת הבקש\"צים ←"));
     p.classList.add("on");clearTimeout(p._h);p._h=setTimeout(()=>p.classList.remove("on"),4500);
   }
+  let pendC={a:null,m:null};
+  function pendOf(sid){const a=visRO(requests);if(pendC.a!==a){const m=new Map();a.forEach(r=>{if(r.status!=="pending")return;if(!m.has(r.soldierId))m.set(r.soldierId,[]);m.get(r.soldierId).push(r);});pendC={a,m};}return pendC.m.get(sid)||[];}
   function nameWithNote(s,cls){
     const d=el("div",(cls||"n1")+" nwn");d.append(el("span","nwt",s.name||""));
     const N=sNotes(s);
@@ -2568,7 +2587,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       b.addEventListener("pointerdown",e=>e.stopPropagation());
       b.onclick=e=>{e.stopPropagation();infoPop("📝",s.name,N.map(g=>({main:g.text})));};d.append(b);}
     // yellow dot: a בקש"צ that is still waiting for approval
-    const P=vis(requests).filter(r=>r.soldierId===s.id&&r.status==="pending");
+    const P=pendOf(s.id);
     if(P.length){const b=el("button","ndot pend");b.type="button";const t=P.map(r=>(r.reason||'בקש"צ')+" · "+reqWhen(r)+(reqBy(r)?' · הוזן ע"י '+reqBy(r):"")).join(" | ");
       b.title=t;b.setAttribute("aria-label",'בקש"צ ממתין לאישור: '+t);if(P.length>1)b.dataset.n=P.length;
       b.addEventListener("pointerdown",e=>e.stopPropagation());
@@ -2628,7 +2647,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const ul=$("listT");ul.textContent="";
     mine.forEach(w=>{
       const li=el("li","tap");li.onclick=()=>{location.hash="weapons";setTimeout(()=>openCard(w),80);};
-      const ic=el("div","wicon");ic.innerHTML=weaponIcon(w.type);
+      const ic=el("div","wicon");svgSet(ic,weaponIcon(w.type));
       const info=el("div","info");info.append(el("div","n1",wType(w.type)),el("div","n2",w.num));
       const fl=faultLine(w);if(fl)info.append(fl);
       li.append(ic,info,delBtn(()=>patch("weapons/"+w.id,{owner:""},"tErr"),"זיכוי"));ul.append(li);
@@ -2993,7 +3012,7 @@ const top=el("div","top");
       li.onclick=()=>{if(bulk.k==="w"){toggleSel(w.id);return;}openCard(w);};
       if(bulk.k==="w"){const cb=el("span","pick");cb.textContent=bulk.sel.has(w.id)?"✓":"";li.append(cb);}
       bulk.vis.push(w.id);
-      const ic=el("div","wicon");ic.innerHTML=weaponIcon(w.type);
+      const ic=el("div","wicon");svgSet(ic,weaponIcon(w.type));
       const info=el("div","info");info.append(el("div","n1",wType(w.type)),el("div","n2",w.num));
       const s=soldierById(w.owner);const on3=el("div","n3");
       if(w.ownerMember)on3.append("שייך ל: "+(w.ownerMember===uid?"אני":(w.ownerName||"מפקד"))+" (מפקד)");
@@ -3089,7 +3108,7 @@ const top=el("div","top");
     $("openMine").hidden=!me;
     if($("v-mine").hidden)return;
     const ul=$("listMine");ul.textContent="";
-    M.forEach(w=>{const li=el("li");const ic=el("div","wicon");ic.innerHTML=weaponIcon(w.type);
+    M.forEach(w=>{const li=el("li");const ic=el("div","wicon");svgSet(ic,weaponIcon(w.type));
       const info=el("div","info");info.append(el("div","n1",wType(w.type)),el("div","n2",w.num));
       li.append(ic,info,delBtn(()=>patch("weapons/"+w.id,{owner:"",ownerMember:"",ownerName:""},"mwErr"),"זיכוי"));ul.append(li);});
     $("emptyMine").hidden=M.length>0;
@@ -3148,10 +3167,17 @@ const top=el("div","top");
     if(x.date===last&&x.end<=x.start)return now>=x.start; // overnight, ends tomorrow morning
     return (t>x.date||now>=x.start)&&(t<last||now<x.end);
   }
+  let awayC={k:null,m:null};
   function awayInfo(sid){
+    const d=new Date(),k=visRO(events).length+"|"+visRO(requests).length+"|"+dataVer+"|"+curView()+"|"+d.getHours()+":"+d.getMinutes()+"|"+todayKey();
+    if(awayC.k!==k)awayC={k,m:new Map()};
+    if(awayC.m.has(sid))return awayC.m.get(sid);
+    const r=awayCalc(sid);awayC.m.set(sid,r);return r;
+  }
+  function awayCalc(sid){
     {const m=medEv().find(x=>x.soldierId===sid&&x.status==="approved"&&reqOutNow(x));if(m)return {tag:"רפואה",text:"רפואה: "+(m.reason||"")+" · חוזר "+fmtG(m.to||m.from)+(m.toTime?" ב-\u2066"+m.toTime+"\u2069":"")};}
     const r=awayReq(sid);if(r)return {tag:'בקש"צ',text:'בקש"צ מאושר: '+(r.reason||"")+" · חוזר "+fmtG(r.to||r.from)+(r.toTime?" ב-\u2066"+r.toTime+"\u2069":"")};
-    const t=todayKey(),a=vis(events).find(x=>x.kind==="abs"&&x.soldierId===sid&&absNow(x,t));
+    const t=todayKey(),a=visRO(events).find(x=>x.kind==="abs"&&x.soldierId===sid&&absNow(x,t));
     if(a)return {tag:a.absType||"היעדרות",text:(a.absType||"היעדרות")+" · "+(a.allDay?"כל היום":"\u2066"+a.start+"–"+a.end+"\u2069")+(a.to&&a.to!==a.date?" · עד "+fmtG(a.to):"")};
     return null;
   }
@@ -3173,7 +3199,7 @@ const top=el("div","top");
     return true;
   }
   function awayReq(sid){
-    return vis(requests).find(r=>r.soldierId===sid&&r.status==="approved"&&reqOutNow(r))||null;
+    return visRO(requests).find(r=>r.soldierId===sid&&r.status==="approved"&&reqOutNow(r))||null;
   }
   const rollKey=(kind,extra)=>"roll:"+kind+":"+curView()+":"+todayKey()+(extra?":"+extra:"");
   function getMarks(k){try{return new Set(JSON.parse(localStorage.getItem(k)||"[]"));}catch(_){return new Set();}}
@@ -3212,7 +3238,8 @@ const top=el("div","top");
     const knob=el("button","knob");knob.type="button";knob.setAttribute("aria-label",on?"ביטול סימון":"סימון");
     knob.append(el("span","ring"));
     track.append(body,knob);li.append(track);
-    const set=v=>{v?marks.add(id):marks.delete(id);setMarks(mk,marks);haptic(v);onChange();};
+    // the row flips itself right away; onChange only refreshes counters (no rebuilding of the list)
+    const set=v=>{v?marks.add(id):marks.delete(id);setMarks(mk,marks);haptic(v);li.classList.toggle("ok",v);knob.setAttribute("aria-label",v?"ביטול סימון":"סימון");onChange();};
     const span=()=>Math.round(track.clientWidth*0.2);
     let x0=null,y0=null,drag=false,moved=0,lastMx=0,justDragged=false;
     const pos=()=>marks.has(id)?span():0;
@@ -3244,7 +3271,9 @@ const top=el("div","top");
     $("atHint").textContent=L?"מצב רשימה: לוחצים על השורה כדי להוסיף לרשימה או להוציא ממנה.":"מקריאים שם ולוחצים על השורה כשהחייל נמצא. לחיצה נוספת מבטלת.";
     const mk=L?"list:"+L.id:rollKey("att");
     if(L)setMarks(mk,new Set(listItems(L).map(x=>x.sid)));
-    const marks=getMarks(mk),onCh=L?listChanged:renderAttend;
+    const marks=getMarks(mk),onCh=L?listChanged:attLight;
+    function attLight(){const m=getMarks(mk);progress($("atBar"),$("atCount"),here.filter(s=>m.has(s.id)).length,here.length);
+      $("atCmdN").textContent=cHere.length?cHere.filter(s=>m.has(s.id)).length+"/"+cHere.length:"";renderHomeCounts();}
     renderListPanel(L);
     const S=vis(soldiers).filter(s=>!isCmdSoldier(s)&&(sq==="*"||(s.squad||"")===sq)).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));
     const here=[],away=[];S.forEach(s=>{const r=awayInfo(s.id);r?away.push({s,r}):here.push(s);});
@@ -3303,7 +3332,7 @@ const top=el("div","top");
   function listChanged(){const L=curList();if(!L)return;const m=getMarks("list:"+L.id),cur=new Set(listItems(L).map(x=>x.sid)),upd={};let t=Date.now();
     m.forEach(sid=>{if(!cur.has(sid))upd["sel."+sid]={note:"",t:t++};});
     cur.forEach(sid=>{if(!m.has(sid))upd["sel."+sid]=FV().delete();});
-    if(Object.keys(upd).length)listUpdate(L,upd);renderAttend();}
+    if(Object.keys(upd).length)listUpdate(L,upd);} // the row already flipped; the list redraws when the change comes back
   function renderListPanel(L){
     $("lstPanel").hidden=!L;$("lstBar").hidden=!!L;
     if(L)$("lstOldBox").hidden=true;
@@ -3397,15 +3426,16 @@ const top=el("div","top");
     const list=W.filter(w=>(ty==="*"||wType(w.type)===ty)).filter(w=>{if(sq==="*")return true;const o=ownerOf(w);return o&&(o.squad||"")===sq;})
       .sort((a,b)=>((ownerOf(a)||{}).name||"ת").localeCompare((ownerOf(b)||{}).name||"ת","he")||String(a.num).localeCompare(String(b.num)));
     const here=[],away=[];list.forEach(w=>{const r=w.owner&&!w.ownerMember?awayInfo(w.owner):null;r?away.push({w,r}):here.push(w);});
-    const row=(w,inner)=>{const ic=el("div","wicon");ic.innerHTML=weaponIcon(w.type);const o=ownerOf(w);
+    const row=(w,inner)=>{const ic=el("div","wicon");svgSet(ic,weaponIcon(w.type));const o=ownerOf(w);
       const info=el("div","info"),who=o?o.name:"לא חתום";
       // all items: the type is the big line and the name is small; one type: the name is big
       if(ty==="*")info.append(el("div","n1",wType(w.type)),el("div","n3",[who,w.num,o&&o.squad?"כיתה "+o.squad:""].filter(Boolean).join(" · ")));
       else info.append(el("div","n1",who),el("div","n3",[w.num,o&&o.squad?"כיתה "+o.squad:""].filter(Boolean).join(" · ")));
       {const of=openFaults(w);if(of.length){const d=el("div","faultline","⚠ "+of.map(f=>f.desc).join(" · "));d.title=d.textContent;info.append(d);}}inner.append(ic,info);
     };
-    here.forEach(w=>ul.append(rollRow(w.id,marks,mk,renderVerify,inner=>row(w,inner))));
-    away.forEach(({w,r})=>ua.append(rollRow(w.id,marks,mk,renderVerify,inner=>{row(w,inner);
+    const vfLight=()=>{const m=getMarks(mk);progress($("vfBar"),$("vfCount"),list.filter(w=>m.has(w.id)).length,list.length);};
+    here.forEach(w=>ul.append(rollRow(w.id,marks,mk,vfLight,inner=>row(w,inner))));
+    away.forEach(({w,r})=>ua.append(rollRow(w.id,marks,mk,vfLight,inner=>{row(w,inner);
       const inf=inner.querySelector(".info");inf.append(el("div","n3 awaynote","⚠ החותם לא נוכח · "+r.text));})));
     progress($("vfBar"),$("vfCount"),list.filter(w=>marks.has(w.id)).length,list.length);
     $("vfEmpty").hidden=list.length>0;$("vfAwayH").hidden=!away.length;
@@ -3420,8 +3450,8 @@ const top=el("div","top");
   const AB_DEF={"שמירות בבסיס":{allDay:true,days:1},"תורן מפלג":{allDay:true,days:1},"מטבח":{allDay:false,start:"06:00",end:"21:00",days:1},"גימלים":{allDay:true,days:2},"מסופח":{allDay:true,days:7}};
   const daysOf=(from,to)=>{const out=[];if(!from)return out;let d=parseKey(from);const e=parseKey(to&&to>=from?to:from);for(let i=0;d<=e&&i<120;i++){out.push(key(d));d=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1);}return out;};
   const onDay=(x,k)=>x.date&&x.date<=k&&(x.to||x.date)>=k;
-  const unitEv=()=>vis(events).filter(x=>x.kind==="unit");
-  const absEv=()=>vis(events).filter(x=>x.kind==="abs");
+  const unitEv=()=>visRO(events).filter(x=>x.kind==="unit");
+  const absEv=()=>visRO(events).filter(x=>x.kind==="abs");
   function writeUnit(){const id=curView();if(id!=="*"&&unitById(id))return Object.assign({},unitById(id).path);if(memberOk())return Object.assign({},myUnit().path);const u=units.find(x=>x.open&&inScope(x.path));return u?Object.assign({},u.path):null;}
   const ltr=t=>"\u2066"+t+"\u2069",tr=(a,b)=>ltr(a+(b?"–"+b:"")),dr=(a,b)=>ltr(fmtG(a))+" – "+ltr(fmtG(b));
   const hm=t=>{if(!t)return null;const [h,m]=t.split(":").map(Number);return h*60+m;};
@@ -3553,7 +3583,9 @@ const top=el("div","top");
   function hmd(d){if(!hFull)return null;const p=hFull.formatToParts(d);return {m:(p.find(x=>x.type==="month")||{}).value,d:parseInt((p.find(x=>x.type==="day")||{}).value,10)};}
   const addD=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
   // holidays in Israel for one day; .yt = a day of rest (yom tov)
-  function holidays(dt){
+  const holC=new Map();
+  function holidays(dt){const k=dt.getFullYear()*400+dt.getMonth()*32+dt.getDate();if(!holC.has(k))holC.set(k,holidays0(dt));return holC.get(k);}
+  function holidays0(dt){
     const h=hmd(dt);if(!h)return [];const {m,d}=h,w=dt.getDay(),L=[],add=(n,yt)=>L.push({n,yt:!!yt});
     const adar=m==="Adar"||m==="Adar II";
     if(m==="Tishri"){if(d===1||d===2)add("ראש השנה",1);if((d===3&&w!==6)||(d===4&&w===0))add("צום גדליה");if(d===9)add("ערב יום כיפור");if(d===10)add("יום כיפור",1);
@@ -3639,7 +3671,8 @@ const top=el("div","top");
     $("scG").textContent=GM[scM]+" "+scY;
     const h1=heb(first),h2=heb(last);
     $("scH").textContent=h1?(h1.month===h2.month?h1.month:h1.month+" – "+h2.month)+" "+gem(h2.year%1000):"";
-    const U=unitEv(),A=absEv();
+    const k0=key(first),k1=key(last),inM=x=>x.date&&x.date<=k1&&(x.to||x.date)>=k0;
+    const U=unitEv().filter(inM),A=absEv().filter(inM);
     const g=$("scGrid");g.textContent="";DOW.forEach(d=>g.append(el("div","dow",d)));
     for(let i=0;i<first.getDay();i++)g.append(el("div","day out"));
     const tk=key(new Date());
@@ -3653,8 +3686,14 @@ const top=el("div","top");
       if(A.some(x=>onDay(x,k)))dots.append(el("span","dot ab"));
       b.append(top,el("div","hd",hh?gem(hh.day):""));if(HL.length)b.append(el("div","hol",HL[0].n.replace(/ – נר .*/,"")));b.append(dots);
       b.setAttribute("aria-label",d+" "+GM[scM]+(hh?", "+hebFull(dt):""));
-      b.onclick=()=>{scSel=k;renderSched();};g.append(b);
+      b.onclick=()=>{scSel=k;g.querySelectorAll(".day.sel").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");renderSchedDay();};g.append(b);
     }
+    renderSchedDay();
+  }
+  // the selected day's details (tapping a day redraws only this part)
+  function renderSchedDay(){
+    const U=unitEv(),A=absEv();
+    const first=new Date(scY,scM,1);
     const sd=parseKey(scSel);
     $("scDayHead").textContent="יום "+DOWL[sd.getDay()]+", "+fmtG(scSel)+(hParts?" · "+hebFull(sd):"");
     const ul=$("scDay");ul.textContent="";
@@ -3845,7 +3884,7 @@ const top=el("div","top");
   /* ---------- בלאי (worn-out gear) ---------- */
   const SHIRT_SVG='<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M22 8l-14 8 5 12 6-3v31h26V25l6 3 5-12-14-8c-2 4-6 6-10 6s-8-2-10-6z" fill="var(--accent)" fill-opacity=".25"/><path d="M30 30l4 6-5 4 6 7M40 44l-3 6"/></svg>';
   const APC_SVG='<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 36h52l-4-10H40l-4-6H18l-4 6H8z" fill="var(--accent)" fill-opacity=".25"/><path d="M30 20v-6h14"/><rect x="4" y="36" width="56" height="12" rx="6"/><circle cx="14" cy="42" r="3"/><circle cx="25" cy="42" r="3"/><circle cx="36" cy="42" r="3"/><circle cx="48" cy="42" r="3"/></svg>';
-  const wearEv=()=>vis(events).filter(x=>x.kind==="wear");
+  const wearEv=()=>visRO(events).filter(x=>x.kind==="wear");
   let wrOpen=null,wrHist=false;
   /* searchable person picker: soldiers of the unit + commanders */
   function peopleList(){
@@ -3929,7 +3968,7 @@ const top=el("div","top");
   function wearRow(x,hist){
     const s=x.soldierId?soldiers.find(z=>z.id===x.soldierId):null;
     const li=el("li","wrrow"+(wrOpen===x.id?" open":""));
-    const ic=el("div","wricon");ic.innerHTML=SHIRT_SVG;
+    const ic=el("div","wricon");svgSet(ic,SHIRT_SVG);
     const info=el("div","info");info.append(el("div","n1",x.item||"בלאי"));
     const n3=el("div","n3");n3.append(s?sLink(s.name,s.id):(x.ownerName||"—"));
     n3.append(" · "+(hist?"טופל "+fmtG(key(new Date(x.doneAt||x.at))):"נפתח "+fmtG(key(new Date(x.at)))));info.append(n3);
@@ -3973,7 +4012,7 @@ const top=el("div","top");
     $("niTitle").textContent="הוספת פריט ל"+c.name;$("ndEmpty").textContent="עוד אין פריטים ב"+c.name+". הוסיפו את הציוד שאמור להיות בו.";
     const dl=$("niNames");dl.textContent="";c.items.forEach(v=>{const o=document.createElement("option");o.value=v;dl.append(o);});
     if(!$("formNM").hidden){$("formNM").reset();$("formNM").hidden=true;$("openNM").hidden=false;}}
-  const kindEv=k=>vis(events).filter(x=>x.kind===k).sort((a,b)=>String(a.num).localeCompare(String(b.num)));
+  const kindEv=k=>visRO(events).filter(x=>x.kind===k).sort((a,b)=>String(a.num).localeCompare(String(b.num)));
   const nmrEv=()=>kindEv(vk);
   let curNmr=null;
   const respName=x=>{if(x.respId){const s=soldiers.find(z=>z.id===x.respId);if(s)return s.name;}return x.respName||"";};
@@ -4000,7 +4039,7 @@ const top=el("div","top");
     L.forEach(x=>{
       const items=x.items||[],m=getMarks(rollKey(vk,x.id)),ok=items.filter(i=>m.has(i.id)).length;
       const li=el("li","tap nmrow");li.onclick=()=>{location.hash=vk+"-"+x.id;};
-      const ic=el("div","nmicon");ic.innerHTML=VK[vk].icon();
+      const ic=el("div","nmicon");svgSet(ic,VK[vk].icon());
       const info=el("div","info");info.append(el("div","n1 ltrnum","⁦"+x.num+"⁩"));
       const n3=el("div","n3");const rn=respName(x);n3.append("אחראי: ");n3.append(x.respId&&soldiers.some(z=>z.id===x.respId)?sLink(rn,x.respId):(rn||"—"));n3.append(" · "+items.length+" פריטים");info.append(n3);
       const pg=el("div","minibar");const sp=el("span");sp.style.width=(items.length?Math.round(ok/items.length*100):0)+"%";pg.append(sp);
@@ -4063,7 +4102,8 @@ const top=el("div","top");
   // "דוח צ": every item of the displayed unit, grouped by type, with who holds it and whether it's stored
   $("vfWa").onclick=()=>{
     const W=vis(weapons);if(!W.length){toast('אין אמל"ח לשליחה');return;}
-    const own=w=>{if(w.ownerMember)return w.ownerMember===uid?((me&&me.name)||""):(w.ownerName||"");const o=w.owner&&soldiers.find(z=>z.id===w.owner);return o?o.name:"";};
+    const ownM=new Map(),sm=new Map(soldiers.map(z=>[z.id,z]));
+    const own=w=>{if(ownM.has(w.id))return ownM.get(w.id);let r;if(w.ownerMember)r=w.ownerMember===uid?((me&&me.name)||""):(w.ownerName||"");else{const o=w.owner&&sm.get(w.owner);r=o?o.name:"";}ownM.set(w.id,r);return r;};
     const G={};W.forEach(w=>{const t=wType(w.type)||"אחר";(G[t]=G[t]||[]).push(w);});
     const types=Object.keys(G).sort((a,b)=>(G[b].length-G[a].length)||a.localeCompare(b,"he"));
     const cv=curView();let u=cv&&cv!=="*"?unitById(cv):null;if(!u)u=me&&me.unitId&&unitById(me.unitId);
@@ -4083,7 +4123,8 @@ const top=el("div","top");
   $("zrQx").onclick=e=>{e.preventDefault();$("zrQ").value="";$("zrQx").hidden=true;renderZR();$("zrQ").focus();};
   function renderZR(){
     if($("v-zr").hidden)return;
-    const own=w=>{if(w.ownerMember)return w.ownerMember===uid?((me&&me.name)||""):(w.ownerName||"");const o=w.owner&&soldiers.find(z=>z.id===w.owner);return o?o.name:"";};
+    const ownM=new Map(),sm=new Map(soldiers.map(z=>[z.id,z]));
+    const own=w=>{if(ownM.has(w.id))return ownM.get(w.id);let r;if(w.ownerMember)r=w.ownerMember===uid?((me&&me.name)||""):(w.ownerName||"");else{const o=w.owner&&sm.get(w.owner);r=o?o.name:"";}ownM.set(w.id,r);return r;};
     const q=$("zrQ").value.trim().toLowerCase();
     const W=vis(weapons).filter(w=>!q||(wType(w.type)+" "+(w.num||"")+" "+(own(w)||"לא חתום")).toLowerCase().includes(q));
     const G={};W.forEach(w=>{const t=wType(w.type)||"אחר";(G[t]=G[t]||[]).push(w);});
@@ -4096,7 +4137,7 @@ const top=el("div","top");
       box.append(el("h2","sec",t+" ("+G[t].length+")"));
       const ul=el("ul","list");
       G[t].sort((a,b)=>(own(a)||"ת").localeCompare(own(b)||"ת","he")).forEach(w=>{
-        const li=el("li","zrrow");const ic=el("div","wicon");ic.innerHTML=weaponIcon(w.type);
+        const li=el("li","zrrow");const ic=el("div","wicon");svgSet(ic,weaponIcon(w.type));
         const info=el("div","info");const o=own(w);
         info.append(el("div","n1",o||"לא חתום"),el("div","n2","\u2066"+(w.num||"ללא מספר")+"\u2069"+(openFaults(w).length?" · ⚠ תקלה":"")));
         const sw=el("button","stsw");sw.type="button";sw.setAttribute("aria-pressed",String(!!w.stored));
@@ -4171,7 +4212,7 @@ const top=el("div","top");
   }
 
   /* ---------- בקש"צים / רפואה screens (same screen, two data sources) ---------- */
-  function medEv(){return vis(events).filter(x=>x.kind==="med");}
+  function medEv(){return visRO(events).filter(x=>x.kind==="med");}
   function reqScreen(o){ // o: {v,P,Q,src,base,title,noun,toastNoun,extra}
     const $$=x=>$(o.P+x),$q=x=>$(o.Q+x);let tab="pending";
     function render(){
@@ -4254,7 +4295,7 @@ const top=el("div","top");
   }
   const obPeople=()=>{const P=vis(soldiers);return P.slice().sort((a,b)=>((a.iron||9999)-(b.iron||9999))||(isCmdSoldier(b)-isCmdSoldier(a))||(a.name||"").localeCompare(b.name||"","he"));};
   function oCard(s,place){
-    const b=el("button","ocard");b.type="button";b.innerHTML=FIG;b.dataset.sid=s.id;
+    const b=el("button","ocard");b.type="button";svgSet(b,FIG);b.dataset.sid=s.id;
     b.append(el("span","pk",s.pakal||(isCmdSoldier(s)?(s.role&&s.role!=="חייל"?s.role:"מפקד"):"—")),el("span","nm",s.name||""));
     if(s.iron)b.append(el("span","ir",String(s.iron)));
     if(obSel&&obSel.sid===s.id)b.classList.add("sel");
@@ -4631,15 +4672,34 @@ const top=el("div","top");
       const vs=$("viewUnit"),vo=vs&&vs.selectedOptions&&vs.selectedOptions[0];
       const j=JSON.stringify({t,tiles,view:vo?vo.textContent:""});if(j!==lastSnap){lastSnap=j;localStorage.setItem("homeSnap",j);}}catch(_){}
   }
-  function renderAllNow(){
+  // which data each screen shows; a screen is redrawn only when one of these changed
+  let verS=0,verW=0,verE=0,verR=0,verM=0,verU=0,verT=0,verMe=0,verSeen=0,dataVer=0,membersKey="",meKey="";
+  const SCREEN_DEPS={"v-weapons":"wsmu","v-zr":"wsmu","v-orbat":"se","v-soldiers":"swremu","v-gaps":"sw","v-wear":"es","v-nmr":"e","v-nmrd":"e","v-mine":"wm","v-units":"umtx","v-attend":"sermua","v-verify":"wsermua"};
+  const lastSig={};const lastSigReset=()=>{for(const k in lastSig)delete lastSig[k];};
+  function screenSig(id){
+    const dep=SCREEN_DEPS[id],d=new Date();
+    const V={s:verS,w:verW,e:verE,r:verR,m:verM,u:verU,t:verT,x:verSeen,get a(){return todayKey()+":"+visRO(soldiers).filter(z=>awayInfo(z.id)).map(z=>z.id).join(".");}};
+    return (dep?dep.split("").map(c=>V[c]).join(","):[verS,verW,verE,verR,verM,verU,verT,d.getHours()+":"+d.getMinutes()].join(","))+(id==="v-home"?"|"+verSeen:"")+"|"+curView()+"|"+location.hash+"|"+verMe;
+  }
+  function renderAllNow(force){
     if(!ready)return;
+    const cur=ALL.find(i=>!$(i).hidden);let skip=null;
+    if(cur){const sg=screenSig(cur);if(!force&&lastSig[cur]===sg)skip=cur;lastSig[cur]=sg;}
+    renderAllFull(skip);
+  }
+  // every screen's renderer; the hidden ones only refresh their home-tile numbers
+  function renderAllFull(skip){
     setTimeout(saveHomeSnap,0);
     setTimeout(syncWearNotes,0);
     ensureLink();mergeSweep();try{fixOldPaste();}catch(e){console.warn(e);}
-    renderMe();renderS();renderW();
-    if(curSoldier)renderDetail();
-    if(!$("v-units").hidden)renderUnits();
-    renderMine();renderAttend();renderVerify();renderSched();renderAbsent();renderWear();renderNmr();renderNmrD();renderGaps();renderOrbat();renderZR();renderReqList();renderMedList();
+    const R=(id,f)=>{if(skip!==id)f();};
+    renderMe();R("v-soldiers",renderS);R("v-weapons",renderW);
+    if(curSoldier)R("v-soldier",renderDetail);
+    if(!$("v-units").hidden)R("v-units",renderUnits);
+    R("v-mine",renderMine);R("v-attend",renderAttend);R("v-verify",renderVerify);R("v-sched",renderSched);R("v-absent",renderAbsent);R("v-wear",renderWear);R("v-nmr",renderNmr);R("v-nmrd",renderNmrD);R("v-gaps",renderGaps);R("v-orbat",renderOrbat);R("v-zr",renderZR);R("v-reqs",renderReqList);R("v-med",renderMedList);
+    renderHomeCounts();
+  }
+  function renderHomeCounts(){
     {const t=key(new Date()),ue=unitEv().filter(x=>onDay(x,t)).length,ab=absEv().filter(x=>onDay(x,t)).length+vis(requests).filter(r=>r.status==="approved"&&r.from&&r.from<=t&&(r.to||r.from)>=t).length;
      const P=unitEv().filter(x=>x.src==="paste"&&x.start&&onDay(x,t)).sort((a,b)=>a.start.localeCompare(b.start)),pos=P.length?nowPos(P,t):null;
      {const cur=pos&&pos.cur>=0&&pos.label==="עכשיו"?pos.cur:-1,pv=cur>0?P[cur-1]:null,nx=cur>=0?P[cur+1]:(pos&&pos.label==="בקרוב"?P[1]:null);
@@ -4658,24 +4718,36 @@ const top=el("div","top");
     if(n>0){const p=myUnit().path;for(let i=0;i<n;i++)q=q.where("unit."+LV[i],"==",p[LV[i]]);}
     return q;
   }
+  // keep each collection in a map and only re-read the documents that changed (not the whole collection every time)
+  const snapMaps={};
+  function applySnap(col,s){
+    let m=snapMaps[col];const ch=s.docChanges();
+    if(!m){m=snapMaps[col]=new Map();s.docs.forEach(d=>m.set(d.id,{id:d.id,...d.data()}));}
+    else ch.forEach(c=>{if(c.type==="removed")m.delete(c.doc.id);else m.set(c.doc.id,{id:c.doc.id,...c.doc.data()});});
+    return [...m.values()];
+  }
   function startData(){
     const n=myLen();const k=n<0?"none":n+"|"+(n?LV.slice(0,n).map(x=>myUnit().path[x]).join("|"):"all");
     if(k===scopeKey)return;
     unsubs.forEach(u=>{try{u();}catch(_){}});unsubs=[];scopeKey=k;
     soldiers=[];weapons=[];events=[];requests=[];soldiersLoaded=false;
+    for(const k in snapMaps)delete snapMaps[k];
     if(n<0)return;
     let got=0;$("status").textContent="טוען נתונים…";
-    const sub=(col,set,label)=>unsubs.push(scoped(col).onSnapshot(s=>{set(s.docs.map(d=>({id:d.id,...d.data()})));renderAll();if(++got===4)$("status").textContent=navigator.onLine?"מסונכרן בזמן אמת":"אופליין · מוצגים נתונים שמורים";},e=>{console.warn(col,e);$("status").textContent="שגיאה בטעינת "+label+(e.code==="permission-denied"?" (אין הרשאה)":"")+".";}));
-    sub("soldiers",v=>{soldiers=v.sort((a,b)=>(b.at||0)-(a.at||0));soldiersLoaded=true;},"החיילים");
-    sub("weapons",v=>weapons=v.sort((a,b)=>(b.at||0)-(a.at||0)),'האמל"ח');
-    sub("events",v=>events=v,"האירועים");
-    sub("requests",v=>requests=v,'הבקש"צים');
+    const sub=(col,set,label)=>unsubs.push(scoped(col).onSnapshot(s=>{set(applySnap(col,s));dataVer++;renderAll();if(++got===4)$("status").textContent=navigator.onLine?"מסונכרן בזמן אמת":"אופליין · מוצגים נתונים שמורים";},e=>{console.warn(col,e);$("status").textContent="שגיאה בטעינת "+label+(e.code==="permission-denied"?" (אין הרשאה)":"")+".";}));
+    sub("soldiers",v=>{soldiers=v.sort((a,b)=>(b.at||0)-(a.at||0));soldiersLoaded=true;verS++;},"החיילים");
+    sub("weapons",v=>{weapons=v.sort((a,b)=>(b.at||0)-(a.at||0));verW++;},'האמל"ח');
+    sub("events",v=>{events=v;verE++;},"האירועים");
+    sub("requests",v=>{requests=v;verR++;},'הבקש"צים');
   }
   function startMgmt(){
     mgmtUnsubs.forEach(u=>{try{u();}catch(_){}});mgmtUnsubs=[];tokens={};allMembers=[];
     if(!mgr())return;
-    mgmtUnsubs.push(fs.collection("unitTokens").onSnapshot(s=>{tokens={};s.docs.forEach(d=>tokens[d.id]=d.data().token);renderAll();},e=>console.warn("tokens",e)));
-    mgmtUnsubs.push(fs.collection("members").onSnapshot(s=>{allMembers=s.docs.map(d=>({id:d.id,...d.data()}));renderAll();},e=>console.warn("members",e)));
+    mgmtUnsubs.push(fs.collection("unitTokens").onSnapshot(s=>{tokens={};s.docs.forEach(d=>tokens[d.id]=d.data().token);verT++;renderAll();},e=>console.warn("tokens",e)));
+    mgmtUnsubs.push(fs.collection("members").onSnapshot(s=>{allMembers=s.docs.map(d=>({id:d.id,...d.data()}));
+      // "last seen" changes all the time; only the management screen shows it
+      const mk=JSON.stringify(allMembers.map(m=>Object.assign({},m,{lastSeen:0,lastMode:0})));
+      if(mk!==membersKey){membersKey=mk;verM++;dataVer++;}verSeen++;renderAll();},e=>console.warn("members",e)));
   }
   function stopAll(){[...unsubs,...mgmtUnsubs].forEach(u=>{try{u();}catch(_){}});unsubs=[];mgmtUnsubs=[];scopeKey=null;soldiers=[];weapons=[];events=[];requests=[];tokens={};allMembers=[];}
 
@@ -4691,6 +4763,8 @@ const top=el("div","top");
       show(["v-home"]);painted=true;
     }
   }catch(_){}
+  // Firebase loads in the background (deferred) so the saved home screen shows first
+  function bootFirebase(){
   if(String(FIREBASE_CONFIG.apiKey).includes("PASTE")){show(["v-config"]);return;}
   if(!window.firebase){$("bootStatus").textContent="לא ניתן לטעון את Firebase. בדקו חיבור לאינטרנט.";return;}
   firebase.initializeApp(FIREBASE_CONFIG);
@@ -4720,9 +4794,11 @@ const top=el("div","top");
       // only re-route when something that changes the screen changed (first load, joined/changed unit, profile created)
       const k=[!!me,me&&me.unitId,me&&me.name,pendingJoin&&pendingJoin.id,editingMe].join("|");
       if(k!==routedKey){routedKey=k;route();}};
-    unitsUnsub=fs.collection("units").onSnapshot(s=>{units=s.docs.map(d=>({id:d.id,...d.data()}));gotUnits=true;step();},e=>{console.warn("units",e);gotUnits=true;step();});
-    meUnsub=fs.doc("members/"+uid).onSnapshot(s=>{me=s.exists?{id:uid,...s.data()}:null;gotMe=true;step();markSeen();},e=>{gotMe=true;step();});
+    unitsUnsub=fs.collection("units").onSnapshot(s=>{units=s.docs.map(d=>({id:d.id,...d.data()}));verU++;dataVer++;gotUnits=true;step();},e=>{console.warn("units",e);gotUnits=true;step();});
+    meUnsub=fs.doc("members/"+uid).onSnapshot(s=>{me=s.exists?{id:uid,...s.data()}:null;{const k=JSON.stringify(me&&Object.assign({},me,{lastSeen:0,lastMode:0}));if(k!==meKey){meKey=k;verMe++;}}gotMe=true;step();markSeen();},e=>{gotMe=true;step();});
   });
+  }
+  if(window.firebase)bootFirebase();else document.addEventListener("DOMContentLoaded",bootFirebase,{once:true});
 })();
 
 </script>
