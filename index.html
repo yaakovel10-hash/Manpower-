@@ -384,6 +384,7 @@ body.bulking #openS,body.bulking #openImp,body.bulking #openW,body.bulking #open
 .ipop{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);width:min(340px,calc(100vw - 32px));background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:18px;padding:12px 16px;box-shadow:0 18px 40px -12px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:61;display:grid;gap:8px;text-align:right}
 .ipop.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .ipop .iph{display:flex;gap:8px;align-items:center;font-size:16px}.ipop .ipi{font-size:18px}
+.ipop .ipgo{font-size:13px;font-weight:700;color:var(--accent);text-align:left}
 .ipop .ipr{border-top:1px solid var(--line);padding-top:8px}.ipop .ipm{font-weight:700;font-size:16px}.ipop .ips{color:var(--muted);font-size:14px;margin-top:2px;text-align:right;direction:ltr}
 .imphead{display:flex;gap:8px;align-items:center;margin-top:12px;padding-bottom:4px;border-bottom:2px solid var(--line)}
 .impitem{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1fr);gap:6px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
@@ -2504,19 +2505,21 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   function sNotes(s){const L=(s.gaps||[]).filter(g=>g&&(g.text||"").trim());if((s.note||"").trim())L.unshift({id:"_old",text:s.note,at:0});return L;}
   function delNote(s,id){return id==="_old"?patch("soldiers/"+s.id,{note:""}):patch("soldiers/"+s.id,{gaps:(s.gaps||[]).filter(g=>g.id!==id)});}
   // short "when" for a request: 9.12 10:00 – 10.12 14:00
-  function reqShort(r){
+  function reqShort(r,noTime){
     const dm=k=>{if(!k)return "";const d=parseKey(k);return d.getDate()+"."+(d.getMonth()+1);};
-    const a=r.from,b=r.to||r.from,ta=r.fromTime||"",tb=r.toTime||"";
+    const a=r.from,b=r.to||r.from,ta=noTime?"":r.fromTime||"",tb=noTime?"":r.toTime||"";
     if(a===b)return dm(a)+(ta||tb?" · "+(ta||"")+(tb?"–"+tb:""):"");
     return dm(a)+(ta?" "+ta:"")+" – "+dm(b)+(tb?" "+tb:"");
   }
   // small tidy popup card (replaces the long toast for dots)
-  function infoPop(icon,title,rows){
+  function infoPop(icon,title,rows,onTap){
     let p=document.getElementById("ipop");
     if(!p){p=el("div","ipop");p.id="ipop";document.body.append(p);
       document.addEventListener("pointerdown",e=>{if(!p.contains(e.target))p.classList.remove("on");},true);}
     p.textContent="";const h=el("div","iph");h.append(el("span","ipi",icon),el("b",null,title));p.append(h);
     rows.forEach(r=>{const d=el("div","ipr");d.append(el("div","ipm",r.main));if(r.sub){const sb=el("div","ips",r.sub);sb.dir="ltr";d.append(sb);}p.append(d);});
+    p.classList.toggle("tap",!!onTap);p.onclick=onTap?()=>{p.classList.remove("on");onTap();}:null;
+    if(onTap)p.append(el("div","ipgo","לרשימת הבקש\"צים ←"));
     p.classList.add("on");clearTimeout(p._h);p._h=setTimeout(()=>p.classList.remove("on"),4500);
   }
   function nameWithNote(s,cls){
@@ -2531,7 +2534,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(P.length){const b=el("button","ndot pend");b.type="button";const t=P.map(r=>(r.reason||'בקש"צ')+" · "+reqWhen(r)+(reqBy(r)?' · הוזן ע"י '+reqBy(r):"")).join(" | ");
       b.title=t;b.setAttribute("aria-label",'בקש"צ ממתין לאישור: '+t);if(P.length>1)b.dataset.n=P.length;
       b.addEventListener("pointerdown",e=>e.stopPropagation());
-      b.onclick=e=>{e.stopPropagation();infoPop("⏳",s.name+' · בקש"צ ממתין',P.map(r=>({main:r.reason||'בקש"צ',sub:reqShort(r)})));};d.append(b);}
+      b.onclick=e=>{e.stopPropagation();infoPop("⏳",s.name+' · בקש"צ ממתין',P.map(r=>({main:r.reason||'בקש"צ',sub:reqShort(r,true)})),()=>renderReqList.open(s.name));};d.append(b);}
     return d;
   }
   /* lists on the soldier's page: one switch per list, to put him on several lists quickly */
@@ -4080,6 +4083,7 @@ const top=el("div","top");
       if(appr.length){L.push("","*מאושרים*");appr.forEach(r=>L.push(line(r)));}
       sendWA(L.join("\n"));
     };
+    render.open=q=>{tab="pending";$$("Q").value=q||"";location.hash=o.v.slice(2);render();};
     return render;
   }
   const renderReqList=reqScreen({v:"v-reqs",P:"rq",Q:"q",cnt:"cntRq",badge:"rqBadge",form:"formRQ",open:"openRQ",cancel:"cancelRQ",src:()=>vis(requests),base:"requests",title:'בקש"צים',noun:'בקש"צים',toastNoun:'הבקש"צ'});
