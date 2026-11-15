@@ -2672,7 +2672,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     e.preventDefault();
     const s=soldierById(curSoldier);if(!s)return;
     const type=wType($("twType").value),num=$("twNum").value.trim();
-    if(weapons.some(w=>w.num===num&&w.type===type))return showErr("tErr","הנשק הזה כבר רשום. אפשר להחתים אותו מהרשימה למעלה.");
+    if(weapons.some(w=>String(w.num||"").trim()===String(num).trim()&&wType(w.type)===wType(type)))return showErr("tErr","הנשק הזה כבר רשום. אפשר להחתים אותו מהרשימה למעלה.");
     const btn=e.submitter;if(btn)btn.disabled=true;
     const ok=await write("weapons/"+newId(),{type,num,owner:curSoldier,unit:s.unit,addedBy:uid,at:Date.now()},"tErr");
     if(btn)btn.disabled=false;if(ok)resetTW();
@@ -3053,7 +3053,7 @@ const top=el("div","top");
     if(sel==="me"){ownerMember=uid;ownerName=(me&&me.name)||"";}
     else if(sel.startsWith("m:")){ownerMember=sel.slice(2);ownerName=(prevW0&&prevW0.ownerName)||"";}
     else owner=sel;
-    if(weapons.some(w=>w.id!==editingW&&w.num===num&&w.type===type))return showErr("wErr","הנשק הזה כבר רשום.");
+    if(weapons.some(w=>w.id!==editingW&&String(w.num||"").trim()===String(num).trim()&&wType(w.type)===wType(type)))return showErr("wErr","הנשק הזה כבר רשום.");
     const s=owner?soldierById(owner):null;
     const prevW=editingW&&weapons.find(w=>w.id===editingW);
     const unit=s?s.unit:(pathOf($("wUnit").value)||(prevW&&prevW.unit));
@@ -3443,7 +3443,7 @@ const top=el("div","top");
     const row=(w,inner)=>{const ic=el("div","wicon");svgSet(ic,weaponIcon(w.type));const o=ownerOf(w);
       const info=el("div","info"),who=o?o.name:"לא חתום";
       // all items: the type is the big line and the name is small; one type: the name is big
-      const xn=dupN.get(w.id)?" ×"+dupN.get(w.id):"";
+      const xn="";
       if(ty==="*")info.append(el("div","n1",wType(w.type)+xn),el("div","n3",[who,w.num,o&&o.squad?"כיתה "+o.squad:""].filter(Boolean).join(" · ")));
       else info.append(el("div","n1",who+xn),el("div","n3",[w.num,o&&o.squad?"כיתה "+o.squad:""].filter(Boolean).join(" · ")));
       {const of=openFaults(w);if(of.length){const d=el("div","faultline","⚠ "+of.map(f=>f.desc).join(" · "));d.title=d.textContent;info.append(d);}}inner.append(ic,info);
@@ -3892,7 +3892,27 @@ const top=el("div","top");
           S.forEach((x,i)=>{const n=S[i+1],upd={src:"paste"};if(x.end&&n&&x.end===n.start)upd.end="";patch("events/"+x.id,upd);});}grp=[];};
       L.forEach(x=>{if(grp.length&&x.at-grp[grp.length-1].at>50)flush();grp.push(x);});flush();});
   }
+  // the same item (same type + same number) entered twice is one item: merge into one record
+  const wDedupDone=new Set();
+  function weaponDedupe(){
+    if(!weapons.length||!uid)return;
+    const G=new Map();
+    visRO(weapons).forEach(w=>{const n=String(w.num||"").trim();if(!n)return;const k=wType(w.type)+"|"+n;if(!G.has(k))G.set(k,[]);G.get(k).push(w);});
+    G.forEach((L,k)=>{
+      if(L.length<2)return;const sig=k+"|"+L.map(w=>w.id).sort().join(",");if(wDedupDone.has(sig))return;wDedupDone.add(sig);
+      const byAge=L.slice().sort((a,b)=>(a.at||0)-(b.at||0)||String(a.id).localeCompare(String(b.id)));
+      const keep=byAge[0],rest=byAge.slice(1);
+      const latest=L.filter(w=>w.owner||w.ownerMember).sort((a,b)=>(b.at||0)-(a.at||0))[0]||keep;
+      const F=[],seenF=new Set();L.forEach(w=>(w.faults||[]).forEach(f=>{const fk=f.id||f.desc;if(seenF.has(fk))return;seenF.add(fk);F.push(f);}));
+      const notes=[...new Set(L.map(w=>(w.notes||"").trim()).filter(Boolean))].join(" · ");
+      const upd={faults:F,notes};
+      ["owner","ownerMember","ownerName"].forEach(f=>{if(latest[f]!==undefined)upd[f]=latest[f];});
+      if(latest.stored!==undefined)upd.stored=latest.stored;
+      patch("weapons/"+keep.id,upd).then(ok=>{if(ok!==false)rest.forEach(w=>remove("weapons/"+w.id));});
+    });
+  }
   function mergeSweep(){
+    try{weaponDedupe();}catch(e){console.warn("dedupe",e);}
     if(!soldiers.length)return;
     soldiers.filter(x=>x.memberId&&!swept.has(x.id)&&inScope(x.unit)).forEach(x=>{swept.add(x.id);if(dupsOf(x).length===1)autoMerge(x);});
   }
