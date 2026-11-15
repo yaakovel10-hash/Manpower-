@@ -2681,7 +2681,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const rq=vis(requests).filter(r=>r.soldierId===s.id&&r.status==="approved"&&reqOutNow(r));
     const head=el("div","sthead");
     const away=ab.some(x=>absNow(x,t))||rq.length;
-    head.append(el("span","stdot"+(away?" away":"")),el("b",null,away?"לא בנוכחות היום":"בנוכחות היום"));
+    const fullDay=ab.some(x=>absNow(x,t)&&(x.allDay||!x.start||!x.end))||rq.some(r=>!r.fromTime&&!r.toTime);
+    const partial=ab.some(x=>!x.allDay&&x.start&&x.end);
+    head.append(el("span","stdot"+(away?" away":"")),el("b",null,away?(fullDay?"לא בנוכחות היום":"לא בנוכחות עכשיו"):(partial?"בנוכחות עכשיו":"בנוכחות היום")));
     box.append(head);box.classList.toggle("away",!!away);
     const yest=()=>{const d=new Date();d.setDate(d.getDate()-1);return key(d);},tom=()=>{const d=new Date();d.setDate(d.getDate()+1);return key(d);};
     ab.forEach(x=>{
