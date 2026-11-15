@@ -4685,7 +4685,8 @@ const top=el("div","top");
         "other";
       const hd=heads[i].filter(t=>/[\u0590-\u05ff]{2,}/.test(t)).join(" ");
       return {i,head:hd,kind,samples:vals.slice(0,4)};});
-    return {cols:out,rows};
+    const top=Math.min(...data[0].items.map(p=>p.w.y));
+    return {cols:out,rows,top,hMed};
   }
 
   // pick the soldier for a personal number read by OCR (digits may be missing or extra)
@@ -4720,7 +4721,17 @@ const top=el("div","top");
     if(!ocrWorker){ocrWorker=await Tesseract.createWorker(["heb","eng"],1,{logger:m=>{if(m&&m.status==="recognizing text")onP(Math.round((m.progress||0)*100));}});
       await ocrWorker.setParameters({tessedit_pageseg_mode:"11"});}
     const c=await prepImage(file);const {data}=await ocrWorker.recognize(c);
-    return (data.words||[]).filter(w=>w.confidence>10).map(w=>({s:w.text,x:w.bbox.x0,y:w.bbox.y0,w:w.bbox.x1-w.bbox.x0,h:w.bbox.y1-w.bbox.y0}));}
+    const toW=(d,dy)=>(d.words||[]).filter(w=>w.confidence>10).map(w=>({s:w.text,x:w.bbox.x0,y:w.bbox.y0+dy,w:w.bbox.x1-w.bbox.x0,h:w.bbox.y1-w.bbox.y0}));
+    let W=toW(data,0);
+    // the header row (often light text on a coloured band) reads much better on its own: OCR just that strip again
+    // (two strip heights; the caller keeps the clearer header for each column)
+    const out=[W];
+    try{const T=fitTable(W);if(T){const y1=Math.max(0,Math.round(T.top-2));
+      for(const k of [5.5,7]){const y0=Math.max(0,Math.round(T.top-T.hMed*k));if(y1-y0<8)continue;
+        const b=document.createElement("canvas");b.width=c.width;b.height=y1-y0;b.getContext("2d").drawImage(c,0,y0,c.width,y1-y0,0,0,c.width,y1-y0);
+        const r=await ocrWorker.recognize(b);const H=toW(r.data,y0);
+        if(H.some(w=>/[\u0590-\u05ff]{2,}/.test(w.s)))out.push(W.filter(w=>w.y+w.h<y0||w.y>=y1).concat(H));}}}catch(e){console.warn("header ocr",e);}
+    return out;}
   async function pdfWords(file){const pages=await readPdf(file);const W=[];let off=0;
     pages.forEach(pg=>{let mx=0;pg.forEach(i=>{W.push({s:i.s,x:i.x,y:off-i.y-i.h,w:i.w,h:i.h});mx=Math.max(mx,i.y);});off+=mx+200;});return W;}
   let ftI=null; // {cols,rows,map:[act|""],types:{},sids:[]}
@@ -4730,9 +4741,13 @@ const top=el("div","top");
     if(/ציון/.test(c.head)&&c.kind==="num")return FIT_SCORE;
     if(c.kind==="num"){const v=c.samples.map(Number);if(v.length>=3&&v.every(x=>x>=50&&x<=100)&&new Set(v).size>1&&/ציון|סופי/.test(c.head||"ציון"))return FIT_SCORE;}
     if(c.kind==="pid"||c.kind==="date"||c.kind==="other")return "";
-    if(/הערכ|הער|קבוצ|שימוש|מס"?ד/.test(c.head))return "";
+    if(/עו?בר/.test(c.head))return FIT_PASS;
+    if(/ציון/.test(c.head))return FIT_SCORE;
+    if(/הערכ|הער|קבוצ|שימוש|מס"?ד|מחלקה|^שם|תאריך|אישי|^מ\.?א/.test(c.head))return "";
+    // whatever is written at the top of the column is the category
+    {const nh=c.head.replace(/["'׳״]/g,"").trim();if(/[\u0590-\u05ff]{2,}/.test(nh)){
+      const ex=[...fitActs().keys()].find(a=>a.replace(/["'׳״]/g,"").trim()===nh);return ex||"new:"+c.head.trim();}}
     for(const [re,a] of FT_GUESS)if(re.test(c.head))return a;
-    if(/זריז/.test(c.head))return "new:זריזות";
     if(c.kind==="time"){const v=c.samples.map(x=>parseFit(x,"time")).filter(x=>x!=null);const avg=v.reduce((a,b)=>a+b,0)/(v.length||1);if(avg>=480)return "ריצת 3 ק\"מ";}
     return "";}
   function ftIRender(){
@@ -4779,7 +4794,9 @@ const top=el("div","top");
       if(/pdf/i.test(f.type)||/\.pdf$/i.test(f.name)){st.textContent="קורא את ה־PDF…";W=await pdfWords(f);
         if(W.length<10){st.textContent="ה־PDF סרוק כתמונה, מזהה טקסט…";throw new Error("scanned");}}
       else{st.textContent="מזהה את הטבלה בתמונה… (בפעם הראשונה זה לוקח קצת יותר)";W=await ocrWords(f,p=>{st.textContent="מזהה את הטבלה בתמונה… "+p+"%";});}
-      const T=fitTable(W);
+      const Ws=Array.isArray(W[0])?W:[W],Ts=Ws.map(fitTable),T=Ts[0];
+      if(T)T.cols.forEach((c,i)=>{const heb=h=>(String(h||"").match(/[\u0590-\u05ff]/g)||[]).length;
+        Ts.forEach(t=>{const h=t&&t.cols.length===T.cols.length&&t.cols[i].head;if(heb(h)>heb(c.head))c.head=h;});});
       if(!T||!T.rows.length){st.textContent="לא מצאתי טבלה עם תוצאות. נסו תמונה ישרה וחדה יותר, שבה רואים את כל השורות.";return;}
       ftI={cols:T.cols,rows:T.rows,map:[],types:{},sids:[],skipped:[]};
       T.cols.forEach((c,ci)=>{const g=guessAct(c);ftI.map[ci]=g;});
