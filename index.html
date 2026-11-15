@@ -1507,7 +1507,7 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 /* keep a copy of the app on the phone so it opens without internet */
 if("serviceWorker" in navigator&&window.isSecureContext){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(e=>console.warn("sw",e)));}
 /* ====== הגדרות: הדביקו כאן את פרטי הפרויקט שלכם מ-Firebase ====== */
-/* קריאת טבלאות מתמונה בעזרת Gemini (Firebase AI Logic). מפתח האתר של reCAPTCHA v3 שמחובר ל־App Check. ריק = קריאה רגילה בטלפון */
+/* קריאת טבלאות מתמונה בעזרת Gemini (Firebase AI Logic). מפתח האתר של reCAPTCHA (Fraud Defense) שמחובר ל־App Check. ריק = קריאה רגילה בטלפון */
 const RECAPTCHA_SITE_KEY = "6LefZSEuAAAAAKFkBHMfJSVMv6wFGJ013fgpVAbW";
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyC-g0AaFEYJQrqTbq11R5kl0-yEKPdSi8c",
@@ -4770,9 +4770,9 @@ const top=el("div","top");
     if(aiModel)return aiModel;
     if(!RECAPTCHA_SITE_KEY)throw new Error("no-key");
     const V="12.5.0",B="https://www.gstatic.com/firebasejs/"+V+"/";
-    const [{initializeApp,getApps},{initializeAppCheck,ReCaptchaV3Provider},{getAI,getGenerativeModel,GoogleAIBackend}]=await Promise.all([import(B+"firebase-app.js"),import(B+"firebase-app-check.js"),import(B+"firebase-ai.js")]);
+    const [{initializeApp,getApps},{initializeAppCheck,ReCaptchaEnterpriseProvider},{getAI,getGenerativeModel,GoogleAIBackend}]=await Promise.all([import(B+"firebase-app.js"),import(B+"firebase-app-check.js"),import(B+"firebase-ai.js")]);
     const app=getApps().find(a=>a.name==="ai")||initializeApp(FIREBASE_CONFIG,"ai");
-    try{initializeAppCheck(app,{provider:new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),isTokenAutoRefreshEnabled:true});}catch(_){}
+    try{initializeAppCheck(app,{provider:new ReCaptchaEnterpriseProvider(RECAPTCHA_SITE_KEY),isTokenAutoRefreshEnabled:true});}catch(_){}
     const ai=getAI(app,{backend:new GoogleAIBackend()});
     aiModel=n=>getGenerativeModel(ai,{model:n,generationConfig:{responseMimeType:"application/json",temperature:0}});
     return aiModel;
