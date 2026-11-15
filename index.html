@@ -219,6 +219,7 @@ a.approvals.mine{margin-top:14px;font-size:17px}
 .tile .lzw{display:flex;flex-direction:column;align-items:center;gap:3px;max-width:100%}
 .tile .lzw:has(.cpn:not([hidden])){-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.25),#000 42%,#000 58%,rgba(0,0,0,.25));mask-image:linear-gradient(to bottom,rgba(0,0,0,.25),#000 42%,#000 58%,rgba(0,0,0,.25))}
 .tile .lzw .cpn{opacity:.9}
+#scAddRow[hidden]{display:none!important}
 #tileOrbat .t{font-size:18px;line-height:1.05;text-align:center}
 html,body{overflow-x:clip}
 #homeTiles{position:relative}
@@ -3618,10 +3619,10 @@ const top=el("div","top");
   $("scDelBtn").onclick=()=>{const i=+String(calCfg.loc).slice(1);calCfg.custom.splice(i,1);calCfg.loc=0;saveCal();fillLocs();syncCalSet();renderSched();};
   const syncCalSet=()=>{$("scLoc").value=String(calCfg.loc);$("scDelBtn").hidden=!String(calCfg.loc).startsWith("c");$("scShowHol").checked=calCfg.hol;$("scShowZ").checked=calCfg.z;$("scLocNote").textContent=calCfg.loc==="gps"&&calCfg.gps?"לפי המיקום שנשמר בטלפון":"";};
   $("scSetBtn").onclick=()=>{const p=$("scSet");p.hidden=!p.hidden;syncCalSet();};
-  $("scSetDone").onclick=()=>{$("scSet").hidden=true;};$("scSet").onsubmit=e=>e.preventDefault();
+  $("scSetDone").onclick=()=>{$("scSet").hidden=true;$("scAddRow").hidden=true;};$("scSet").onsubmit=e=>e.preventDefault();
   $("scShowHol").onchange=e=>{calCfg.hol=e.target.checked;saveCal();renderSched();};
   $("scShowZ").onchange=e=>{calCfg.z=e.target.checked;saveCal();renderSched();};
-  $("scLoc").onchange=e=>{const v=e.target.value;
+  $("scLoc").onchange=e=>{const v=e.target.value;$("scAddRow").hidden=true;
     if(v!=="gps"){calCfg.loc=v.startsWith("c")?v:Number(v);saveCal();syncCalSet();renderSched();return;}
     getPos(g=>{calCfg.loc="gps";calCfg.gps=g;saveCal();syncCalSet();renderSched();toast("המיקום נשמר");});};
   function renderSched(){
