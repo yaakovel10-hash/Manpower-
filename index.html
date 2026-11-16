@@ -3404,7 +3404,8 @@ const top=el("div","top");
   $("fFault").onclick=()=>{faultOnly=!faultOnly;$("fFault").setAttribute("aria-pressed",String(faultOnly));renderW();};
   function renderW(){
     if($("v-weapons").hidden){counts();return;}
-    const q=$("qW").value.trim().toLowerCase(),ul=$("listW");ul.textContent="";if(bulk.k==="w")bulk.vis=[];
+    // in the alerts screen the search and type filter are hidden, so they must not hide anything either
+    const q=alertMode?"":$("qW").value.trim().toLowerCase(),ul=$("listW");ul.textContent="";if(bulk.k==="w")bulk.vis=[];
     const W=vis(weapons);
     // type filter options
     const fsel=$("fW"),fv=fsel.value;
@@ -3412,7 +3413,7 @@ const top=el("div","top");
     fsel.textContent="";const f0=el("option",null,"כל הסוגים ("+W.length+")");f0.value="";fsel.append(f0);
     types.forEach(t=>{const o=el("option",null,t+" ("+W.filter(w=>wType(w.type)===t).length+")");o.value=t;fsel.append(o);});
     fsel.value=types.includes(fv)?fv:"";
-    const ft=fsel.value;
+    const ft=alertMode?"":fsel.value;
     const nf=W.filter(w=>openFaults(w).length).length;
     $("fFault").textContent=(faultOnly?"✓ ":"")+"⚠ תקלות פתוחות ("+nf+")";
     const nfr=W.filter(isFree).length;
