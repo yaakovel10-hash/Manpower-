@@ -3107,7 +3107,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     return null;
   }
   const phoneOf=v=>{const m=String(v||"").replace(/[^\d+]/g," ").match(/\+?\d[\d ]{7,}\d/);return m?m[0].replace(/\s+/g,""):"";};
-  const nameOf=v=>String(v||"").replace(/\+?\d[\d\s-]{6,}\d/g," ").replace(/[-–:,]/g," ").replace(/\s+/g," ").trim();
+  const nameOf=v=>String(v||"").replace(/\+?\d[\d\s-]{6,}\d/g," ").replace(/[-–:,]/g," ").split(/\s+/).filter(w=>/[\u0590-\u05ffA-Za-z]{2,}/.test(w)&&!/^[a-z]{1,4}$/.test(w)).join(" ").trim();
   // fields → one record in the soldier's shape
   function detRecord(F){
     const r={name:"",pid:"",phone:"",address:"",parents:[{who:"אבא",name:"",phone:""},{who:"אמא",name:"",phone:""}],emerg:{name:"",phone:""},squad:""};
@@ -3123,7 +3123,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       else if(k==="emerg"){r.emerg.name=r.emerg.name||nameOf(v);r.emerg.phone=r.emerg.phone||phoneOf(v);}
       else if(k==="emergT")r.emerg.phone=phoneOf(v)||v;};
     F.forEach(([k,v])=>put(k,v));
-    r.name=r.name.replace(/\s+/g," ").trim();
+    r.name=r.name.replace(/[.,;:!?]+$/,"").replace(/\s+/g," ").trim();
     return r;
   }
   const hasDetails=r=>!!(r.address||r.parents.some(p=>p.phone||p.name)||r.emerg.phone);
@@ -3209,9 +3209,47 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const twice=[...dup.entries()].filter(([,v])=>v.length>1).map(([k,v])=>k.split("|").join(" ")+" ("+v.join(" / ")+")");
     return out.length?{items:out,noNum,twice}:null;
   }
+  // without AI: read the photo's words (OCR) and rebuild "label: value" cards from where the words sit
+  function detailsFromWords(W){
+    W=W.filter(w=>w.s&&w.s.trim());if(W.length<8)return null;
+    const isLab=w=>/[:：?]$/.test(w.s);
+    const hs=W.map(w=>w.h).sort((a,b)=>a-b),hMed=hs[Math.floor(hs.length/2)]||12;
+    // card columns: the x where label words end (right side of each card)
+    const L=W.filter(isLab).map(w=>w.x+w.w).sort((a,b)=>a-b);if(L.length<3)return null;
+    const cols=[];L.forEach(x=>{const c=cols.find(c=>Math.abs(c.x-x)<hMed*12);if(c){c.n++;c.x=Math.max(c.x,x);}else cols.push({x,n:1});});
+    const C=cols.filter(c=>c.n>=2).sort((a,b)=>a.x-b.x);if(!C.length)return null;
+    C.forEach((c,i)=>{c.left=i?C[i-1].x+hMed:-1e9;const lw=W.filter(w=>isLab(w)&&w.x+w.w<=c.x+hMed&&w.x+w.w>c.left);c.labMin=Math.min(...lw.map(w=>w.x))-hMed*2.5;});
+    const ORDER=["name","pid","phone","mother","father","city"];
+    const out=[];
+    C.forEach(c=>{
+      const ws=W.filter(w=>w.x+w.w<=c.x+hMed*2&&w.x>c.left).sort((a,b)=>(a.y+a.h/2)-(b.y+b.h/2));
+      const rows=[];ws.forEach(w=>{const cy=w.y+w.h/2,r=rows.find(r=>Math.abs(r.cy-cy)<hMed*0.6);if(r)r.w.push(w);else rows.push({cy,w:[w]});});
+      rows.sort((a,b)=>a.cy-b.cy);
+      const gaps=rows.slice(1).map((r,i)=>r.cy-rows[i].cy).sort((a,b)=>a-b),gMed=gaps[Math.floor(gaps.length/3)]||hMed*2;
+      let rec=null,prev=null;
+      const flush=()=>{if(rec&&rec.F.length)out.push(rec.F.map(([k,v])=>k+": "+v).join("\n"));rec=null;};
+      rows.forEach(r=>{
+        const lab=r.w.filter(w=>w.x>=c.labMin).sort((a,b)=>b.x-a.x).map(w=>w.s).join(" ");
+        const val=r.w.filter(w=>w.x<c.labMin).sort((a,b)=>b.x-a.x).map(w=>w.s).join(" ").trim();
+        if(prev!=null&&r.cy-prev>gMed*1.8)flush();prev=r.cy;
+        if(!lab&&/^\d{1,2}$/.test(val))return; // the card's number
+        if(!lab&&!val)return;
+        if(!rec)rec={F:[],i:0};
+        let k=/מלא/.test(lab)?"name":/אישי/.test(lab)?"pid":/אמא/.test(lab)?"mother":/אבא/.test(lab)?"father":/מגורים|מקום/.test(lab)?"city":/טלפון|של|החי/.test(lab)?"phone":ORDER[rec.i]||"";
+        if(k==="name"&&rec.F.some(([x])=>x==="שם מלא")){flush();rec={F:[],i:0};}
+        rec.i=ORDER.indexOf(k)+1||rec.i+1;
+        const LBL={name:"שם מלא",pid:"מספר אישי",phone:"טלפון",mother:"שם אמא וטלפון",father:"שם אבא וטלפון",city:"מקום מגורים"};
+        if(k&&val)rec.F.push([LBL[k],val]);
+      });
+      flush();
+    });
+    const R=out.length?detailsCards(out.join("\n\n")):null;
+    return R&&R.filter(r=>r.pid||hasDetails(r));
+  }
   // a photo or screenshot of soldiers' details (cards or a table): the AI reader turns it into rows
   async function importPhoto(f){
     impRows=[];impItems=[];impMode="soldiers";renderImp();showErr("impErr","");$("impStatus").textContent="קורא את התמונה…";
+    let aiErr="";
     try{
       const H=["שם מלא","מספר אישי","טלפון החייל","שם אמא","טלפון אמא","שם אבא","טלפון אבא","מקום מגורים"];
       const j=await aiJSON(f,'This image lists soldiers\' personal details (as cards of "label: value" or as a table, Hebrew, right-to-left). '+
@@ -3219,8 +3257,16 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
         'Copy names and numbers exactly as written; phone numbers digits only. A parent written as "name + phone" goes to the two matching cells. Use "" when missing. Do not invent anything.');
       const rows=(j&&j.rows)||[];if(!rows.length)throw new Error("empty");
       const d=detailsGrid([H].concat(rows));if(!d)throw new Error("empty");
-      importDetails(d,"מתמונה, בעזרת AI");
-    }catch(err){console.warn(err);$("impStatus").textContent="";showErr("impErr","לא הצלחתי לקרוא את התמונה. אפשר להעתיק את הטקסט ולהדביק ב\"הדבקת טקסט\".");}
+      importDetails(d,"מתמונה, בעזרת AI");return;
+    }catch(err){console.warn(err);aiErr=(err&&(err.code||err.message))||"";}
+    // no AI: plain OCR of the words, then their positions
+    try{
+      $("impStatus").textContent="קורא את התמונה בלי AI… 0%";
+      const L=await ocrWords(f,p=>{$("impStatus").textContent="קורא את התמונה בלי AI… "+p+"%";});
+      const d=detailsFromWords(L[0]);if(!d)throw new Error("empty");
+      importDetails(d,"מתמונה — בדקו את השמות והמספרים, קריאה בלי AI עלולה לטעות");
+    }catch(err){console.warn(err);$("impStatus").textContent="";
+      showErr("impErr","לא הצלחתי לקרוא את התמונה"+(aiErr?" (AI: "+String(aiErr).slice(0,80)+")":"")+". אפשר להעתיק את הטקסט ולהדביק ב\"הדבקת טקסט מהפתק\".");}
   }
   async function importSheet(f){
     impRows=[];impItems=[];impMode="soldiers";renderImp();showErr("impErr","");$("impStatus").textContent="קורא…";
