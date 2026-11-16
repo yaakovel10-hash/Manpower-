@@ -4805,6 +4805,7 @@ const top=el("div","top");
     sendWA(L.join("\n"));
   };
   // "דוח צ": every item of the displayed unit, grouped by type, with who holds it and whether it's stored
+  const isRatak=u=>!!u&&/^א['׳"]?$/.test(String(u.p||"").replace(/^פלוגה\s*/,"").trim())&&/רתק/.test(String(u.m||""));
   $("vfWa").onclick=()=>{
     const W=vis(weapons);if(!W.length){toast('אין אמל"ח לשליחה');return;}
     const ownM=new Map(),sm=new Map(soldiers.map(z=>[z.id,z]));
@@ -4819,6 +4820,8 @@ const top=el("div","top");
       L.push("","*"+t+"* ("+G[t].length+")");
       G[t].sort((a,b)=>(own(a)||"ת").localeCompare(own(b)||"ת","he")).forEach(w=>{
         const o=own(w),n=w.num||"ללא מספר",f=openFaults(w).length?" ⚠ תקלה":"";
+        // מחלקת הרתק, פלוגה א: ✅ on him, ❌ stored
+        if(isRatak(w.unit)){L.push((o||"לא חתום")+" - "+n+" "+(w.stored?"❌":"✅")+f);return;}
         L.push(o?o+" - "+n+". "+(w.stored?"מאופסן":"עליו")+f:"לא חתום - "+n+(w.stored?". מאופסן":"")+f);});
     });
     sendWA(L.join("\n"));
