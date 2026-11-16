@@ -804,6 +804,18 @@ ul.pulist li.purow{display:block;padding:12px 14px}
 .pdbox[hidden]{display:none}
 .pdbox .nh{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .pdbox .nh b{font-size:16px}
+.morebtn{display:inline-flex;align-items:center;gap:6px;margin:2px 0 10px;background:none;border:1px solid var(--line);border-radius:999px;padding:5px 14px;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
+.morebtn[aria-expanded="true"]{color:var(--fg);border-color:var(--accent)}
+.morebox{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:12px;display:grid;gap:10px}
+.morebox[hidden]{display:none}
+.mrow{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:start}
+.mrow .ml{font-size:13px;color:var(--muted);padding-top:2px}
+.mrow .mv{display:grid;gap:4px;min-width:0}
+.mrow .mt{font-weight:700;overflow-wrap:anywhere}
+.mlinks{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.mlink{font-size:13.5px;font-weight:700;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:999px;padding:3px 12px;text-decoration:none}
+.morebox .linkbtn{justify-self:start}
+.morebox a.tel{color:var(--fg);font-weight:700;text-decoration:none;direction:ltr;font-variant-numeric:tabular-nums}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1530,6 +1542,8 @@ ul.pulist li.purow{display:block;padding:12px 14px}
       <div class="av lg" id="dAv"></div>
       <div class="info"><div class="n1" id="dName"></div><div class="n2" id="dNum"></div><div id="dPhone" class="phone"></div><label class="sqpick">כיתה<select id="dSquad"><option value="">ללא כיתה</option><option value="א">כיתה א</option><option value="ב">כיתה ב</option><option value="ג">כיתה ג</option></select></label></div>
     </div>
+    <button class="morebtn" type="button" id="dMoreBtn" aria-expanded="false" aria-controls="dMore">יותר פרטים <span aria-hidden="true">▾</span></button>
+    <div class="morebox" id="dMore" hidden></div>
     <div class="statusbox" id="dStatus"></div>
     <div class="notebox" id="dNoteBox">
       <div class="nbhead"><strong><span class="ndot" aria-hidden="true"></span> הערות <span class="mini" id="dNoteN"></span></strong><button class="ghost sm" type="button" id="dNoteOpen">+ הערה</button></div>
@@ -3263,7 +3277,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     $("dName").textContent="";$("dName").append(s.name);if(s.role&&s.role!=="חייל"){const rb=el("span","role",s.role);$("dName").append(" ",rb);}
     $("dEdit").hidden=false;$("dNum").textContent=s.num+"  ·  "+unitText(s.unit).replace(/ · /g," / ");
     const av=avatar(s.photo,"lg");av.id="dAv";$("dAv").replaceWith(av);
-    renderPhone(s);
+    renderPhone(s);renderMore(s);
     renderStatus(s);
     renderSoldierLists(s);
     {const N=sNotes(s),ul=$("dNotes");ul.textContent="";$("dNoteBox").classList.toggle("has",N.length>0);$("dNoteN").textContent=N.length?"("+N.length+")":"";
@@ -3330,6 +3344,46 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     }
     if(s.phone){const a=el("a","tel",s.phone);a.href=telHref(s.phone);box.append(a);}
     const ed=el("button","linkbtn",s.phone?"עריכה":"+ הוספת טלפון");ed.type="button";ed.onclick=()=>{editingPhone=s.id;renderDetail();};
+    box.append(ed);
+  }
+  /* more details: home address and the parents' phones, folded behind a small button */
+  let moreOpen=false,moreEdit=null;
+  $("dMoreBtn").onclick=()=>{moreOpen=!moreOpen;moreEdit=null;const s=soldierById(curSoldier);if(s)renderMore(s);};
+  function renderMore(s){
+    const btn=$("dMoreBtn"),box=$("dMore");
+    btn.setAttribute("aria-expanded",String(moreOpen));btn.querySelector("span").textContent=moreOpen?"▴":"▾";
+    box.hidden=!moreOpen;if(!moreOpen)return;
+    if(moreEdit===s.id&&box.querySelector("input"))return;
+    box.textContent="";
+    const P=(s.parents||[]).concat([{},{}]).slice(0,2);
+    if(moreEdit===s.id){
+      const f=(lbl,v,ph,type,cls)=>{const l=el("label","f",lbl);const i=el("input");i.type=type||"text";if(cls)i.className=cls;if(type==="tel")i.inputMode="tel";i.value=v||"";i.placeholder=ph||"";l.append(i);box.append(l);return i;};
+      const ad=f("כתובת מגורים",s.address,"רחוב, מספר, עיר");
+      const n1=f("שם הורה 1",P[0].name,"למשל: אמא — רונית"),t1=f("טלפון הורה 1",P[0].phone,"050-0000000","tel","ltr");
+      const n2=f("שם הורה 2",P[1].name,"למשל: אבא — יוסי"),t2=f("טלפון הורה 2",P[1].phone,"050-0000000","tel","ltr");
+      const r=el("div","row2");const sv=el("button","primary","שמירה");sv.type="button";const cn=el("button","ghost","ביטול");cn.type="button";
+      sv.onclick=async()=>{sv.disabled=true;
+        const parents=[{name:n1.value.trim(),phone:t1.value.trim()},{name:n2.value.trim(),phone:t2.value.trim()}].filter(p=>p.name||p.phone);
+        const ok=await patch("soldiers/"+s.id,{address:ad.value.trim(),parents});moreEdit=null;if(ok)toast("הפרטים נשמרו");renderMore(soldierById(s.id)||s);};
+      cn.onclick=()=>{moreEdit=null;renderMore(s);};
+      r.append(sv,cn);box.append(r);ad.focus();return;
+    }
+    const row=(lbl,content)=>{const d=el("div","mrow");d.append(el("span","ml",lbl));const v=el("div","mv");content.forEach(c=>v.append(c));d.append(v);box.append(d);};
+    if(s.address){
+      const t=el("span","mt",s.address);
+      const wz=el("a","mlink","Waze");wz.href="https://waze.com/ul?q="+encodeURIComponent(s.address)+"&navigate=yes";wz.target="_blank";wz.rel="noopener";
+      const gm=el("a","mlink","מפה");gm.href="https://maps.google.com/?q="+encodeURIComponent(s.address);gm.target="_blank";gm.rel="noopener";
+      const lk=el("span","mlinks");lk.append(wz,gm);row("כתובת",[t,lk]);
+    }else row("כתובת",[el("span","mini","לא הוזנה")]);
+    const ps=(s.parents||[]).filter(p=>p&&(p.name||p.phone));
+    if(ps.length)ps.forEach((p,i)=>{
+      const parts=[el("span","mt",p.name||"הורה "+(i+1))];
+      if(p.phone){const a=el("a","tel",p.phone);a.href=telHref(p.phone);
+        const wa=el("a","mlink","וואטסאפ");wa.href="https://wa.me/"+String(p.phone).replace(/\D/g,"").replace(/^0/,"972");wa.target="_blank";wa.rel="noopener";
+        const lk=el("span","mlinks");lk.append(a,wa);parts.push(lk);}
+      row(ps.length>1?"הורה "+(i+1):"הורים",parts);});
+    else row("הורים",[el("span","mini","לא הוזנו")]);
+    const ed=el("button","linkbtn",s.address||ps.length?"עריכה":"+ הוספת פרטים");ed.type="button";ed.onclick=()=>{moreEdit=s.id;renderMore(s);};
     box.append(ed);
   }
   /* admin only: edit a soldier and set his role */
