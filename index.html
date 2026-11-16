@@ -778,6 +778,13 @@ body.sheeton{overflow:hidden}
       <h1 id="naTitle">צריך קישור הצטרפות</h1>
       <p id="naText">כדי להיכנס, פתחו את קישור ההצטרפות של המסגרת שלכם. את הקישור מקבלים מהמפקד או ממנהל המערכת.</p>
     </div>
+    <form class="panel" id="joinForm">
+      <strong>יש לך קישור הצטרפות?</strong>
+      <span class="mini">אפשר להדביק אותו כאן — למשל אחרי הוספת האפליקציה למסך הבית באייפון, שם הקישור לא עובר לבד.</span>
+      <label class="f">קישור הצטרפות<input type="text" inputmode="url" id="joinIn" class="ltr" autocomplete="off" placeholder="https://…#join=…"></label>
+      <p class="err" id="joinErr" hidden></p>
+      <div class="row2"><button class="primary" type="submit">הצטרפות</button><button class="ghost" type="button" id="joinPaste">הדבקה</button></div>
+    </form>
     <form class="panel" id="keyForm">
       <strong>יש לך סיסמת מפתח?</strong>
       <label class="f">סיסמת מפתח<input type="password" id="keyIn" class="ltr" required autocomplete="off"></label>
@@ -1827,6 +1834,15 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       history.replaceState(null,"",location.pathname+location.search);}
     else if(!pendingJoin){try{const v=JSON.parse(localStorage.getItem("pendingJoin")||"null");if(v&&v.id&&v.token)pendingJoin=v;}catch(_){}}
   }
+  // a join link pasted by hand: the iPhone home-screen app keeps its own storage, so a link opened in Safari doesn't reach it
+  function useJoinText(t){
+    const m=String(t||"").match(/join=([A-Za-z0-9]+)\.([a-f0-9]+)/);
+    if(!m){showErr("joinErr","זה לא נראה כמו קישור הצטרפות. בקשו מהמפקד את הקישור המלא.");return false;}
+    pendingJoin={id:m[1],token:m[2]};try{localStorage.setItem("pendingJoin",JSON.stringify(pendingJoin));}catch(_){}
+    showErr("joinErr","");$("joinIn").value="";route();return true;
+  }
+  $("joinForm").onsubmit=e=>{e.preventDefault();useJoinText($("joinIn").value);};
+  $("joinPaste").onclick=async()=>{try{const t=await navigator.clipboard.readText();$("joinIn").value=t;useJoinText(t);}catch(_){$("joinIn").focus();showErr("joinErr","לחצו לחיצה ארוכה בשדה ובחרו \"הדבקה\".");}};
   function clearJoin(){pendingJoin=null;try{localStorage.removeItem("pendingJoin");}catch(_){}}
   const joinLink=(u,tok)=>location.origin+location.pathname+"#join="+u.id+"."+tok;
   readJoin();
