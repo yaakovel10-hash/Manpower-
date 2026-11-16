@@ -804,7 +804,8 @@ ul.pulist li.purow{display:block;padding:12px 14px}
 .pdbox[hidden]{display:none}
 .pdbox .nh{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .pdbox .nh b{font-size:16px}
-.morebtn{display:inline-flex;align-items:center;gap:6px;margin:2px 0 10px;background:none;border:1px solid var(--line);border-radius:999px;padding:5px 14px;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
+.sqrow{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.morebtn{display:inline-flex;align-items:center;gap:6px;margin:0;flex:none;background:none;border:1px solid var(--line);border-radius:999px;padding:5px 14px;font:inherit;font-size:14px;color:var(--muted);cursor:pointer}
 .morebtn[aria-expanded="true"]{color:var(--fg);border-color:var(--accent)}
 .morebox{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:12px;display:grid;gap:10px}
 .morebox[hidden]{display:none}
@@ -1540,9 +1541,8 @@ ul.pulist li.purow{display:block;padding:12px 14px}
     </form>
     <div class="sh">
       <div class="av lg" id="dAv"></div>
-      <div class="info"><div class="n1" id="dName"></div><div class="n2" id="dNum"></div><div id="dPhone" class="phone"></div><label class="sqpick">כיתה<select id="dSquad"><option value="">ללא כיתה</option><option value="א">כיתה א</option><option value="ב">כיתה ב</option><option value="ג">כיתה ג</option></select></label></div>
+      <div class="info"><div class="n1" id="dName"></div><div class="n2" id="dNum"></div><div id="dPhone" class="phone"></div><div class="sqrow"><label class="sqpick">כיתה<select id="dSquad"><option value="">ללא כיתה</option><option value="א">כיתה א</option><option value="ב">כיתה ב</option><option value="ג">כיתה ג</option></select></label><button class="morebtn" type="button" id="dMoreBtn" aria-expanded="false" aria-controls="dMore">יותר פרטים <span aria-hidden="true">▾</span></button></div></div>
     </div>
-    <button class="morebtn" type="button" id="dMoreBtn" aria-expanded="false" aria-controls="dMore">יותר פרטים <span aria-hidden="true">▾</span></button>
     <div class="morebox" id="dMore" hidden></div>
     <div class="statusbox" id="dStatus"></div>
     <div class="notebox" id="dNoteBox">
