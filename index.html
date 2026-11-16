@@ -849,6 +849,9 @@ ul.pulist li.purow{display:block;padding:12px 14px}
 .sh .shacts .sqpick{grid-column:1;flex:none;min-width:0}
 .sh .shacts .morebtn{grid-column:2 / 4;flex:none;min-width:0}
 .sh .shacts .phone .ubtns{grid-column:1 / 4}
+.sh .n2{direction:rtl;text-align:start}
+.sh .n2 .nlab{font-family:var(--body);letter-spacing:0;font-size:14px}
+.sh .n2 .nval{direction:ltr;unicode-bidi:isolate}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -3319,7 +3322,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!s){$("dStatus").textContent="";$("dName").textContent="החייל לא נמצא";$("dNum").textContent="";$("dDel").textContent="";["t-tzalam","t-cal","t-req"].forEach(i=>$(i).hidden=true);return;}
     setTab(curTab);
     $("dName").textContent="";$("dName").append(s.name);if(s.role&&s.role!=="חייל"){const rb=el("span","role",s.role);$("dName").append(" ",rb);}
-    $("dEdit").hidden=false;$("dNum").textContent=s.num||"";$("dNum").hidden=!s.num;
+    $("dEdit").hidden=false;{const n=$("dNum");n.textContent="";if(s.num)n.append(el("span","nlab","מ.א: "),el("span","nval",s.num));n.hidden=!s.num;}
     {// the unit, short: the last two levels (company · platoon); the full path when tapped
       const full=unitText(s.unit),parts=full.split(" · "),u=$("dUnit");u.textContent=parts.slice(-2).join(" · ");u.title=full;u.onclick=()=>{u.textContent=u.textContent===full?parts.slice(-2).join(" · "):full;};}
     const av=avatar(s.photo,"lg");av.id="dAv";$("dAv").replaceWith(av);
