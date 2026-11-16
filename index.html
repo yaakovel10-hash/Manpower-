@@ -711,6 +711,10 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 .rsact{display:block;width:100%;text-align:start;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:13px 14px;color:var(--fg);font:inherit;font-weight:700;cursor:pointer}
 .rsact.wa{color:#25d366;border-color:color-mix(in srgb,#25d366 45%,var(--line))}
 .rsact.go{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);text-align:center}
+.zstyle{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.zopt{display:grid;gap:4px;text-align:start;background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:12px;color:var(--fg);font:inherit;cursor:pointer}
+.zopt b{font-size:16px}.zopt .mini{font-size:12.5px}
+.zopt.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
 .dupcards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .dupcard{display:grid;gap:3px;align-content:start;text-align:start;background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:12px;color:var(--fg);font:inherit;cursor:pointer;min-width:0}
 .dupcard b{font-size:15.5px;overflow-wrap:anywhere}
@@ -4824,6 +4828,12 @@ const top=el("div","top");
     sendWA(L.join("\n"));
   };
   // "דוח צ": every item of the displayed unit, grouped by type, with who holds it and whether it's stored
+  // how the דוח צ marks on-him / stored: words or ✅ / ❌, set per unit (the closest unit that chose wins)
+  function zStyleFor(path){
+    if(path){const own=units.filter(u=>u.zStyle&&sameUpTo(path,u.path,u.depth)).sort((a,b)=>b.depth-a.depth)[0];if(own)return own.zStyle;}
+    try{const l=localStorage.getItem("zStyle");if(l)return l;}catch(_){}
+    return isRatak(path)?"emoji":"text";
+  }
   const isRatak=u=>!!u&&/^א['׳"]?$/.test(String(u.p||"").replace(/^פלוגה\s*/,"").trim())&&/רתק/.test(String(u.m||""));
   $("vfWa").onclick=()=>{
     const W=vis(weapons);if(!W.length){toast('אין אמל"ח לשליחה');return;}
@@ -4840,7 +4850,7 @@ const top=el("div","top");
       G[t].sort((a,b)=>(own(a)||"ת").localeCompare(own(b)||"ת","he")).forEach(w=>{
         const o=own(w),n=w.num||"ללא מספר",f=openFaults(w).length?" ⚠ תקלה":"";
         // מחלקת הרתק, פלוגה א: ✅ on him, ❌ stored
-        if(isRatak(w.unit)){L.push((o||"לא חתום")+" - "+n+" "+(w.stored?"❌":"✅")+f);return;}
+        if(zStyleFor(w.unit)==="emoji"){L.push((o||"לא חתום")+" - "+n+" "+(w.stored?"❌":"✅")+f);return;}
         L.push(o?o+" - "+n+". "+(w.stored?"מאופסן":"עליו")+f:"לא חתום - "+n+(w.stored?". מאופסן":"")+f);});
     });
     sendWA(L.join("\n"));
@@ -6265,7 +6275,20 @@ const top=el("div","top");
       shAct(b,'+ הוספת אמל"ח',()=>{location.hash="weapons";setTimeout(()=>{closeCard();openW(null);$("wType").focus();},60);});
       shAct(b,"📄 ייבוא מ-PDF או אקסל",()=>{location.hash="soldiers";setTimeout(()=>$("openImp").click(),80);});
       shAct(b,'🗂 ניהול אמל"ח',goHash("weapons"));
-      shAct(b,'📋 דו"ח צל"מ',goHash("zreport"));}
+      shAct(b,'📋 דו"ח צל"מ',goHash("zreport"));
+      {// דוח צ in WhatsApp: words or ✅ / ❌, for the unit on screen
+        const cv=curView();let u=cv&&cv!=="*"?unitById(cv):null;if(!u)u=me&&me.unitId&&unitById(me.unitId);
+        shSec(b,'דוח צ בוואטסאפ'+(u?" · "+LVC[LV[u.depth-1]]+" "+u.path[LV[u.depth-1]]:""));
+        const cur=zStyleFor(u&&u.path),row=el("div","zstyle");
+        [["text","עליו / מאופסן","משה - 4518922. עליו"],["emoji","✅ / ❌","משה - 4518922 ✅"]].forEach(([k,t,ex])=>{
+          const o=el("button","zopt"+(cur===k?" on":""));o.type="button";o.setAttribute("aria-pressed",String(cur===k));o.append(el("b",null,t),el("span","mini ltrx",ex));
+          o.onclick=async()=>{row.querySelectorAll(".zopt").forEach(x=>{x.classList.toggle("on",x===o);x.setAttribute("aria-pressed",String(x===o));});
+            let ok=false;if(u&&mgr()){try{await fs.doc("units/"+u.id).update({zStyle:k});u.zStyle=k;ok=true;}catch(e){console.warn(e);}}
+            if(!ok){try{localStorage.setItem("zStyle",k);}catch(_){}}
+            toast(ok?"נשמר לכל "+LVC[LV[u.depth-1]]+" "+u.path[LV[u.depth-1]]:"נשמר בטלפון הזה");};
+          row.append(o);});
+        b.append(row);
+      }}
     const sec=ALL.find(i=>!$(i).hidden),wa=sec&&[...$(sec).querySelectorAll(".bar .pencil.wa")].find(x=>x.offsetParent);
     shSec(b,"כללי");
     if(wa)shAct(b,"שליחה בוואטסאפ",()=>wa.click(),"wa");
