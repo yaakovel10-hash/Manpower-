@@ -1558,8 +1558,8 @@ ul.tslist li.tsrow{display:block;padding:12px 14px}
       <strong>ייבוא חיילים ואמל"ח מקובץ</strong>
       <span class="mini">נתמכים שני סוגי טבלאות: טבלה עם שם ומספר אישי לכל חייל ועמודות אמל"ח, וטבלה לפי שמות בלבד שבה כל עמודה היא סוג אמל"ח והתא הוא מספר האמל"ח. לפני השמירה אפשר לבדוק ולתקן הכול. קבצים סרוקים (תמונה) לא נתמכים.</span>
       <label class="f">מסגרת לחיילים שיתווספו<select id="impUnit"></select></label>
-      <label class="ghost filebtn" for="impFile">בחירת קובץ PDF או אקסל</label>
-      <input type="file" id="impFile" accept="application/pdf,.pdf,.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
+      <label class="ghost filebtn" for="impFile">בחירת קובץ: PDF, אקסל או תמונה</label>
+      <input type="file" id="impFile" accept="image/*,application/pdf,.pdf,.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
       <div class="impnote">
         <span class="mini">או מפתק של Apple (הפתקים באייפון):</span>
         <div class="row2"><input type="text" inputmode="url" id="impUrl" placeholder="הדבקת קישור icloud.com/notes/…" autocomplete="off" dir="ltr"><button class="ghost" type="button" id="impUrlGo">קריאת הפתק</button></div>
@@ -3032,7 +3032,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const sel=impRows.filter(r=>r.on);
     $("impTools").hidden=!impRows.length;$("impSave").hidden=!impRows.length;
     const nw=sel.reduce((n,r)=>n+r.weapons.length,0),ns=sel.filter(r=>!r.dup).length;
-    $("impSave").textContent="שמירה: "+ns+" חיילים חדשים"+(nw?" ו-"+nw+' פריטי אמל"ח':"");
+    const nu=sel.filter(r=>r.dup&&r.det).length;
+    $("impSave").textContent="שמירה: "+[ns?ns+" חיילים חדשים":"",nu?nu+" עדכוני פרטים":"",nw?nw+' פריטי אמל"ח':""].filter(Boolean).join(", ");
     $("impSave").disabled=!sel.length;
     impRows.forEach((r,i)=>{
       const d=el("div","improw"+(r.dup?" dup":""));
@@ -3041,7 +3042,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const pd=el("input");pd.type="text";pd.className="ltr";pd.value=r.pid;pd.id="impp"+i;pd.inputMode="numeric";pd.oninput=()=>{r.pid=pd.value.trim();};
       const ph=el("input");ph.type="tel";ph.className="ltr";ph.value=r.phone;ph.placeholder="טלפון";ph.id="imph"+i;ph.oninput=()=>{r.phone=ph.value.trim();};
       d.append(cb,nm,pd,ph);
-      if(r.dup)d.append(el("span","mini warnnote",'החייל כבר קיים, יתעדכן רק האמל"ח שלו'));
+      if(r.dup)d.append(el("span","mini warnnote",r.det?"קיים — יתעדכנו הפרטים שלו":'החייל כבר קיים, יתעדכן רק האמל"ח שלו'));
+      if(r.det){const x=r.det,bits=[];if(x.address)bits.push("🏠 "+x.address);x.parents.forEach(p=>{if(p.phone||p.name)bits.push((p.who||"")+(p.name?" "+p.name:"")+(p.phone?" "+p.phone:""));});if(x.emerg.phone)bits.push("חירום "+x.emerg.phone);
+        if(bits.length)d.append(el("span","mini impdet",bits.join(" · ")));}
       if(r.weapons.length){const w=el("div","impw");r.weapons.forEach(x=>{const c=el("span","chip");c.append(el("b",null,tName(x)+": "),el("span","ltrnum",x.num));w.append(c);});d.append(w);}
       box.append(d);
     });
@@ -3081,8 +3084,95 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   $("impFile").onchange=async e=>{
     const f=e.target.files[0];if(!f)return;
     if(/\.(xlsx|xls|csv)$/i.test(f.name)||/sheet|excel|csv/.test(f.type))return importSheet(f);
+    if(/^image\//.test(f.type))return importPhoto(f);
     await importFrom(()=>readPdf(f),"לא הצלחתי לקרוא את הקובץ. ודאו שזה PDF תקין ושיש חיבור לאינטרנט.");
   };
+  /* ---------- personal details from a table, a list of "label: value" cards, or a photo of one ---------- */
+  // what a column title / a label means
+  function detField(t){
+    t=String(t||"").replace(/[:：*]/g," ").replace(/\s+/g," ").trim();if(!t)return null;
+    const tel=/טל|נייד|פלאפון|פלא|מספר טלפון|טלפון|מס'? ?טל|phone/i.test(t);
+    if(/חירום/.test(t))return tel&&!/שם/.test(t)?"emergT":/שם/.test(t)&&tel?"emerg":tel?"emergT":"emerg";
+    if(/אמא|^אם\b|\bאם$|אמ"?א/.test(t))return /שם/.test(t)&&tel?"mother":tel?"motherT":/שם/.test(t)?"motherN":"mother";
+    if(/אבא|^אב\b|\bאב$/.test(t))return /שם/.test(t)&&tel?"father":tel?"fatherT":/שם/.test(t)?"fatherN":"father";
+    if(/הור/.test(t))return "parent";
+    if(/אישי|מ\.?א\.?$|^מ\.?א|ת\.?ז/.test(t))return "pid";
+    if(/שם פרטי/.test(t))return "first";
+    if(/שם משפחה/.test(t))return "last";
+    if(/^שם|שם מלא|שם החייל/.test(t))return "name";
+    if(/כתובת|רחוב/.test(t))return "street";
+    if(/מגורים|עיר|ישוב|יישוב|מקום/.test(t))return "city";
+    if(/כיתה/.test(t))return "squad";
+    if(tel)return "phone";
+    return null;
+  }
+  const phoneOf=v=>{const m=String(v||"").replace(/[^\d+]/g," ").match(/\+?\d[\d ]{7,}\d/);return m?m[0].replace(/\s+/g,""):"";};
+  const nameOf=v=>String(v||"").replace(/\+?\d[\d\s-]{6,}\d/g," ").replace(/[-–:,]/g," ").replace(/\s+/g," ").trim();
+  // fields → one record in the soldier's shape
+  function detRecord(F){
+    const r={name:"",pid:"",phone:"",address:"",parents:[{who:"אבא",name:"",phone:""},{who:"אמא",name:"",phone:""}],emerg:{name:"",phone:""},squad:""};
+    const put=(k,v)=>{v=String(v||"").trim();if(!v)return;
+      if(k==="name")r.name=v;else if(k==="first")r.name=(v+" "+r.name).trim();else if(k==="last")r.name=(r.name+" "+v).trim();
+      else if(k==="pid")r.pid=v.replace(/\D/g,"");else if(k==="phone")r.phone=phoneOf(v)||v;
+      else if(k==="city")r.address=r.address?r.address+", "+v:v;else if(k==="street")r.address=r.address?v+", "+r.address:v;
+      else if(k==="squad")r.squad=v;
+      else if(k==="father"||k==="mother"){const p=r.parents[k==="father"?0:1];p.name=p.name||nameOf(v);p.phone=p.phone||phoneOf(v);}
+      else if(k==="fatherN"||k==="motherN")r.parents[k==="fatherN"?0:1].name=v;
+      else if(k==="fatherT"||k==="motherT")r.parents[k==="fatherT"?0:1].phone=phoneOf(v)||v;
+      else if(k==="parent"){const i=r.parents[0].phone?1:0,p=r.parents[i];if(!r.parents[0].phone&&!r.parents[1].phone)p.who="הורה";p.name=p.name||nameOf(v);p.phone=p.phone||phoneOf(v);}
+      else if(k==="emerg"){r.emerg.name=r.emerg.name||nameOf(v);r.emerg.phone=r.emerg.phone||phoneOf(v);}
+      else if(k==="emergT")r.emerg.phone=phoneOf(v)||v;};
+    F.forEach(([k,v])=>put(k,v));
+    r.name=r.name.replace(/\s+/g," ").trim();
+    return r;
+  }
+  const hasDetails=r=>!!(r.address||r.parents.some(p=>p.phone||p.name)||r.emerg.phone);
+  // a grid (Excel / CSV / pasted table): a title row, then one soldier per row
+  function detailsGrid(g){
+    for(let h=0;h<Math.min(g.length,15);h++){
+      const cols=g[h].map(detField);
+      const n=cols.filter(Boolean).length;
+      if(n<3||!(cols.includes("name")||cols.includes("first")||cols.includes("pid")))continue;
+      if(!cols.some(c=>c&&/mother|father|parent|emerg|city|street/.test(c)))continue;
+      // "שם אמא" + the next unnamed column holding the phone
+      cols.forEach((c,i)=>{if(!cols[i+1]&&/^(mother|father|emerg)N?$/.test(c||"")&&g.slice(h+1,h+4).some(r=>phoneOf(r[i+1])))cols[i+1]=c.replace(/N$/,"")+"T";});
+      const out=[];
+      g.slice(h+1).forEach(row=>{if(!row.some(c=>String(c||"").trim()))return;
+        const r=detRecord(cols.map((k,i)=>[k,row[i]]).filter(([k])=>k));if(r.name||r.pid)out.push(r);});
+      if(out.length)return out;
+    }
+    return null;
+  }
+  // cards: "שם מלא: …" "מספר אישי: …" "שם אמא וטלפון: רויטל 0509550548" … one block per soldier
+  function detailsCards(txt){
+    const lines=String(txt||"").replace(/\r/g,"").split("\n").map(l=>l.replace(/[‎‏‪-‮⁦-⁩]/g,"").trim());
+    const out=[];let F=[];
+    const flush=()=>{if(F.length){const r=detRecord(F);if(r.name||r.pid)out.push(r);}F=[];};
+    lines.forEach(l=>{
+      const m=l.match(/^([^:：\d][^:：]{0,40})[:：]\s*(.*)$/);if(!m)return;
+      const k=detField(m[1]);if(!k)return;
+      if((k==="name"||k==="first")&&F.some(([x])=>x==="name"||x==="first"))flush();
+      F.push([k,m[2]]);});
+    flush();
+    return out.filter(hasDetails).length?out:null;
+  }
+  // the soldier this record belongs to: personal number, then name (also a fuller name for a one-word one)
+  function detMatch(r){
+    const S=vis(soldiers);
+    if(r.pid){const s=S.find(x=>x.num===r.pid);if(s)return s;}
+    const s=r.name&&matchName(r.name);if(s&&(!r.pid||!s.num||s.num===r.pid))return s;
+    if(r.name){const t=baseToks(r.name),c=S.filter(x=>{const xt=baseToks(x.name);return xt.length&&xt.length<t.length&&xt.every(w=>t.includes(w))&&(!r.pid||!x.num);});if(c.length===1)return c[0];}
+    return null;
+  }
+  function importDetails(list,how){
+    impRows=[];impItems=[];impMode="soldiers";showErr("impErr","");
+    list.forEach(r=>{const ex=detMatch(r);
+      impRows.push({name:r.name||(ex&&ex.name)||"",pid:r.pid||(ex&&ex.num)||"",phone:r.phone,weapons:[],dup:!!ex,exId:ex?ex.id:"",det:r,on:!!ex||(!!r.name&&/^\d{5,9}$/.test(r.pid))});});
+    typeMap={};
+    const nEx=impRows.filter(r=>r.dup).length,nNew=impRows.length-nEx;
+    $("impStatus").textContent="נקראו פרטים אישיים של "+impRows.length+" חיילים"+(how?" ("+how+")":"")+": "+nEx+" כבר קיימים — יתעדכנו אצלם הטלפון, הכתובת והורים"+(nNew?", "+nNew+" חדשים":"")+". בדקו לפני השמירה.";
+    renderImp();return true;
+  }
   /* ---------- Excel: a table of names (rows) × item types (columns), each cell holding the item's number ---------- */
   // the header can be two rows (a group like "נשקים" above the types): each column takes the lowest title above the data
   function gridItems(g){
@@ -3119,6 +3209,19 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const twice=[...dup.entries()].filter(([,v])=>v.length>1).map(([k,v])=>k.split("|").join(" ")+" ("+v.join(" / ")+")");
     return out.length?{items:out,noNum,twice}:null;
   }
+  // a photo or screenshot of soldiers' details (cards or a table): the AI reader turns it into rows
+  async function importPhoto(f){
+    impRows=[];impItems=[];impMode="soldiers";renderImp();showErr("impErr","");$("impStatus").textContent="קורא את התמונה…";
+    try{
+      const H=["שם מלא","מספר אישי","טלפון החייל","שם אמא","טלפון אמא","שם אבא","טלפון אבא","מקום מגורים"];
+      const j=await aiJSON(f,'This image lists soldiers\' personal details (as cards of "label: value" or as a table, Hebrew, right-to-left). '+
+        'Return JSON only: {"rows":[[...],...]} with one row per soldier and exactly these 8 cells in this order: '+H.join(" | ")+'. '+
+        'Copy names and numbers exactly as written; phone numbers digits only. A parent written as "name + phone" goes to the two matching cells. Use "" when missing. Do not invent anything.');
+      const rows=(j&&j.rows)||[];if(!rows.length)throw new Error("empty");
+      const d=detailsGrid([H].concat(rows));if(!d)throw new Error("empty");
+      importDetails(d,"מתמונה, בעזרת AI");
+    }catch(err){console.warn(err);$("impStatus").textContent="";showErr("impErr","לא הצלחתי לקרוא את התמונה. אפשר להעתיק את הטקסט ולהדביק ב\"הדבקת טקסט\".");}
+  }
   async function importSheet(f){
     impRows=[];impItems=[];impMode="soldiers";renderImp();showErr("impErr","");$("impStatus").textContent="קורא…";
     try{
@@ -3126,6 +3229,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const wb=XLSX.read(await f.arrayBuffer(),{type:"array"});
       let res=null;
       for(const n of wb.SheetNames){const g=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:false,defval:""}).map(r=>r.map(c=>String(c==null?"":c).trim()));
+        const dt=detailsGrid(g);if(dt){importDetails(dt,"מאקסל");return;}
         const r=gridItems(g);if(r&&(!res||r.items.length>res.items.length))res=r;
         if(!res){// not a names × types table: hand the rows to the regular reader as text
           const txt=g.map(r=>r.join("\t")).join("\n");if(importListText(txt))return;}}
@@ -3240,6 +3344,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   const showPaste=(hint)=>{$("impPasteBox").hidden=false;$("impPasteBtn").hidden=true;if(hint)$("impPasteHint").textContent=hint;};
   $("impPasteBtn").onclick=()=>{showPaste();$("impText").focus();};
   $("impTextGo").onclick=async()=>{const t=$("impText").value;if(!t.trim()){$("impText").focus();return;}
+    {const c=detailsCards(t);if(c)return importDetails(c);
+     if(/\t|\|/.test(t)){const g=t.split("\n").map(l=>l.split(/\t|\|/).map(x=>x.trim()));const d=detailsGrid(g);if(d)return importDetails(d);}}
     if(importListText(t))return;
     await importFrom(async()=>textToPages(t),"לא הצלחתי להבין את הטקסט. בדקו שיש בו שמות ומספרים אישיים או מספרי אמל\"ח.");};
   $("impUrlGo").onclick=async()=>{
@@ -3261,15 +3367,21 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const unit=pathOf($("impUnit").value);
     if(!unit||!inScope(unit))return showErr("impErr","בחרו מסגרת מהרשימה.");
     const list=impRows.filter(r=>r.on);
-    const bad=list.find(r=>(!r.dup&&!r.name.trim())||!/^\d{5,9}$/.test(r.pid));
+    const bad=list.find(r=>(!r.dup&&!r.name.trim())||(!r.dup&&!/^\d{5,9}$/.test(r.pid)));
     if(bad)return showErr("impErr","יש שורה מסומנת בלי שם או עם מספר אישי לא תקין ("+(bad.pid||bad.name)+").");
-    const ops=[];let nS=0,nNew=0,nMoved=0;const importId=newId();
+    const ops=[];let nS=0,nNew=0,nMoved=0,nUpd=0;const importId=newId();
     const known=vis(weapons).slice();
     list.forEach(r=>{
-      const ex=vis(soldiers).find(s=>s.num===r.pid);
+      const ex=(r.exId&&soldiers.find(s=>s.id===r.exId))||vis(soldiers).find(s=>s.num===r.pid);
       const sid=ex?ex.id:newId();const sUnit=ex?ex.unit:unit;
-      if(!ex){nS++;ops.push(b=>b.set(fs.doc("soldiers/"+sid),{name:r.name.trim(),num:r.pid,phone:r.phone||"",photo:"",unit,addedBy:uid,importId,at:Date.now()}));}
-      else if(r.phone&&!ex.phone)ops.push(b=>b.update(fs.doc("soldiers/"+sid),{phone:r.phone}));
+      // personal details from the table: what it has replaces what's there
+      const det={};if(r.det){const d=r.det;if(d.address)det.address=d.address;
+        if(d.parents.some(p=>p.name||p.phone)){const old=(ex&&ex.parents)||[];det.parents=d.parents.map((p,i)=>({who:p.who,name:p.name||((old[i]||{}).name)||"",phone:p.phone||((old[i]||{}).phone)||""}));}
+        if(d.emerg.phone||d.emerg.name)det.emerg=d.emerg;if(d.squad&&!(ex&&ex.squad))det.squad=d.squad;}
+      if(!ex){nS++;ops.push(b=>b.set(fs.doc("soldiers/"+sid),Object.assign({name:r.name.trim(),num:r.pid,phone:r.phone||"",photo:"",unit,addedBy:uid,importId,at:Date.now()},det)));}
+      else{const u=Object.assign({},det);if(r.phone&&(r.det||!ex.phone))u.phone=r.phone;if(r.det&&r.pid&&!ex.num)u.num=r.pid;
+        if(r.det&&r.name&&baseToks(r.name).length>baseToks(ex.name).length)u.name=r.name.trim();
+        if(Object.keys(u).length){nUpd++;ops.push(b=>b.update(fs.doc("soldiers/"+sid),u));}}
       r.weapons.forEach(w=>{
         const type=tName(w),num=w.num.trim();if(!num)return;
         const ew=known.find(k=>sameW(k,{type,num}));
@@ -3281,7 +3393,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const btn=$("impSave");btn.disabled=true;$("impStatus").textContent="שומר…";
     try{
       for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await qc(b.commit());}
-      $("impStatus").textContent="נשמר: "+nS+" חיילים חדשים, "+nNew+' פריטי אמל"ח חדשים'+(nMoved?", "+nMoved+" פריטים הוחתמו מחדש":"")+".";
+      $("impStatus").textContent="נשמר: "+nS+" חיילים חדשים"+(nUpd?", "+nUpd+" עודכנו":"")+", "+nNew+' פריטי אמל"ח חדשים'+(nMoved?", "+nMoved+" פריטים הוחתמו מחדש":"")+".";
       impRows=[];typeMap={};$("impFile").value="";renderImp();showErr("impErr","");
     }catch(err){console.warn(err);showErr("impErr",errMsg(err));$("impStatus").textContent="";btn.disabled=false;}
   };
@@ -3490,7 +3602,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const gm=el("a","mlink","מפה");gm.href="https://maps.google.com/?q="+encodeURIComponent(s.address);gm.target="_blank";gm.rel="noopener";
       const lk=el("span","mlinks");lk.append(wz,gm);row("כתובת",[t,lk]);
     }else row("כתובת",[el("span","mini","לא הוזנה")]);
-    const ps=P.map((p,i)=>Object.assign({lbl:i?"אמא":"אבא"},p||{})).filter(p=>p.name||p.phone);
+    const ps=P.map((p,i)=>Object.assign({},p||{},{lbl:(p&&p.who)||(i?"אמא":"אבא")})).filter(p=>p.name||p.phone);
     if(ps.length)ps.forEach(p=>{
       const parts=[el("span","mt",p.name||p.lbl)];
       if(p.phone){const a=callBtn(p.phone);
@@ -5450,6 +5562,17 @@ const top=el("div","top");
     const ai=getAI(app,{backend:new GoogleAIBackend()});
     aiModel=n=>getGenerativeModel(ai,{model:n,generationConfig:{responseMimeType:"application/json",temperature:0}});
     return aiModel;
+  }
+  async function aiJSON(file,prompt){
+    const mk=await aiReady();
+    const img=await createImageBitmap(file);const sc=Math.min(1,2200/Math.max(img.width,img.height));
+    const c=document.createElement("canvas");c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    const data=c.toDataURL("image/jpeg",0.9).split(",")[1];
+    let res=null,err=null;
+    for(const n of ["gemini-3.8-flash","gemini-3.5-flash","gemini-3.5-flash-lite"]){
+      try{res=await mk(n).generateContent([prompt,{inlineData:{data,mimeType:"image/jpeg"}}]);break;}catch(e){err=e;console.warn("ai",n,e);}}
+    if(!res)throw err||new Error("ai");
+    return JSON.parse(res.response.text().trim().replace(/^```(?:json)?|```$/g,""));
   }
   async function aiTable(file){
     const mk=await aiReady();
