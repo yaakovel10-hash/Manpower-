@@ -2204,8 +2204,14 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     return c.length===1?c[0]:null;
   }
   /* duplicates: same full name in the same unit */
-  const sameName=(a,b)=>{const x=nameToks(a),y=nameToks(b);return x.length>=2&&x.length===y.length&&x.every(w=>y.includes(w));};
-  const dupsOf=s=>soldiers.filter(x=>x.id!==s.id&&sameName(x.name,s.name)&&sameUpTo(x.unit,s.unit,5)&&(!x.memberId||!s.memberId||x.memberId===s.memberId));
+  // a role written into the name ("יוגב עמירב מכ") is not part of the name
+  const ROLE_TOK={"מכ":'מ"כ',"ממ":'מ"מ',"סמל":"סמל","סמח":'סמ"ח',"סמפ":'סמ"פ',"מפ":'מ"פ',"רספ":'רס"פ',"רסל":'רס"ל',"קמנ":'קמ"ן'};
+  const baseToks=n=>nameToks(n).filter(t=>!ROLE_TOK[t]);
+  const roleInName=n=>{const t=nameToks(n).find(t=>ROLE_TOK[t]);return t?ROLE_TOK[t]:"";};
+  const cleanName=n=>String(n||"").replace(/\([^)]*\)/g," ").replace(/(^|\s)(מ["״׳']?כ|מ["״׳']?מ|סמל|סמ["״׳']?ח|סמ["״׳']?פ|מ["״׳']?פ|רס["״׳']?פ|רס["״׳']?ל|קמ["״׳']?ן)(?=\s|$)/g," ").replace(/\s+/g," ").trim();
+  const sameName=(a,b)=>{const x=baseToks(a),y=baseToks(b);return x.length>=2&&x.length===y.length&&x.every(w=>y.includes(w));};
+  // the same person: same name in the same unit, and nothing that tells them apart (two different personal numbers or two different phones' accounts)
+  const dupsOf=s=>soldiers.filter(x=>x.id!==s.id&&sameName(x.name,s.name)&&sameUpTo(x.unit,s.unit,5)&&(!x.memberId||!s.memberId||x.memberId===s.memberId)&&(!x.num||!s.num||x.num===s.num));
   async function mergeSoldiers(keep,drop){
     const ops=[];
     weapons.filter(w=>w.owner===drop.id).forEach(w=>ops.push(b=>b.update(fs.doc("weapons/"+w.id),{owner:keep.id,unit:keep.unit})));
@@ -2213,6 +2219,11 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     requests.filter(x=>x.soldierId===drop.id).forEach(x=>ops.push(b=>b.update(fs.doc("requests/"+x.id),{soldierId:keep.id})));
     const fill={};["num","phone","photo","squad","memberId"].forEach(k=>{if(!keep[k]&&drop[k])fill[k]=drop[k];});
     if((!keep.role||keep.role==="חייל")&&drop.role&&drop.role!=="חייל")fill.role=drop.role;
+    const r0=roleInName(keep.name)||roleInName(drop.name);
+    if(cleanName(keep.name)!==keep.name&&cleanName(keep.name))fill.name=cleanName(keep.name);
+    if(r0&&(!keep.role||keep.role==="חייל")&&!fill.role)fill.role=r0;
+    {const kg=keep.gaps||[],dg=drop.gaps||[];if(dg.length){const ids=new Set(kg.map(x=>x.id));const add=dg.filter(x=>!ids.has(x.id));if(add.length)fill.gaps=kg.concat(add);}}
+    if((drop.note||"").trim()&&!(keep.note||"").trim())fill.note=drop.note;
     if(Object.keys(fill).length)ops.push(b=>b.update(fs.doc("soldiers/"+keep.id),fill));
     ops.push(b=>b.delete(fs.doc("soldiers/"+drop.id)));
     for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await qc(b.commit());}
@@ -4551,7 +4562,17 @@ const top=el("div","top");
   function mergeSweep(){
     try{weaponDedupe();}catch(e){console.warn("dedupe",e);}
     if(!soldiers.length)return;
-    soldiers.filter(x=>x.memberId&&!swept.has(x.id)&&inScope(x.unit)).forEach(x=>{swept.add(x.id);if(dupsOf(x).length===1)autoMerge(x);});
+    // any two soldiers with the same name in the same unit become one; the one with more on it stays
+    const score=x=>(x.memberId?100:0)+(x.num?20:0)+(x.phone?5:0)+(x.photo?3:0)+(x.squad?2:0)+weapons.filter(w=>w.owner===x.id).length+(cleanName(x.name)===x.name?1:0);
+    soldiers.filter(x=>!swept.has(x.id)&&inScope(x.unit)).forEach(x=>{if(swept.has(x.id))return;swept.add(x.id);
+      const d=dupsOf(x).filter(y=>inScope(y.unit));
+      if(!d.length){// alone, but with the role written into the name: move it to the role
+        const cn=cleanName(x.name),r=roleInName(x.name);
+        if(cn!==x.name&&baseToks(cn).length>=2){const u={name:cn};if(r&&(!x.role||x.role==="חייל"))u.role=r;patch("soldiers/"+x.id,u);}
+        return;}
+      if(d.length!==1)return;const y=d[0];swept.add(y.id);
+      const keep=(score(x)>score(y)||(score(x)===score(y)&&x.id<y.id))?x:y,drop=keep===x?y:x;
+      mergeSoldiers(keep,drop).then(()=>toast("אוחדו: "+cleanName(keep.name))).catch(e=>console.warn("merge",e));});
   }
   /* ---------- בלאי (worn-out gear) ---------- */
   const SHIRT_SVG='<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M22 8l-14 8 5 12 6-3v31h26V25l6 3 5-12-14-8c-2 4-6 6-10 6s-8-2-10-6z" fill="var(--accent)" fill-opacity=".25"/><path d="M30 30l4 6-5 4 6 7M40 44l-3 6"/></svg>';
