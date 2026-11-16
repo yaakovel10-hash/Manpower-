@@ -1287,9 +1287,9 @@ ul.pulist li.purow{display:block;padding:12px 14px}
     <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>מענים</h1><span class="count" id="puCount"></span><button class="pencil wa" type="button" id="puWa" aria-label="שליחת המענים בוואטסאפ"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg></button></div>
     <div class="pusum" id="puSum"></div>
     <div class="punext" id="puNext"></div>
-    <button class="primary" type="button" id="openPU">+ מען חדש</button>
+    <button class="primary" type="button" id="openPU">+ מענה חדש</button>
     <form class="add" id="formPU" hidden>
-      <strong>מען חדש</strong>
+      <strong>מענה חדש</strong>
       <div class="f">למי<div class="pusel" id="puSel"></div>
         <div class="picker" id="puPick"></div>
         <div class="chips" id="puSquads"></div>
@@ -5874,7 +5874,7 @@ const top=el("div","top");
     const date=$("puDate").value||todayKey(),on=$("puOn").value||"",note=$("puNote").value.trim();
     const b=$("puSave");b.disabled=true;
     const ops=puPicked.map(id=>{const s=soldierById(id);return s&&(bt=>bt.set(fs.doc("events/"+newId()),{kind:"pun",soldierId:s.id,unit:s.unit,ptype:puType,amount,other,why,date,on,note,status:"open",at:Date.now(),addedBy:uid,addedByName:(me&&me.name)||""}));}).filter(Boolean);
-    try{const bt=fs.batch();ops.forEach(f=>f(bt));await qc(bt.commit());const n=ops.length;puReset();toast(n===1?"המען נשמר":"נשמרו "+n+" מענים");}
+    try{const bt=fs.batch();ops.forEach(f=>f(bt));await qc(bt.commit());const n=ops.length;puReset();toast(n===1?"המענה נשמר":"נשמרו "+n+" מענים");}
     catch(err){console.warn(err);showErr("puErr",errMsg(err));}
     b.disabled=false;
   };
@@ -5972,7 +5972,7 @@ const top=el("div","top");
     let box=$("dPun");if(!box){box=el("div","pdbox");box.id="dPun";$("dStatus").after(box);}
     box.textContent="";const L=punOpen().filter(x=>x.soldierId===s.id);
     const nh=el("div","nh");nh.append(el("b",null,"מענים"+(L.length?" ("+L.length+")":"")));
-    const add=el("button","ghost sm","+ מען");add.type="button";add.onclick=()=>{location.hash="pun";setTimeout(()=>{$("openPU").click();puPicked=[s.id];puDrawSel();},80);};
+    const add=el("button","ghost sm","+ מענה");add.type="button";add.onclick=()=>{location.hash="pun";setTimeout(()=>{$("openPU").click();puPicked=[s.id];puDrawSel();},80);};
     nh.append(add);box.append(nh);
     if(L.length){const d=el("div","debt");d.style.display="flex";d.style.flexWrap="wrap";d.style.gap="6px";debtOf(L).P.forEach(p=>d.append(el("span","pubadge"+(p.k==="shabbat"?" sh":""),p.t)));box.append(d);
       L.forEach(x=>box.append(el("div","mini","• "+punTxt(x)+" — "+(x.why||"")+(x.on?" · ירוצה "+shortD(x.on):""))));}
