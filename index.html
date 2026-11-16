@@ -1240,7 +1240,8 @@ body.sheeton{overflow:hidden}
     </div>
     <ul class="list roll" id="ndList"></ul>
     <div class="empty" id="ndEmpty" hidden>עוד אין פריטים בנמ"ר. הוסיפו את הציוד שאמור להיות בכלי.</div>
-    <form class="add" id="formNI">
+    <button class="primary" type="button" id="niOpen">+ הוספת פריט לנמ"ר</button>
+    <form class="add" id="formNI" hidden>
       <strong id="niTitle">הוספת פריט לנמ"ר</strong>
       <label class="f">שם הפריט<input type="text" id="niName" list="niNames" maxlength="60" required placeholder="למשל: מעיל רוח, פטיש 5"></label>
       <datalist id="niNames"><option value="מעיל רוח"><option value="פטיש 5"><option value="מטף"><option value="ערכת עזרה ראשונה"><option value="אלונקה"><option value="ג'ריקן מים"><option value="ג'ריקן דלק"><option value="כבל גרירה"><option value="מפתח גלגלים"><option value="ג'ק"><option value="פנס"><option value="רשת הסוואה"><option value="מכשיר קשר"></datalist>
@@ -1248,7 +1249,7 @@ body.sheeton{overflow:hidden}
       <label class="f" id="niNumWrap" hidden>מספר הפריט<input type="text" id="niNum" class="ltr" maxlength="30"></label>
       <label class="f">כמות<input type="number" id="niQty" min="1" max="99" value="1" inputmode="numeric"></label>
       <p class="err" id="niErr" hidden></p>
-      <button class="primary" type="submit" id="niSave">+ הוספה</button>
+      <div class="row2"><button class="primary" type="submit" id="niSave">+ הוספה</button><button class="ghost" type="button" id="niDone">סיום</button></div>
     </form>
     <div class="row2 ndfoot"><button class="ghost sm" type="button" id="ndReset">איפוס הבדיקה</button><span id="ndDel"></span></div>
   </section>
@@ -1799,7 +1800,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(h==="zreport"){show(["v-zr"]);renderZR();return;}
     if(h==="orbat"){show(["v-orbat"]);renderOrbat();return;}
     if(h==="nmr"||h==="veh"){setVk(h);show(["v-nmr"]);renderNmr();return;}
-    {const nm=h.match(/^(nmr|veh)-([A-Za-z0-9]+)$/);if(nm){setVk(nm[1]);curNmr=nm[2];show(["v-nmrd"]);renderNmrD();return;}}
+    {const nm=h.match(/^(nmr|veh)-([A-Za-z0-9]+)$/);if(nm){setVk(nm[1]);if(curNmr!==nm[2])niClose();curNmr=nm[2];show(["v-nmrd"]);renderNmrD();return;}}
     if(h==="absent"){show(["v-absent"]);renderAbsent();return;}
     {const am=h==="alerts";if(am!==alertMode){alertMode=am;document.body.classList.toggle("alertmode",am);$("wTitle").textContent=am?"התראות אמל\"ח":"ניהול אמל\"ח";if(am&&bulk.k)setBulk(null);}
      if(am){$("vfMenu").hidden=true;show(["v-weapons"]);renderW();return;}}
@@ -4487,7 +4488,7 @@ const top=el("div","top");
   function setVk(k){if(vk===k&&$("nmH1").dataset.k===k)return;vk=k;const c=VK[k];$("nmH1").dataset.k=k;
     $("nmH1").textContent=c.name;$("openNM").textContent="+ הוספת "+c.name;$("nmEmpty").textContent="עוד אין "+c.plural+'. לחצו "הוספת '+c.name+'" כדי להתחיל.';
     $("nmNumL").textContent=c.numL;$("nmNum").placeholder=c.ph;$("ndBack").dataset.go=k;$("ndBack").textContent="→ "+c.name;
-    $("niTitle").textContent="הוספת פריט ל"+c.name;$("ndEmpty").textContent="עוד אין פריטים ב"+c.name+". הוסיפו את הציוד שאמור להיות בו.";
+    $("niTitle").textContent="הוספת פריט ל"+c.name;$("niOpen").textContent="+ הוספת פריט ל"+c.name;$("ndEmpty").textContent="עוד אין פריטים ב"+c.name+". הוסיפו את הציוד שאמור להיות בו.";
     const dl=$("niNames");dl.textContent="";c.items.forEach(v=>{const o=document.createElement("option");o.value=v;dl.append(o);});
     if(!$("formNM").hidden){$("formNM").reset();$("formNM").hidden=true;$("openNM").hidden=false;}}
   const kindEv=k=>visRO(events).filter(x=>x.kind===k).sort((a,b)=>String(a.num).localeCompare(String(b.num)));
@@ -4535,8 +4536,12 @@ const top=el("div","top");
     const qty=hasNum?1:Math.max(1,Math.min(99,parseInt($("niQty").value,10)||1));
     const items=(x.items||[]).concat([{id:newId(),name,num,qty}]);
     const b=$("niSave");b.disabled=true;const ok=await patch("events/"+x.id,{items},"niErr");b.disabled=false;
-    if(ok){$("niName").value="";$("niNum").value="";$("niQty").value=1;showErr("niErr","");$("niName").focus();}
+    if(ok){$("niName").value="";$("niNum").value="";$("niQty").value=1;showErr("niErr","");$("niName").focus();toast("נוסף: "+name);}
   };
+  // the add form stays folded behind one button; after adding, it stays open for the next item until "סיום"
+  function niClose(){$("formNI").hidden=true;$("niOpen").hidden=false;showErr("niErr","");}
+  $("niOpen").onclick=()=>{$("formNI").hidden=false;$("niOpen").hidden=true;$("niName").focus();};
+  $("niDone").onclick=niClose;
   $("ndReset").onclick=()=>{if(!curNmr)return;setMarks(rollKey(vk,curNmr),new Set());renderNmrD();toast("הבדיקה אופסה");};
   function renderNmrD(){
     if($("v-nmrd").hidden||!curNmr)return;
