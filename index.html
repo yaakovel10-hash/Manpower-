@@ -710,6 +710,14 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 .rssec{font-size:13px;font-weight:700;color:var(--muted);margin:10px 2px 0;letter-spacing:.02em}
 .rsact{display:block;width:100%;text-align:start;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:13px 14px;color:var(--fg);font:inherit;font-weight:700;cursor:pointer}
 .rsact.wa{color:#25d366;border-color:color-mix(in srgb,#25d366 45%,var(--line))}
+.rsact.go{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);text-align:center}
+.dupcards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dupcard{display:grid;gap:3px;align-content:start;text-align:start;background:var(--bg);border:1.5px solid var(--line);border-radius:14px;padding:12px;color:var(--fg);font:inherit;cursor:pointer;min-width:0}
+.dupcard b{font-size:15.5px;overflow-wrap:anywhere}
+.dupcard .mini{font-size:12.5px;overflow-wrap:anywhere}
+.dupcard.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.dupkeep{margin-top:6px;font-size:13px;font-weight:700;color:var(--muted)}
+.dupcard.on .dupkeep{color:var(--accent)}
 .rsact.ghost{background:none;text-align:center;color:var(--muted);font-weight:600}
 .rstog{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:11px 14px;cursor:pointer}
 .rstx{display:grid;gap:1px;flex:1;min-width:0;text-align:start}
@@ -6094,6 +6102,7 @@ const top=el("div","top");
     {// soldiers: today's attendance started but not finished, soldiers with no squad
       const m=getMarks(rollKey("att"));
       if(m.size){const un=S.filter(s=>!awayInfo(s.id)&&!m.has(s.id)).length;if(un)add("attend","warn",(un===1?"חייל אחד בבסיס עוד לא סומן":un+" חיילים בבסיס עוד לא סומנו")+" היום","הנוכחות התחילה ולא הושלמה",goHash("attend"));}
+      dupPairs().forEach(([a,b])=>add("attend","warn","שני חיילים בשם "+cleanName(a.name),(a.num&&b.num?"מספר אישי "+a.num+" / "+b.num:"רק שם אחד בלי שם משפחה")+" · אותו אדם?",()=>openDup(a,b)));
       const ns=S.filter(s=>!(s.squad||"").trim()).length;if(ns)add("attend","info",(ns===1?"חייל אחד":ns+" חיילים")+" בלי כיתה","כדאי לשבץ אותם — זה משפיע על הסינון והדוחות",goHash("soldiers"));
     }
     {// weapons: open faults, items nobody signed for
@@ -6184,6 +6193,33 @@ const top=el("div","top");
   const shTog=(b,t,sub,on,f)=>{const l=el("label","rstog");const tx=el("span","rstx");tx.append(el("b",null,t));if(sub)tx.append(el("span","mini",sub));
     const c=document.createElement("input");c.type="checkbox";c.setAttribute("switch","");c.checked=on;c.onchange=()=>f(c.checked);l.append(tx,c);b.append(l);};
 
+  // same name, but something stops the automatic merge (two personal numbers, or a one-word name): the commander decides
+  function dupPairs(){
+    const S=vis(soldiers).filter(x=>inScope(x.unit)),out=[];
+    const key=x=>baseToks(x.name).slice().sort().join(" ");
+    const by=new Map();S.forEach(x=>{const k=key(x);if(!k)return;if(!by.has(k))by.set(k,[]);by.get(k).push(x);});
+    by.forEach(L=>{for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++){const a=L[i],b=L[j];
+      if(!sameUpTo(a.unit,b.unit,5))continue;
+      if(a.memberId&&b.memberId&&a.memberId!==b.memberId)continue;
+      if((a.notDup||[]).includes(b.id)||(b.notDup||[]).includes(a.id))continue;
+      const auto=baseToks(a.name).length>=2&&(!a.num||!b.num||a.num===b.num);if(auto)continue;
+      out.push([a,b]);}});
+    return out;
+  }
+  function openDup(a,b){
+    const body=sheet("אותו אדם?");let keep=a.memberId?a:b.memberId?b:(weapons.filter(w=>w.owner===b.id).length>weapons.filter(w=>w.owner===a.id).length?b:a);
+    body.append(el("div","rsnote","יש שני חיילים בשם "+cleanName(a.name)+". אם זה אותו אדם — בחרו איזה פרטים להשאיר, וכל מה שרשום על השני (אמל\"ח, היעדרויות, בקש\"צים, פערים, מענים) יעבור אליו."));
+    const cards=el("div","dupcards");
+    const draw=()=>{cards.textContent="";[a,b].forEach(x=>{
+      const c=el("button","dupcard"+(keep===x?" on":""));c.type="button";c.setAttribute("aria-pressed",String(keep===x));
+      const wn=weapons.filter(w=>w.owner===x.id).length,en=events.filter(e=>e.soldierId===x.id).length;
+      c.append(el("b",null,x.name||""),el("span","mini","מספר אישי: "+(x.num||"—")),el("span","mini","טלפון: "+(x.phone||"—")),el("span","mini",[x.role&&x.role!=="חייל"?x.role:"",x.squad?"כיתה "+x.squad:"",x.memberId?"📱 מחובר לאפליקציה":""].filter(Boolean).join(" · ")||" "),
+        el("span","mini",wn+' פריטי אמל"ח · '+en+" רשומות"),el("span","dupkeep",keep===x?"✓ נשאר":"לחצו כדי להשאיר"));
+      c.onclick=()=>{keep=x;draw();};cards.append(c);});};
+    draw();body.append(cards);
+    shAct(body,"איחוד לחייל אחד",async()=>{const drop=keep===a?b:a;try{await mergeSoldiers(keep,drop);toast("אוחדו: "+cleanName(keep.name));}catch(e){console.warn(e);toast("האיחוד נכשל");}},"go");
+    shAct(body,"אלה שני אנשים שונים",()=>{patch("soldiers/"+a.id,{notDup:(a.notDup||[]).concat([b.id])});patch("soldiers/"+b.id,{notDup:(b.notDup||[]).concat([a.id])});toast("סומן — לא נשאל שוב");},"ghost");
+  }
   function openGear(r){
     const R=RUB[r],b=sheet("הגדרות · "+(R?R.n:"מסך ראשי"));
     if(r==="home"){
