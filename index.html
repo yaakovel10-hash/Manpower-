@@ -738,6 +738,13 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 body.sheeton{overflow:hidden}
 .rsbody .setpanel>b:first-child{display:none}
 #niOpen,#formNI{margin-bottom:18px}
+.mkshow{display:grid;gap:6px}
+.mkrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.mkrow .sm{flex:1 1 0}
+.mkrow input{flex:2 1 0;min-width:0}
+.mkval{flex:1 1 100%;min-width:0;font-family:var(--mono);font-size:18px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;overflow-wrap:anywhere;user-select:all;-webkit-user-select:all}
+
+.mkwa{color:#25d366;text-decoration:none;display:inline-grid;place-items:center}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -917,8 +924,9 @@ body.sheeton{overflow:hidden}
 
     <form class="panel" id="masterForm" hidden style="margin-top:22px">
       <strong>סיסמת מפתח</strong>
+      <div class="mkshow" id="mkShow"></div>
       <span class="mini">מי שמזין את הסיסמה הזו יכול לפתוח ולסגור מסגרות ורואה את כל הנתונים. החלפת הסיסמה מבטלת את כל מי שנכנס עם הסיסמה הקודמת.</span>
-      <label class="f">סיסמה חדשה (לפחות 8 תווים)<input type="password" id="masterIn" class="ltr" minlength="8" required autocomplete="new-password"></label>
+      <label class="f">סיסמה חדשה (לפחות 8 תווים)<input type="text" id="masterIn" class="ltr" minlength="8" required autocomplete="new-password"></label>
       <p class="err" id="masterErr" hidden></p>
       <button class="ghost" type="submit">שמירת סיסמת מפתח</button>
     </form>
@@ -1855,8 +1863,29 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     e.preventDefault();
     const pw=$("masterIn").value;if(pw.length<8)return showErr("masterErr","לפחות 8 תווים.");
     const k=await sha256(pw);
-    if(await write("config/master",{key:k,at:Date.now()},"masterErr")){$("masterIn").value="";showErr("masterErr","נשמר. מי שנכנס עם סיסמה קודמת צריך להזין את החדשה.");}
+    if(await write("config/master",{key:k,at:Date.now()},"masterErr")){mkKeep(pw);$("masterIn").value="";showErr("masterErr","נשמר. מי שנכנס עם סיסמה קודמת צריך להזין את החדשה.");renderMk();}
   };
+  // the key itself is never stored on the server (only its fingerprint), so it's kept on the admin's own phone to show and copy
+  const mkGet=()=>{try{return localStorage.getItem("masterPlain:"+uid)||"";}catch(_){return "";}};
+  const mkKeep=pw=>{try{localStorage.setItem("masterPlain:"+uid,pw);}catch(_){}};
+  function renderMk(){
+    const box=$("mkShow");if(!box)return;box.textContent="";const pw=mkGet();
+    if(pw){
+      const row=el("div","mkrow");const v=el("code","mkval ltr",pw);
+      const cp=el("button","primary sm","העתקה");cp.type="button";
+      cp.onclick=async()=>{try{await navigator.clipboard.writeText(pw);cp.textContent="הועתק ✓";}catch(_){const r=document.createRange();r.selectNodeContents(v);const sl=getSelection();sl.removeAllRanges();sl.addRange(r);cp.textContent="סמנו והעתיקו";}setTimeout(()=>{cp.textContent="העתקה";},1800);};
+      const wa=el("a","ghost sm mkwa","וואטסאפ");wa.href="https://wa.me/?text="+encodeURIComponent("סיסמת המפתח לאפליקציית כוח האדם: "+pw);wa.target="_blank";wa.rel="noopener";
+      row.append(v,cp,wa);box.append(el("span","mini","הסיסמה הנוכחית:"),row);
+    }else{
+      box.append(el("span","mini","הסיסמה הנוכחית לא שמורה בטלפון הזה. כדי שתופיע כאן עם כפתור העתקה — הזינו אותה פעם אחת:"));
+      const row=el("div","mkrow");const i=el("input");i.type="text";i.className="ltr";i.autocomplete="off";i.placeholder="הסיסמה הנוכחית";
+      const ok=el("button","ghost sm","שמירה בטלפון");ok.type="button";
+      ok.onclick=async()=>{const t=i.value;if(!t)return;
+        try{const d=await fs.doc("config/master").get();const k=d.exists&&d.data().key;if(k&&k!==await sha256(t)){toast("זו לא הסיסמה הנוכחית");return;}}catch(_){}
+        mkKeep(t);renderMk();};
+      row.append(i,ok);box.append(row);
+    }
+  }
 
   /* ---------- setup / join ---------- */
   let setupMode="join";
@@ -2105,7 +2134,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   }
   function renderUnits(){
     if(!mgr())return;
-    $("masterForm").hidden=!isAdmin;
+    $("masterForm").hidden=!isAdmin;if(isAdmin)renderMk();
     const box=$("listU");box.textContent="";
     const list=units.slice().sort((a,b)=>pathKey(a.path).localeCompare(pathKey(b.path),"he"));
     $("cntU").textContent=list.length||"";$("emptyU").hidden=list.length>0;
