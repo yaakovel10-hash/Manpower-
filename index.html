@@ -2130,13 +2130,18 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   }
   /* ---------- home tiles: long-press, then drag to reorder ---------- */
   const tileKey=t=>t.getAttribute("href");
+  // the default order, two per row, right to left
+  const DEF_TILES=["#attend","#verify","#reqs","#absent","#wear","#gaps","#med","#pun","#sched","#nmr","#orbat","#fit","#veh"];
   function applyTileOrder(){
     const nav=$("homeTiles");if(nav.classList.contains("editing"))return;
-    const ord=(me&&me.tileOrder)||[];if(!ord.length)return;
+    const ord=(me&&me.tileOrder&&me.tileOrder.length)?me.tileOrder:DEF_TILES;
     const T=[...nav.querySelectorAll(":scope > .tile")];
-    T.sort((a,b)=>{const ia=ord.indexOf(tileKey(a)),ib=ord.indexOf(tileKey(b));return (ia<0?999:ia)-(ib<0?999:ib);});
+    // a tile missing from a saved order goes after it, in the default order
+    const pos=k=>{const i=ord.indexOf(k);return i>=0?i:100+DEF_TILES.indexOf(k);};
+    T.sort((a,b)=>pos(tileKey(a))-pos(tileKey(b)));
     T.forEach(t=>nav.append(t));
   }
+  applyTileOrder();
   {
     const nav=$("homeTiles");let lp=null,drag=null,sx=0,sy=0;
     const enter=()=>{nav.classList.add("editing");haptic(true);};
