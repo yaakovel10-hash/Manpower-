@@ -3087,15 +3087,18 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     head.append(el("span","stdot"+(away?" away":"")),el("b",null,away?(fullDay?"לא בנוכחות היום":"לא בנוכחות עכשיו"):(partial?"בנוכחות עכשיו":"בנוכחות היום")));
     box.append(head);box.classList.toggle("away",!!away);
     const yest=()=>{const d=new Date();d.setDate(d.getDate()-1);return key(d);},tom=()=>{const d=new Date();d.setDate(d.getDate()+1);return key(d);};
-    ab.forEach(x=>{
+    const grp=new Map();ab.forEach(x=>{const k=(x.absType||"")+"|"+(x.allDay||!x.start?"d":x.start+x.end);if(!grp.has(k))grp.set(k,[]);grp.get(k).push(x);});
+    [...grp.values()].forEach(G=>{
+      const x=Object.assign({},G[0],{to:G.map(y=>y.to||y.date).sort().pop()});
       const r=el("div","strow");
       const txt=(x.absType||"היעדרות")+" · "+(x.allDay?"כל היום":"\u2066"+x.start+"–"+x.end+"\u2069")+(x.to&&x.to!==x.date?" · עד "+fmtG(x.to):"");
       r.append(el("span","awaytag",x.absType||"היעדרות"),el("span","sttext",txt));
       const back=el("button","approve sm","החזרה לנוכחות");back.type="button";
       back.onclick=async()=>{back.disabled=true;
-        if(x.date>=t&&(x.to||x.date)<=t)await remove("events/"+x.id);
-        else if(x.date<t)await patch("events/"+x.id,{to:yest()});
-        else await patch("events/"+x.id,{date:tom()});
+        for(const x of G){
+          if(x.date>=t&&(x.to||x.date)<=t)await remove("events/"+x.id);
+          else if(x.date<t)await patch("events/"+x.id,{to:yest()});
+          else await patch("events/"+x.id,{date:tom()});}
         toast(s.name+" חזר לנוכחות");};
       r.append(back);box.append(r);
     });
@@ -4165,7 +4168,17 @@ const top=el("div","top");
     const allDay=$("abAllDay").checked,start=allDay?"":($("abStart").value||nowHM()),end=allDay?"":$("abEnd").value;
     if(!allDay&&!end)return showErr("abErr","מלאו עד איזו שעה, או סמנו כל היום.");
     const title=type+(allDay?"":" "+tr(start,end));
-    const btn=$("abSave");btn.disabled=true;
+    const btn=$("abSave");
+    // same soldier, same reason, dates touching or overlapping: stretch the one that exists instead of adding a twin
+    if(allDay){const nx=k=>{const d=parseKey(k);d.setDate(d.getDate()+1);return key(d);};
+      const tw=vis(events).filter(x=>x.kind==="abs"&&x.soldierId===s.id&&x.absType===type&&(x.allDay||!x.start)&&x.date&&x.date<=nx(to)&&nx(x.to||x.date)>=date);
+      if(tw.length){btn.disabled=true;
+        const nd=[date,...tw.map(x=>x.date)].sort()[0],nt=[to,...tw.map(x=>x.to||x.date)].sort().pop();
+        const ok=await patch("events/"+tw[0].id,{date:nd,to:nt});
+        for(const x of tw.slice(1))await remove("events/"+x.id);
+        btn.disabled=false;if(ok){abDay=date;resetAB();renderAbsent();toast(s.name+' כבר היה ב"'+type+'" — עודכנו התאריכים');}
+        return;}}
+    btn.disabled=true;
     const ok=await write("events/"+newId(),{kind:"abs",soldierId:s.id,unit:s.unit,absType:type,title,date,to,allDay,start,end,time:start,note:$("abNote").value.trim(),addedBy:uid,addedByName:(me&&me.name)||"",at:Date.now()},"abErr");
     btn.disabled=false;if(ok){abDay=date;resetAB();renderAbsent();toast("נוספה היעדרות: "+type);}
   };
