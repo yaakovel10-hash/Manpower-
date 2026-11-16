@@ -822,9 +822,18 @@ ul.pulist li.purow{display:block;padding:12px 14px}
       <p class="mini" id="loginSub">התחברו כדי להמשיך</p>
     </div>
     <div class="panel">
+      <p class="mini iosnote" id="iosNote" hidden>באייפון, מאפליקציה שהוספתם למסך הבית, הכניסה עם Google לא תמיד עובדת. אם היא נתקעת — היכנסו עם מייל וסיסמה כאן למטה.</p>
       <button class="primary" type="button" id="googleBtn">התחברות עם Google</button>
       <p class="err" id="lErr" hidden></p>
     </div>
+    <form class="panel" id="mailForm">
+      <strong>או עם מייל וסיסמה</strong>
+      <label class="f">מייל<input type="email" id="mlEmail" class="ltr" autocomplete="username" inputmode="email" required></label>
+      <label class="f">סיסמה<input type="password" id="mlPass" class="ltr" autocomplete="current-password" minlength="6" required></label>
+      <p class="err" id="mlErr" hidden></p>
+      <div class="row2"><button class="primary" type="submit" id="mlIn">כניסה</button><button class="ghost" type="button" id="mlNew">משתמש חדש</button></div>
+      <button class="linkbtn" type="button" id="mlForgot">שכחתי סיסמה</button>
+    </form>
   </section>
 
   <!-- NO ACCESS -->
@@ -1943,12 +1952,22 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   readJoin();
 
   /* ---------- login ---------- */
-  const authErr=e=>({"auth/invalid-credential":"מייל או סיסמה לא נכונים.","auth/wrong-password":"מייל או סיסמה לא נכונים.","auth/user-not-found":"לא נמצא משתמש עם המייל הזה.","auth/email-already-in-use":"המייל הזה כבר רשום. נסו להיכנס.","auth/weak-password":"הסיסמה צריכה להיות לפחות 6 תווים.","auth/invalid-email":"כתובת המייל לא תקינה.","auth/popup-closed-by-user":"","auth/unauthorized-domain":"הכתובת של האתר לא מאושרת ב-Firebase. הוסיפו אותה ב-Authentication › Settings › Authorized domains."}[e&&e.code]??"ההתחברות נכשלה. נסו שוב.");
+  const authErr=e=>({"auth/invalid-credential":"מייל או סיסמה לא נכונים.","auth/wrong-password":"מייל או סיסמה לא נכונים.","auth/user-not-found":"לא נמצא משתמש עם המייל הזה.","auth/email-already-in-use":"המייל הזה כבר רשום. נסו להיכנס.","auth/weak-password":"הסיסמה צריכה להיות לפחות 6 תווים.","auth/invalid-email":"כתובת המייל לא תקינה.","auth/popup-closed-by-user":"","auth/operation-not-allowed":"הכניסה עם מייל עוד לא הופעלה. מנהל המערכת צריך להפעיל אותה ב-Firebase: Authentication › Sign-in method › Email/Password.","auth/too-many-requests":"יותר מדי ניסיונות. חכו כמה דקות ונסו שוב.","auth/missing-initial-state":"הכניסה עם Google לא עובדת כאן. היכנסו עם מייל וסיסמה.","auth/unauthorized-domain":"הכתובת של האתר לא מאושרת ב-Firebase. הוסיפו אותה ב-Authentication › Settings › Authorized domains."}[e&&e.code]??"ההתחברות נכשלה. נסו שוב.");
   $("googleBtn").onclick=async()=>{
     const p=new firebase.auth.GoogleAuthProvider();
     try{await auth.signInWithPopup(p);}
     catch(e){if(e.code==="auth/popup-blocked"||e.code==="auth/operation-not-supported-in-this-environment"){try{await auth.signInWithRedirect(p);}catch(e2){showErr("lErr",authErr(e2));}}else showErr("lErr",authErr(e));}
   };
+  // email + password: works everywhere, including the iPhone home-screen app where Google sign-in can get stuck
+  const isIOSApp=/iP(hone|ad|od)/.test(navigator.userAgent)&&(navigator.standalone||matchMedia("(display-mode: standalone)").matches);
+  $("iosNote").hidden=!isIOSApp;
+  const mlVals=()=>({e:$("mlEmail").value.trim(),p:$("mlPass").value});
+  $("mailForm").onsubmit=async e=>{e.preventDefault();const {e:m,p}=mlVals();showErr("mlErr","");const b=$("mlIn");b.disabled=true;
+    try{await auth.signInWithEmailAndPassword(m,p);}catch(err){showErr("mlErr",authErr(err));}b.disabled=false;};
+  $("mlNew").onclick=async()=>{const {e:m,p}=mlVals();if(!m||p.length<6)return showErr("mlErr","כתבו מייל וסיסמה של 6 תווים לפחות, ואז לחצו \"משתמש חדש\".");
+    showErr("mlErr","");try{await auth.createUserWithEmailAndPassword(m,p);}catch(err){showErr("mlErr",authErr(err));}};
+  $("mlForgot").onclick=async()=>{const m=$("mlEmail").value.trim();if(!m){$("mlEmail").focus();return showErr("mlErr","כתבו את המייל ואז לחצו \"שכחתי סיסמה\".");}
+    try{await auth.sendPasswordResetEmail(m);showErr("mlErr","נשלח מייל לאיפוס הסיסמה ל-"+m+".");}catch(err){showErr("mlErr",authErr(err));}};
   const logout=()=>auth.signOut();
   $("logout").onclick=logout;$("naOut").onclick=logout;
 
