@@ -853,6 +853,9 @@ ul.pulist li.purow{display:block;padding:12px 14px}
 .sh .n2 .nlab{font-family:var(--body);letter-spacing:0;font-size:14px}
 .sh .n2 .nval{direction:ltr;unicode-bidi:isolate}
 .mtash{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px 10px;font-size:14.5px;line-height:1.5}
+.morebox a.callbtn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;background:var(--accent);color:var(--accent-fg);font-weight:800;font-family:var(--mono);text-decoration:none;direction:ltr;box-shadow:0 5px 12px -9px var(--accent)}
+.morebox a.callbtn svg{width:16px;height:16px;flex:none}
+.morebox a.callbtn:active{transform:scale(.97)}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -3403,6 +3406,12 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   /* more details: home address and the parents' phones, folded behind a small button */
   let moreOpen=false,moreEdit=null;
   $("dMoreBtn").onclick=()=>{moreOpen=!moreOpen;moreEdit=null;const s=soldierById(curSoldier);if(s)renderMore(s);};
+  // a phone number as a button that opens the dialer
+  function callBtn(ph){
+    const a=el("a","callbtn");a.href=telHref(ph);a.setAttribute("aria-label","חיוג ל-"+ph);
+    a.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>';
+    a.append(el("span",null,String(ph).replace(/^\+972[\s-]*/,"0")));return a;
+  }
   function renderMore(s){
     const btn=$("dMoreBtn"),box=$("dMore");
     btn.setAttribute("aria-expanded",String(moreOpen));btn.querySelector("span").textContent=moreOpen?"▴":"▾";
@@ -3435,14 +3444,14 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const ps=P.map((p,i)=>Object.assign({lbl:i?"אמא":"אבא"},p||{})).filter(p=>p.name||p.phone);
     if(ps.length)ps.forEach(p=>{
       const parts=[el("span","mt",p.name||p.lbl)];
-      if(p.phone){const a=el("a","tel",p.phone);a.href=telHref(p.phone);
+      if(p.phone){const a=callBtn(p.phone);
         const wa=el("a","mlink","וואטסאפ");wa.href="https://wa.me/"+String(p.phone).replace(/\D/g,"").replace(/^0/,"972");wa.target="_blank";wa.rel="noopener";
         const lk=el("span","mlinks");lk.append(a,wa);parts.push(lk);}
       row(p.lbl,parts);});
     else{row("אבא",[el("span","mini","לא הוזן")]);row("אמא",[el("span","mini","לא הוזן")]);}
     {const e=s.emerg||{};
       if(e.name||e.phone){const parts=[el("span","mt",e.name||"איש קשר")];
-        if(e.phone){const a=el("a","tel",e.phone);a.href=telHref(e.phone);
+        if(e.phone){const a=callBtn(e.phone);
           const wa=el("a","mlink","וואטסאפ");wa.href="https://wa.me/"+String(e.phone).replace(/\D/g,"").replace(/^0/,"972");wa.target="_blank";wa.rel="noopener";
           const lk=el("span","mlinks");lk.append(a,wa);parts.push(lk);}
         row("חירום",parts);}
