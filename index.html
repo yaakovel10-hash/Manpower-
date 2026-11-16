@@ -275,7 +275,7 @@ html,body{overflow-x:clip}
 .tilebar[hidden]{display:none}
 .tilechk{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin-top:6px}
 .bkopen{margin-top:4px}
-.bkover{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
+.bkover{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center}
 .bkover[hidden]{display:none}
 .bkcard{background:var(--surface);color:var(--fg);width:100%;max-width:560px;max-height:86vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px));display:grid;gap:10px}
 .bkhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -679,6 +679,64 @@ ul.nmlist li.nmrow{flex-wrap:wrap;row-gap:6px}
 .pkchip{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1px solid var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--bg));color:var(--fg)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){.tile:active{transform:none}}
+
+/* ---- the same corner on every screen: own actions, bell, gear ---- */
+.bartools{margin-inline-start:auto;display:flex;align-items:center;gap:8px;flex:none}
+.bartools .pencil{margin:0!important;width:40px;height:40px}
+.bar:has(.bartools) .count{margin-inline-start:2px}
+.bar:has(.bartools) .back{flex:none}
+.hometools{display:flex;gap:8px;margin-top:10px;direction:rtl}
+.hometools .pencil{margin:0!important}
+.pencil.bell .belln{top:-7px;left:-7px}
+.belln[data-l="info"]{background:var(--accent);color:var(--accent-fg)}
+.belln[data-l="warn"]{background:var(--warn);color:#1b1a12}
+.pencil.bell.on{border-color:var(--danger);color:var(--danger)}
+#homeTiles .badge{display:none!important}
+.abadge{position:absolute;top:8px;left:8px;min-width:22px;height:22px;line-height:22px;padding:0 7px;border-radius:999px;font-size:12px;font-weight:800;text-align:center;background:var(--accent);color:var(--accent-fg);box-shadow:0 2px 6px var(--shadow);font-variant-numeric:tabular-nums;z-index:2}
+.abadge.warn{background:var(--warn);color:#1b1a12}
+.abadge.bad{background:var(--danger);color:#fff}
+.rsheet{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;animation:rsfade .18s ease-out}
+.rsheet[hidden]{display:none}
+.rscard{background:var(--surface);color:var(--fg);width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column;border-radius:22px 22px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,.35);animation:rsup .22s cubic-bezier(.2,.8,.2,1)}
+@keyframes rsup{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes rsfade{from{background:rgba(0,0,0,0)}}
+@media (prefers-reduced-motion:reduce){.rscard,.rsheet{animation:none}}
+.rsgrip{width:44px;height:5px;border-radius:999px;background:var(--line);margin:10px auto 2px}
+.rshead{display:flex;align-items:center;justify-content:space-between;padding:6px 18px 10px}
+.rshead b{font-size:19px}
+.rsx{background:none;border:0;color:var(--muted);font-size:20px;padding:6px 8px;cursor:pointer}
+.rsbody{overflow:auto;padding:0 16px calc(20px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;overscroll-behavior:contain}
+.rsbody>.setpanel,.rsbody>.panel,.rsbody>form{margin:0;border:0;padding:0;background:none;box-shadow:none}
+.rssec{font-size:13px;font-weight:700;color:var(--muted);margin:10px 2px 0;letter-spacing:.02em}
+.rsact{display:block;width:100%;text-align:start;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:13px 14px;color:var(--fg);font:inherit;font-weight:700;cursor:pointer}
+.rsact.wa{color:#25d366;border-color:color-mix(in srgb,#25d366 45%,var(--line))}
+.rsact.ghost{background:none;text-align:center;color:var(--muted);font-weight:600}
+.rstog{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:11px 14px;cursor:pointer}
+.rstx{display:grid;gap:1px;flex:1;min-width:0;text-align:start}
+.rstx b{font-size:15px}.rstx .mini{font-size:13px;overflow-wrap:anywhere}
+.rstog input{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-radius:999px;background:var(--line);position:relative;flex:none;cursor:pointer;transition:background .15s;margin:0}
+.rstog input::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:right .15s}
+.rstog input:checked{background:var(--accent)}
+.rstog input:checked::after{right:21px}
+.rsbody label.allday input[type=checkbox]{appearance:none;-webkit-appearance:none;width:40px;height:24px;border-radius:999px;background:var(--line);position:relative;flex:none;cursor:pointer;transition:background .15s;margin:0}
+.rsbody label.allday input[type=checkbox]::after{content:"";position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:right .15s}
+.rsbody label.allday input[type=checkbox]:checked{background:var(--accent)}
+.rsbody label.allday input[type=checkbox]:checked::after{right:19px}
+.rsal{display:flex;align-items:center;gap:12px;width:100%;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:11px 14px;color:var(--fg);font:inherit;cursor:pointer;text-align:start}
+.rsdot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--accent)}
+.rsal.warn .rsdot{background:var(--warn)}
+.rsal.bad .rsdot{background:var(--danger)}
+.rsal.bad{border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}
+.rsgo{color:var(--muted);font-size:20px;flex:none}
+.rsgrp{display:flex;align-items:center;gap:8px;background:none;border:0;padding:12px 2px 2px;color:var(--fg);font:inherit;cursor:pointer;width:100%;text-align:start}
+.rsgrp b{font-size:16px;flex:1}
+.rscnt{font-size:12px;font-weight:800;background:var(--line);border-radius:999px;padding:1px 8px;font-variant-numeric:tabular-nums}
+.rsmore{background:none;border:0;color:var(--accent);font:inherit;font-weight:700;padding:2px 4px;text-align:start;cursor:pointer}
+.rsempty{display:grid;justify-items:center;gap:4px;padding:26px 0 20px;text-align:center}
+.rsok{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-size:26px;font-weight:800;background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);margin-bottom:6px}
+.rsnote{font-size:13px;color:var(--muted);background:var(--bg);border-radius:12px;padding:10px 12px}
+body.sheeton{overflow:hidden}
+.rsbody .setpanel>b:first-child{display:none}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -5585,6 +5643,188 @@ const top=el("div","top");
     {const S=vis(soldiers).filter(s=>!isCmdSoldier(s)),here=S.filter(s=>!awayInfo(s.id)),m=getMarks(rollKey("att"));
      $("cntAt").textContent=here.length+" בבסיס"+(S.length-here.length?" · "+(S.length-here.length)+" בבית":"")+(m.size?" · ✓"+here.filter(s=>m.has(s.id)).length:"");
      $("cntVf").textContent=vis(weapons).length+" פריטים";}
+    try{alertsRefresh();}catch(e){console.warn(e);}
+  }
+
+
+  /* ---------- one language for every rubric: the bell (what needs you) and the gear (its settings), always in the same corner ---------- */
+  const BELL_SVG=$("vfBell").querySelector("svg").outerHTML,GEAR_SVG=$("setBtn").querySelector("svg").outerHTML;
+  const RUB={
+    attend:{n:"חיילים",go:"attend",scr:["v-attend","v-soldiers"]},
+    verify:{n:'אמל"ח',go:"verify",scr:["v-verify","v-weapons","v-zr","v-mine"]},
+    reqs:{n:'בקש"צים',go:"reqs",scr:["v-reqs"],hide:"reqs"},
+    med:{n:"רפואה",go:"med",scr:["v-med"],hide:"med"},
+    gaps:{n:"פערים",go:"gaps",scr:["v-gaps"],hide:"gaps"},
+    wear:{n:"בלאי",go:"wear",scr:["v-wear"]},
+    sched:{n:'לו"ז',go:"sched",scr:["v-sched"]},
+    absent:{n:"היעדרויות",go:"absent",scr:["v-absent"]},
+    fit:{n:"כושר",go:"fit",scr:["v-fit"],hide:"fit"},
+    nmr:{n:'נמ"ר',go:"nmr",scr:[],hide:"nmr"},
+    veh:{n:"רכב",go:"veh",scr:[],hide:"veh"},
+    orbat:{n:"מבנה וארגון לקרב",go:"orbat",scr:["v-orbat"],hide:"orbat"}
+  };
+  const TILE_RUB={attend:"attend",verify:"verify",reqs:"reqs",med:"med",gaps:"gaps",wear:"wear",sched:"sched",absent:"absent",fit:"fit",nmr:"nmr",veh:"veh",orbat:"orbat"};
+  const secRub=id=>(id==="v-nmr"||id==="v-nmrd")?vk:Object.keys(RUB).find(k=>RUB[k].scr.includes(id))||"home";
+  const muted=r=>{try{return localStorage.getItem("amute:"+r)==="1";}catch(_){return false;}};
+  const setMuted=(r,v)=>{try{localStorage.setItem("amute:"+r,v?"1":"0");}catch(_){}};
+  const rubOn=k=>!RUB[k].hide||tileShown(RUB[k].hide);
+  const goHash=h=>()=>{location.hash=h;};
+
+  // what needs attention, per rubric; each item: level (bad / warn / info), text, detail, where a tap takes you
+  let ALR={};
+  function alertsCompute(){
+    const A={},t=todayKey(),tom=(()=>{const d=new Date();d.setDate(d.getDate()+1);return key(d);})();
+    const add=(k,lvl,tx,sub,go)=>{(A[k]=A[k]||[]).push({lvl,t:tx,s:sub||"",go});};
+    const nm=id=>{const s=soldierById(id);return s?s.name:"חייל";};
+    const toS=id=>goHash("soldier-"+encodeURIComponent(id));
+    const S=vis(soldiers).filter(s=>!isCmdSoldier(s));
+    {// soldiers: today's attendance started but not finished, soldiers with no squad
+      const m=getMarks(rollKey("att"));
+      if(m.size){const un=S.filter(s=>!awayInfo(s.id)&&!m.has(s.id)).length;if(un)add("attend","warn",(un===1?"חייל אחד בבסיס עוד לא סומן":un+" חיילים בבסיס עוד לא סומנו")+" היום","הנוכחות התחילה ולא הושלמה",goHash("attend"));}
+      const ns=S.filter(s=>!(s.squad||"").trim()).length;if(ns)add("attend","info",(ns===1?"חייל אחד":ns+" חיילים")+" בלי כיתה","כדאי לשבץ אותם — זה משפיע על הסינון והדוחות",goHash("soldiers"));
+    }
+    {// weapons: open faults, items nobody signed for
+      const W=vis(weapons),goA=()=>{faultOnly=false;freeOnly=false;$("fFault").setAttribute("aria-pressed","false");location.hash="alerts";};
+      W.filter(w=>openFaults(w).length).forEach(w=>add("verify","bad","תקלה: "+wType(w.type)+(w.num?" "+w.num:""),openFaults(w).map(f=>f.desc||"").filter(Boolean).join(" · "),goA));
+      const free=W.filter(w=>!w.ownerMember&&(!w.owner||!soldiers.some(x=>x.id===w.owner))).length;
+      if(free)add("verify","warn",(free===1?'פריט אמל"ח אחד':free+' פריטי אמל"ח')+" בלי חותם","צריך לשייך אותם לחייל",goA);
+    }
+    {// requests and medical: waiting for a decision, coming back today
+      const R=vis(requests);
+      R.filter(r=>r.status==="pending"&&canDecideReq(r.unit)).forEach(r=>add("reqs","warn","ממתין לאישור: "+nm(r.soldierId),[r.reason,reqWhen(r)].filter(Boolean).join(" · "),goHash("reqs")));
+      R.filter(r=>r.status==="approved"&&(r.to||r.from)===t&&reqOutNow(r)).forEach(r=>add("reqs","info","חוזר היום: "+nm(r.soldierId),(r.toTime?"ב-⁦"+r.toTime+"⁩ · ":"")+(r.reason||""),toS(r.soldierId)));
+      medEv().filter(r=>r.status==="pending"&&canDecideReq(r.unit)).forEach(r=>add("med","warn","ממתין לאישור: "+nm(r.soldierId),[r.reason,reqWhen(r)].filter(Boolean).join(" · "),goHash("med")));
+      medEv().filter(r=>r.status==="approved"&&(r.to||r.from)===t&&reqOutNow(r)).forEach(r=>add("med","info","חוזר היום: "+nm(r.soldierId),(r.toTime?"ב-⁦"+r.toTime+"⁩ · ":"")+(r.reason||""),toS(r.soldierId)));
+    }
+    {// gaps: per soldier, oldest first
+      vis(soldiers).map(s=>({s,L:sNotes(s)})).filter(x=>x.L.length).sort((a,b)=>Math.min(...a.L.map(g=>g.at||0))-Math.min(...b.L.map(g=>g.at||0)))
+        .forEach(({s,L})=>add("gaps","warn",s.name+(L.length>1?" · "+L.length+" פערים":""),L.map(g=>g.text).join(" · "),toS(s.id)));
+      vis(weapons).filter(w=>(w.notes||"").trim()).forEach(w=>add("gaps","warn",wType(w.type)+(w.num?" "+w.num:""),w.notes,goHash("gaps")));
+    }
+    {// wear: open items
+      wearEv().filter(x=>x.status!=="done").sort((a,b)=>(a.at||0)-(b.at||0)).forEach(x=>add("wear","warn",x.item||"בלאי",x.soldierId?nm(x.soldierId):(x.ownerName||""),goHash("wear")));
+    }
+    {// schedule: what starts in the next two hours
+      const d=new Date(),now=d.getHours()*60+d.getMinutes();
+      unitEv().filter(x=>onDay(x,t)&&x.start).forEach(x=>{const [h,mi]=x.start.split(":").map(Number),dm=h*60+mi-now;
+        if(dm>=0&&dm<=120)add("sched",dm<=15?"warn":"info",(dm<1?"עכשיו":"בעוד "+(dm<60?dm+" דק'":Math.floor(dm/60)+":"+String(dm%60).padStart(2,"0")+" שע'"))+": "+(x.title||""),"⁦"+x.start+"⁩",goHash("sched"));});
+    }
+    {// absences: who comes back today, who leaves tomorrow
+      absEv().filter(x=>(x.to||x.date)===t&&x.date<=t).forEach(x=>add("absent","info","חוזר היום: "+nm(x.soldierId),(x.absType||"")+(x.allDay?"":" · עד ⁦"+(x.end||"")+"⁩"),toS(x.soldierId)));
+      absEv().filter(x=>x.date===tom).forEach(x=>add("absent","info","יוצא מחר: "+nm(x.soldierId),x.absType||"",toS(x.soldierId)));
+    }
+    {// fitness: the latest test of each kind, soldiers with no result
+      const last=new Map();fitEv().forEach(x=>{if(!x.act||!x.date)return;const p=last.get(x.act);if(!p||x.date>p.date)last.set(x.act,x);});
+      const old=key(new Date(Date.now()-30*864e5));
+      last.forEach(x=>{if(x.date<old)return;const res=x.results||{};const miss=S.filter(s=>res[s.id]==null||res[s.id]==="").length;
+        if(miss&&miss<S.length)add("fit","info",x.act+": "+miss+" בלי תוצאה","מדידה מ-"+fmtG(x.date),goHash("fit"));});
+    }
+    ["nmr","veh"].forEach(k=>{// vehicle kit: what wasn't checked today
+      kindEv(k).forEach(x=>{const items=x.items||[];if(!items.length)return;const m=getMarks(rollKey(k,x.id)),left=items.filter(i=>!m.has(i.id)).length;
+        if(left)add(k,"info","⁦"+x.num+"⁩: "+left+" מתוך "+items.length+" לא נבדקו היום","",goHash(k+"-"+x.id));});
+    });
+    ALR=A;
+  }
+  const alertN=r=>muted(r)?0:(ALR[r]||[]).length;
+  function alertsRefresh(){
+    try{alertsCompute();}catch(e){console.warn("alerts",e);return;}
+    document.querySelectorAll("#homeTiles .tile").forEach(t=>{const r=TILE_RUB[(t.getAttribute("href")||"").slice(1)];if(!r)return;
+      let b=t.querySelector(".abadge");if(!b){b=el("span","abadge");t.append(b);}
+      const L=muted(r)?[]:(ALR[r]||[]);b.hidden=!L.length;b.textContent=L.length;b.classList.toggle("bad",L.some(a=>a.lvl==="bad"));b.classList.toggle("warn",!L.some(a=>a.lvl==="bad")&&L.some(a=>a.lvl==="warn"));});
+    {const ks=Object.keys(RUB).filter(k=>rubOn(k)&&!muted(k)),n=ks.reduce((s,k)=>s+alertN(k),0),b=$("homeBellN"),all=ks.flatMap(k=>ALR[k]||[]);b.hidden=!n;b.textContent=n>99?"99+":n;
+      b.dataset.l=all.some(a=>a.lvl==="bad")?"bad":all.some(a=>a.lvl==="warn")?"warn":"info";}
+    document.querySelectorAll(".rbell").forEach(b=>{const r=secRub(b.closest("section").id),n=alertN(r),c=b.querySelector(".belln"),L=ALR[r]||[];c.hidden=!n;c.textContent=n;c.dataset.l=L.some(a=>a.lvl==="bad")?"bad":L.some(a=>a.lvl==="warn")?"warn":"info";b.classList.toggle("on",(ALR[r]||[]).some(a=>a.lvl==="bad")&&!muted(r));});
+  }
+
+  /* the bottom sheet both of them open */
+  let shMoved=[],shObs=null;
+  function sheet(title){
+    let o=$("rsheet");
+    if(!o){o=el("div","rsheet");o.id="rsheet";o.hidden=true;o.addEventListener("click",e=>{if(e.target===o)closeSheet();});document.body.append(o);}
+    closeSheet();o.textContent="";
+    const card=el("div","rscard");card.setAttribute("role","dialog");card.setAttribute("aria-label",title);
+    const grip=el("div","rsgrip");const head=el("div","rshead");const h=el("b",null,title);const x=el("button","rsx","✕");x.type="button";x.setAttribute("aria-label","סגירה");x.onclick=closeSheet;
+    head.append(h,x);const body=el("div","rsbody");card.append(grip,head,body);o.append(card);o.hidden=false;document.body.classList.add("sheeton");
+    return body;
+  }
+  function closeSheet(){
+    const o=$("rsheet");if(!o||o.hidden)return;
+    if(shObs){shObs.disconnect();shObs=null;}
+    shMoved.forEach(({n,ph})=>{n.hidden=true;ph.replaceWith(n);});shMoved=[];
+    o.hidden=true;document.body.classList.remove("sheeton");
+  }
+  // a settings panel that already exists moves into the sheet while it's open, then goes back to its place
+  function moveIn(body,n){
+    const ph=document.createComment("sheet");n.replaceWith(ph);shMoved.push({n,ph});n.hidden=false;body.append(n);
+    shObs=shObs||new MutationObserver(()=>{if(shMoved.some(m=>m.n.hidden))closeSheet();});
+    shObs.observe(n,{attributes:true,attributeFilter:["hidden"]});
+  }
+  addEventListener("hashchange",closeSheet);
+  const shSec=(b,t)=>b.append(el("div","rssec",t));
+  const shAct=(b,t,f,cls)=>{const x=el("button","rsact"+(cls?" "+cls:""),t);x.type="button";x.onclick=()=>{closeSheet();f();};b.append(x);return x;};
+  const shTog=(b,t,sub,on,f)=>{const l=el("label","rstog");const tx=el("span","rstx");tx.append(el("b",null,t));if(sub)tx.append(el("span","mini",sub));
+    const c=document.createElement("input");c.type="checkbox";c.setAttribute("switch","");c.checked=on;c.onchange=()=>f(c.checked);l.append(tx,c);b.append(l);};
+
+  function openGear(r){
+    const R=RUB[r],b=sheet("הגדרות · "+(R?R.n:"מסך ראשי"));
+    if(r==="home"){
+      shSec(b,"רובריקות במסך הראשי");
+      HIDEABLE.forEach(([k,n,,c])=>shTog(b,n,"",tileShown(k),v=>{$(c).checked=v;$(c).onchange();alertsRefresh();}));
+      b.append(el("div","rsnote","לשינוי הסדר: לחיצה ארוכה על רובריקה וגרירה למקום החדש."));
+      shSec(b,"התראות");
+      b.append(el("div","rsnote","מה שמסומן — נספר על הפעמון ועל הרובריקה. מה שמושתק עדיין מופיע כשפותחים את הפעמון בתוך הרובריקה."));
+      Object.keys(RUB).filter(rubOn).forEach(k=>shTog(b,RUB[k].n,"",!muted(k),v=>{setMuted(k,!v);alertsRefresh();}));
+      shSec(b,"כללי");
+      shTog(b,"רטט בסימון סוויץ'","",$("setHaptic").checked,v=>{$("setHaptic").checked=v;$("setHaptic").onchange();});
+      shAct(b,"↺ שחזור נתונים שנמחקו",bkOpenUI);
+      return;}
+    if(r==="absent"){loadCfg();renderCfg();showErr("abCfgErr","");shSec(b,"סוגי היעדרות ותורנות");moveIn(b,$("abCfg"));}
+    if(r==="sched"){shSec(b,"לוח שנה");moveIn(b,$("scSet"));syncCalSet();}
+    if(r==="attend"){shSec(b,"פעולות");
+      shAct(b,"+ הוספת חייל",()=>{location.hash="soldiers";setTimeout(()=>$("openS").click(),80);});
+      shAct(b,"📄 ייבוא חיילים מ-PDF או מפתק",()=>{location.hash="soldiers";setTimeout(()=>$("openImp").click(),80);});
+      shAct(b,"👥 ניהול חיילים, בחירה ומחיקה",goHash("soldiers"));}
+    if(r==="verify"){shSec(b,"פעולות");
+      shAct(b,'+ הוספת אמל"ח',()=>{location.hash="weapons";setTimeout(()=>{closeCard();openW(null);$("wType").focus();},60);});
+      shAct(b,"📄 ייבוא מ-PDF",()=>{location.hash="soldiers";setTimeout(()=>$("openImp").click(),80);});
+      shAct(b,'🗂 ניהול אמל"ח',goHash("weapons"));
+      shAct(b,'📋 דו"ח צל"מ',goHash("zreport"));}
+    const sec=ALL.find(i=>!$(i).hidden),wa=sec&&[...$(sec).querySelectorAll(".bar .pencil.wa")].find(x=>x.offsetParent);
+    shSec(b,"כללי");
+    if(wa)shAct(b,"שליחה בוואטסאפ",()=>wa.click(),"wa");
+    if(R.hide){const h=HIDEABLE.find(x=>x[0]===R.hide);shTog(b,"מופיע במסך הראשי","",tileShown(R.hide),v=>{const c=$(h[3]);c.checked=v;c.onchange();alertsRefresh();});}
+    shTog(b,"התראות","מספר על הפעמון ועל הרובריקה",!muted(r),v=>{setMuted(r,!v);alertsRefresh();});
+  }
+  function openBell(r){
+    const R=RUB[r],home=r==="home",b=sheet(home?"התראות":"התראות · "+R.n);
+    const keys=home?Object.keys(RUB).filter(k=>rubOn(k)&&!muted(k)&&(ALR[k]||[]).length):[r];
+    const row=a=>{const x=el("button","rsal "+a.lvl);x.type="button";const tx=el("span","rstx");tx.append(el("b",null,a.t));if(a.s)tx.append(el("span","mini",a.s));
+      x.append(el("span","rsdot"),tx,el("span","rsgo","›"));x.onclick=()=>{closeSheet();a.go();};return x;};
+    let any=false;
+    keys.forEach(k=>{const L=ALR[k]||[];if(!L.length)return;any=true;
+      if(home){const hd=el("button","rsgrp");hd.type="button";hd.append(el("b",null,RUB[k].n),el("span","rscnt",L.length),el("span","rsgo","›"));hd.onclick=()=>{closeSheet();location.hash=RUB[k].go;};b.append(hd);}
+      (home?L.slice(0,3):L).forEach(a=>b.append(row(a)));
+      if(home&&L.length>3){const m=el("button","rsmore","ועוד "+(L.length-3)+" ›");m.type="button";m.onclick=()=>{closeSheet();location.hash=RUB[k].go;};b.append(m);}
+    });
+    if(!any){const e=el("div","rsempty");e.append(el("div","rsok","✓"),el("b",null,"אין כרגע מה לטפל"),el("span","mini","כשמשהו ידרוש תשומת לב — הוא יופיע כאן"));b.append(e);}
+    if(!home&&muted(r)&&any)b.prepend(el("div","rsnote","ההתראות כאן מושתקות — הן לא נספרות על הפעמון ועל הרובריקה. אפשר להחזיר בהגדרות ⚙︎"));
+    if(r==="verify")shAct(b,'למסך התראות האמל"ח',()=>{faultOnly=false;freeOnly=false;$("fFault").setAttribute("aria-pressed","false");location.hash="alerts";},"ghost");
+  }
+
+  // every screen gets the same corner: [its own actions] [🔔] [⚙︎]
+  ["vfBell","vfGear","atGear","scSetBtn","abCfgBtn"].forEach(id=>{const b=$(id);if(b)b.hidden=true;});
+  document.querySelectorAll("section .bar").forEach(bar=>{
+    const sec=bar.closest("section");if(!sec||["v-setup","v-soldier","v-units"].includes(sec.id))return;
+    const tools=el("div","bartools");[...bar.querySelectorAll(":scope>.pencil")].forEach(p=>tools.append(p));
+    const bell=el("button","pencil bell rbell");bell.type="button";bell.setAttribute("aria-label","התראות");bell.innerHTML=BELL_SVG;const n=el("span","belln");n.hidden=true;bell.append(n);
+    bell.onclick=()=>openBell(secRub(sec.id));
+    const gear=el("button","pencil rgear");gear.type="button";gear.setAttribute("aria-label","הגדרות");gear.innerHTML=GEAR_SVG;gear.onclick=()=>openGear(secRub(sec.id));
+    tools.append(bell,gear);bar.append(tools);
+  });
+  {// home: the bell next to the gear, the gear opens the same sheet
+    const hb=el("button","pencil bell homebell");hb.type="button";hb.id="homeBell";hb.setAttribute("aria-label","כל ההתראות");hb.innerHTML=BELL_SVG;
+    const n=el("span","belln");n.id="homeBellN";n.hidden=true;hb.append(n);hb.onclick=()=>openBell("home");
+    const w=el("div","hometools");$("setBtn").before(w);w.append(hb,$("setBtn"));$("setBtn").onclick=()=>openGear("home");
   }
 
   /* ---------- data subscriptions (queries match the security rules) ---------- */
