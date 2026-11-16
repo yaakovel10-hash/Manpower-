@@ -3345,12 +3345,14 @@ const top=el("div","top");
         note.onchange=()=>{const arr=(w.faults||[]).map(x=>x.id===f.id?Object.assign({},x,{note:note.value.trim()}):x);saveFaults(w.id,arr);};
         c.append(note);
         const fix=el("button","approve","✓ התקלה תוקנה");fix.type="button";
-        fix.onclick=()=>{const arr=(w.faults||[]).map(x=>x.id===f.id?Object.assign({},x,{fixed:true,fixedAt:Date.now(),fixedBy:uid,fixedByName:(me&&me.name)||""}):x);saveFaults(w.id,arr);};
+        fix.onclick=()=>{const arr=(w.faults||[]).map(x=>x.id===f.id?Object.assign({},x,{fixed:true,fixedAt:Date.now(),fixedBy:uid,fixedByName:(me&&me.name)||""}):x);
+          fix.disabled=true;fix.textContent="שומר…";
+          saveFaults(w.id,arr).then(ok=>{if(ok){closeCard();toast("✓ התקלה סומנה כתוקנה");}else{fix.disabled=false;fix.textContent="✓ התקלה תוקנה";}});};
         c.append(fix);
       }else if(f.note)c.append(el("div","mini","טיפול: "+f.note));
       const row=el("div","ubtns end");
-      if(f.fixed){const re=el("button","linkbtn","פתיחה מחדש");re.type="button";re.onclick=()=>{const arr=(w.faults||[]).map(x=>x.id===f.id?Object.assign({},x,{fixed:false,fixedAt:0,fixedBy:"",fixedByName:""}):x);saveFaults(w.id,arr);};row.append(re);}
-      row.append(delBtn(()=>saveFaults(w.id,(w.faults||[]).filter(x=>x.id!==f.id))));
+      if(f.fixed){const re=el("button","linkbtn","פתיחה מחדש");re.type="button";re.onclick=()=>{const arr=(w.faults||[]).map(x=>x.id===f.id?Object.assign({},x,{fixed:false,fixedAt:0,fixedBy:"",fixedByName:""}):x);saveFaults(w.id,arr).then(()=>renderCard(true));};row.append(re);}
+      row.append(delBtn(()=>saveFaults(w.id,(w.faults||[]).filter(x=>x.id!==f.id)).then(()=>renderCard(true))));
       c.append(row);box.append(c);
     });
   }
