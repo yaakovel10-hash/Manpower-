@@ -745,6 +745,53 @@ body.sheeton{overflow:hidden}
 .mkval{flex:1 1 100%;min-width:0;font-family:var(--mono);font-size:18px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;overflow-wrap:anywhere;user-select:all;-webkit-user-select:all}
 
 .mkwa{color:#25d366;text-decoration:none;display:inline-grid;place-items:center}
+/* ---- מענים ---- */
+.pusum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.pusum button{font:inherit;color:var(--fg);background:linear-gradient(180deg,var(--surface),var(--tile));border:1px solid var(--line);border-radius:14px;padding:10px 6px;display:grid;gap:2px;justify-items:center;cursor:pointer}
+.pusum button b{font-size:24px;font-variant-numeric:tabular-nums;line-height:1.1}
+.pusum button span{font-size:13px;color:var(--muted)}
+.pusum button.on{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.punext{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:12px;display:grid;gap:8px}
+.punext[hidden]{display:none}
+.punext .nh{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.punext .nh b{font-size:16px}
+.punext .names{display:flex;flex-wrap:wrap;gap:6px}
+.punext .names a,.punext .names span{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;color:var(--fg);text-decoration:none}
+.pusel{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.pusel:empty{display:none}
+.pusel .pch{display:inline-flex;align-items:center;gap:6px;background:color-mix(in srgb,var(--accent) 18%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:999px;padding:4px 6px 4px 12px;font-weight:700;font-size:14px}
+.pusel .pch button{background:none;border:0;color:var(--muted);font-size:16px;padding:0 4px;cursor:pointer}
+#puSquads{margin-top:6px}
+#puSquads .chipbtn{font-size:13px;padding:6px 12px}
+#puWhyChips{margin-bottom:6px}
+#puWhyChips .chipbtn{font-size:14px;padding:6px 12px}
+#puWhen{margin-bottom:6px}
+.pufilter{display:grid;gap:8px;margin:14px 0 10px}
+ul.pulist li.purow{display:block;padding:12px 14px}
+.purow .ph{display:flex;align-items:center;gap:10px}
+.purow .ph .who{flex:1;min-width:0;display:grid;gap:3px}
+.purow .ph .who b{font-size:17px}
+.purow .debt{display:flex;flex-wrap:wrap;gap:6px}
+.pubadge{font-size:12.5px;font-weight:800;border-radius:999px;padding:2px 10px;background:color-mix(in srgb,var(--warn) 22%,transparent);color:color-mix(in srgb,var(--warn) 70%,var(--fg));border:1px solid color-mix(in srgb,var(--warn) 45%,transparent);white-space:nowrap}
+.pubadge.sh{background:color-mix(in srgb,var(--danger) 18%,transparent);color:color-mix(in srgb,var(--danger) 75%,var(--fg));border-color:color-mix(in srgb,var(--danger) 45%,transparent)}
+.pubadge.rep{background:none;color:var(--muted);border-color:var(--line);font-weight:700}
+.purow .chev{color:var(--muted);font-size:18px;transition:transform .15s}
+.purow.open .chev{transform:rotate(90deg)}
+.puitems{display:grid;gap:8px;margin-top:10px}
+.puit{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:4px}
+.puit .t1{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.puit .t1 b{font-size:15.5px}
+.puit .mini{font-size:13px}
+.puit .acts{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:4px}
+.puit .acts input[type=date]{width:auto;flex:1;min-width:130px;padding:6px 10px;font-size:14px}
+.puit .part{display:flex;align-items:center;gap:6px}
+.puit .part input{width:56px;text-align:center;padding:6px;font-weight:700}
+.puit.done{opacity:.75}
+.punote{font-style:italic}
+.pdbox{margin-top:12px;border:1px solid color-mix(in srgb,var(--warn) 40%,var(--line));background:color-mix(in srgb,var(--warn) 7%,var(--surface));border-radius:18px;padding:12px 14px;display:grid;gap:6px}
+.pdbox[hidden]{display:none}
+.pdbox .nh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pdbox .nh b{font-size:16px}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -839,7 +886,7 @@ body.sheeton{overflow:hidden}
         <button class="pencil homegear" id="setBtn" type="button" aria-expanded="false" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </div>
     </header>
-    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="setShowReqs" data-k="reqs"> בקש"צים</label><label class="allday"><input type="checkbox" id="setShowMed" data-k="med"> רפואה</label><label class="allday"><input type="checkbox" id="setShowFit" data-k="fit"> כושר</label><button type="button" class="ghost bkopen" id="bkOpen">↺ שחזור נתונים שנמחקו</button></div>
+    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="setShowReqs" data-k="reqs"> בקש"צים</label><label class="allday"><input type="checkbox" id="setShowMed" data-k="med"> רפואה</label><label class="allday"><input type="checkbox" id="setShowFit" data-k="fit"> כושר</label><label class="allday"><input type="checkbox" id="setShowPun" data-k="pun"> מענים</label><button type="button" class="ghost bkopen" id="bkOpen">↺ שחזור נתונים שנמחקו</button></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <nav class="tiles" id="homeTiles">
@@ -896,6 +943,10 @@ body.sheeton{overflow:hidden}
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><circle cx="38" cy="11" r="5" fill="var(--accent)" fill-opacity=".35"/><path d="M27 24l9-4 7 7 7 2"/><path d="M36 20l-5 15 9 7-2 14"/><path d="M31 35l-6 9H14"/><path d="M8 30h10M4 38h9M10 46h8" opacity=".6"/></svg>
         <span class="t">כושר</span><span class="c" id="cntFt">—</span>
       </a>
+      <a class="tile t-sand" href="#pun" id="tilePun">
+        <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M32 8v44"/><path d="M14 16h36"/><path d="M14 16L6 34h16z" fill="var(--accent)" fill-opacity=".25"/><path d="M50 16l-8 18h16z" fill="var(--accent)" fill-opacity=".25"/><path d="M6 34a8 5 0 0 0 16 0M42 34a8 5 0 0 0 16 0"/><path d="M22 56h20"/><circle cx="32" cy="10" r="3" fill="var(--accent)" fill-opacity=".35"/></svg>
+        <span class="t">מענים</span><span class="c" id="cntPu">—</span>
+      </a>
       <a class="tile t-olive" href="#nmr" id="tileNmr">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M6 36h52l-4-10H40l-4-6H18l-4 6H8z" fill="var(--accent)" fill-opacity=".25"/><path d="M30 20v-6h14"/><rect x="4" y="36" width="56" height="12" rx="6"/><circle cx="14" cy="42" r="3"/><circle cx="25" cy="42" r="3"/><circle cx="36" cy="42" r="3"/><circle cx="48" cy="42" r="3"/></svg>
         <span class="t">נמ"ר</span><span class="c" id="cntNm">—</span>
@@ -921,7 +972,7 @@ body.sheeton{overflow:hidden}
       <span class="mini">ממלאים מלמעלה למטה, עד הרמה של המסגרת. למשל לפלוגה: חטיבה, גדוד ופלוגה, בלי מחלקה וכיתה. מי שנכנס בקישור של מסגרת רואה את כל מה שמתחתיה.</span>
       <div class="unitf" id="uNew"></div>
       <div class="f">רובריקות שיופיעו במסגרת<span class="mini">ברירת מחדל לכל המפקדים במסגרת. כל מפקד יכול לשנות לעצמו בהגדרות.</span>
-        <div class="tilechk"><label class="allday"><input type="checkbox" id="nuT-nmr" checked> נמ"ר</label><label class="allday"><input type="checkbox" id="nuT-veh" checked> רכב</label><label class="allday"><input type="checkbox" id="nuT-gaps" checked> פערים</label><label class="allday"><input type="checkbox" id="nuT-orbat" checked> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="nuT-reqs" checked> בקש"צים</label><label class="allday"><input type="checkbox" id="nuT-med" checked> רפואה</label><label class="allday"><input type="checkbox" id="nuT-fit" checked> כושר</label></div></div>
+        <div class="tilechk"><label class="allday"><input type="checkbox" id="nuT-nmr" checked> נמ"ר</label><label class="allday"><input type="checkbox" id="nuT-veh" checked> רכב</label><label class="allday"><input type="checkbox" id="nuT-gaps" checked> פערים</label><label class="allday"><input type="checkbox" id="nuT-orbat" checked> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="nuT-reqs" checked> בקש"צים</label><label class="allday"><input type="checkbox" id="nuT-med" checked> רפואה</label><label class="allday"><input type="checkbox" id="nuT-fit" checked> כושר</label><label class="allday"><input type="checkbox" id="nuT-pun" checked> מענים</label></div></div>
       <p class="err" id="unErr" hidden></p>
       <div class="row2"><button class="primary" type="submit">פתיחה</button><button class="ghost" type="button" id="cancelU">ביטול</button></div>
     </form>
@@ -1229,6 +1280,41 @@ body.sheeton{overflow:hidden}
     <ul class="list wrlist" id="wrList"></ul>
     <button class="histbtn" type="button" id="wrHistBtn" aria-expanded="false">היסטוריית בלאי</button>
     <ul class="list wrlist hist" id="wrHist" hidden></ul>
+  </section>
+
+  <!-- PUNISHMENTS (מענים) -->
+  <section id="v-pun" hidden>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>מענים</h1><span class="count" id="puCount"></span><button class="pencil wa" type="button" id="puWa" aria-label="שליחת המענים בוואטסאפ"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg></button></div>
+    <div class="pusum" id="puSum"></div>
+    <div class="punext" id="puNext"></div>
+    <button class="primary" type="button" id="openPU">+ מען חדש</button>
+    <form class="add" id="formPU" hidden>
+      <strong>מען חדש</strong>
+      <div class="f">למי<div class="pusel" id="puSel"></div>
+        <div class="picker" id="puPick"></div>
+        <div class="chips" id="puSquads"></div>
+      </div>
+      <div class="f">מה קרה<div class="chips" id="puWhyChips"></div>
+        <input type="text" id="puWhy" maxlength="200" placeholder="תיאור האירוע"></div>
+      <label class="f">מתי קרה<input type="date" id="puDate"></label>
+      <div class="f">העונש — לפי החלטת המפקד<div class="chips" id="puTypes" role="radiogroup" aria-label="סוג העונש"></div></div>
+      <div class="f" id="puAmtWrap" hidden><span id="puAmtL">כמה</span>
+        <div class="daysel"><button class="nav" type="button" id="puMinus" aria-label="פחות">−</button><input type="number" id="puAmt" min="1" max="99" inputmode="numeric" aria-label="כמות"><button class="nav" type="button" id="puPlus" aria-label="יותר">+</button></div>
+      </div>
+      <label class="f" id="puOtherWrap" hidden>מה העונש<input type="text" id="puOther" maxlength="80" placeholder="למשל: שמירה נוספת, תורנות מטבח"></label>
+      <div class="f">מתי ירוצה (לא חובה)<div class="chips" id="puWhen"></div><input type="date" id="puOn"></div>
+      <label class="f">הערה (לא חובה)<textarea id="puNote" maxlength="300"></textarea></label>
+      <p class="err" id="puErr" hidden></p>
+      <div class="row2"><button class="primary" type="submit" id="puSave">שמירה</button><button class="ghost" type="button" id="cancelPU">ביטול</button></div>
+    </form>
+    <div class="pufilter">
+      <input type="text" id="puQ" placeholder="🔍 חיפוש חייל…" autocomplete="off" enterkeyhint="search">
+      <div class="chips" id="puF"></div>
+    </div>
+    <div class="empty" id="puEmpty" hidden>אין מענים פתוחים.</div>
+    <ul class="list pulist" id="puList"></ul>
+    <button class="histbtn" type="button" id="puHistBtn" aria-expanded="false">היסטוריה</button>
+    <ul class="list pulist hist" id="puHist" hidden></ul>
   </section>
 
   <!-- NMR (vehicle kit) -->
@@ -1779,7 +1865,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   function pathOf(unitId){const u=unitById(unitId);return u?Object.assign({},u.path):null;}
 
   /* ---------- screens ---------- */
-  const ALL=["v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat","v-zr","v-reqs","v-med","v-fit"];
+  const ALL=["v-pun","v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat","v-zr","v-reqs","v-med","v-fit"];
   // big lists of a screen you left are emptied (they're rebuilt when you come back), so the page stays light
   const HEAVY={"v-weapons":["listW"],"v-zr":["zrBox"],"v-verify":["vfList"],"v-soldiers":["listS"],"v-gaps":["gpS","gpW"],"v-reqs":["rqList"],"v-med":["mdList"]};
   function show(ids){
@@ -1813,6 +1899,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(h==="reqs"){show(["v-reqs"]);renderReqList();return;}
     if(h==="med"){show(["v-med"]);renderMedList();return;}
     if(h==="fit"){show(["v-fit"]);renderFit();return;}
+    if(h==="pun"){show(["v-pun"]);renderPun();return;}
     if(h==="zreport"){show(["v-zr"]);renderZR();return;}
     if(h==="orbat"){show(["v-orbat"]);renderOrbat();return;}
     if(h==="nmr"||h==="veh"){setVk(h);show(["v-nmr"]);renderNmr();return;}
@@ -2059,7 +2146,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     document.addEventListener("pointerdown",e=>{if(nav.classList.contains("editing")&&!e.target.closest("#homeTiles"))exit();});
     addEventListener("hashchange",exit);
   }
-  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"],["orbat","מבנה וארגון לקרב","tileOrbat","setShowOrbat"],["reqs",'בקש"צים',"tileReqs","setShowReqs"],["med","רפואה","tileMed","setShowMed"],["fit","כושר","tileFit","setShowFit"]];
+  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"],["orbat","מבנה וארגון לקרב","tileOrbat","setShowOrbat"],["reqs",'בקש"צים',"tileReqs","setShowReqs"],["med","רפואה","tileMed","setShowMed"],["fit","כושר","tileFit","setShowFit"],["pun","מענים","tilePun","setShowPun"]];
   // default for a tile: the closest unit (own unit, then its parents) that set it; otherwise shown
   function unitTileDefault(k){
     let u=me&&me.unitId?unitById(me.unitId):null;
@@ -3217,6 +3304,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const add=el("button","ghost sm stadd","+ תורנות / היעדרות");add.type="button";
     add.onclick=()=>{location.hash="absent";setTimeout(()=>{$("openAB").click();const sel=$("abSoldier");if([...sel.options].some(o=>o.value===s.id))sel.value=s.id;},60);};
     box.append(add);
+    punDetail(s);
   }
   $("assignBtn").onclick=async()=>{
     const id=$("assignSel").value;if(!id)return showErr("tErr","בחרו נשק מהרשימה.");
@@ -4423,7 +4511,7 @@ const top=el("div","top");
     return out.sort((a,b)=>(b.cmd-a.cmd)||a.name.localeCompare(b.name,"he"));
   }
   const pickers={};
-  function makePicker(id,ph,soldiersOnly){
+  function makePicker(id,ph,soldiersOnly,onPick){
     const box=$(id);box.textContent="";
     const st={value:"",label:""};
     const inp=el("input");inp.type="search";inp.id=id+"In";inp.placeholder=ph||"חיפוש שם…";inp.autocomplete="off";inp.setAttribute("role","combobox");
@@ -4442,7 +4530,7 @@ const top=el("div","top");
         if(p.cmd!==lastCmd){lastCmd=p.cmd;list.append(el("li","pkhead",p.cmd?"מפקדים":"חיילים"));}
         const li=el("li","pkitem");li.append(el("b",null,p.name));if(p.sub)li.append(el("span","mini",p.sub));
         li.addEventListener("pointerdown",e=>e.preventDefault());
-        li.onclick=()=>{st.value=p.v;st.label=p.name;chip.textContent="";chip.append(el("b",null,p.name));
+        li.onclick=()=>{if(onPick){onPick(p.v);inp.value="";list.hidden=true;inp.blur();return;}st.value=p.v;st.label=p.name;chip.textContent="";chip.append(el("b",null,p.name));
           const x=el("button","linkbtn muted","שינוי");x.type="button";x.onclick=()=>{st.value="";chip.hidden=true;wrap.hidden=false;inp.value="";inp.focus();draw();list.hidden=false;};
           chip.append(x);chip.hidden=false;wrap.hidden=true;list.hidden=true;};
         list.append(li);
@@ -5672,7 +5760,7 @@ const top=el("div","top");
   }
   // which data each screen shows; a screen is redrawn only when one of these changed
   let verS=0,verW=0,verE=0,verR=0,verM=0,verU=0,verT=0,verMe=0,verSeen=0,dataVer=0,membersKey="",meKey="";
-  const SCREEN_DEPS={"v-weapons":"wsmu","v-zr":"wsmu","v-orbat":"se","v-soldiers":"swremu","v-gaps":"sw","v-wear":"es","v-fit":"se","v-nmr":"e","v-nmrd":"e","v-mine":"wm","v-units":"umtx","v-attend":"sermua","v-verify":"wsermua"};
+  const SCREEN_DEPS={"v-pun":"se","v-weapons":"wsmu","v-zr":"wsmu","v-orbat":"se","v-soldiers":"swremu","v-gaps":"sw","v-wear":"es","v-fit":"se","v-nmr":"e","v-nmrd":"e","v-mine":"wm","v-units":"umtx","v-attend":"sermua","v-verify":"wsermua"};
   const lastSig={};const lastSigReset=()=>{for(const k in lastSig)delete lastSig[k];};
   function screenSig(id){
     const dep=SCREEN_DEPS[id],d=new Date();
@@ -5694,7 +5782,7 @@ const top=el("div","top");
     renderMe();R("v-soldiers",renderS);R("v-weapons",renderW);
     if(curSoldier)R("v-soldier",renderDetail);
     if(!$("v-units").hidden)R("v-units",renderUnits);
-    R("v-mine",renderMine);R("v-attend",renderAttend);R("v-verify",renderVerify);R("v-sched",renderSched);R("v-absent",renderAbsent);R("v-wear",renderWear);R("v-nmr",renderNmr);R("v-nmrd",renderNmrD);R("v-gaps",renderGaps);R("v-orbat",renderOrbat);R("v-zr",renderZR);R("v-reqs",renderReqList);R("v-med",renderMedList);R("v-fit",renderFit);
+    R("v-mine",renderMine);R("v-attend",renderAttend);R("v-verify",renderVerify);R("v-sched",renderSched);R("v-absent",renderAbsent);R("v-wear",renderWear);R("v-nmr",renderNmr);R("v-nmrd",renderNmrD);R("v-gaps",renderGaps);R("v-orbat",renderOrbat);R("v-zr",renderZR);R("v-reqs",renderReqList);R("v-med",renderMedList);R("v-fit",renderFit);R("v-pun",renderPun);
     renderHomeCounts();
   }
   function renderHomeCounts(){
@@ -5712,6 +5800,185 @@ const top=el("div","top");
   }
 
 
+
+  /* ---------- מענים: the commander decides the punishment; the app only collects, schedules and keeps track ---------- */
+  const PUN_T={hours:{n:"שעות ביציאה",u:"שעות",one:"שעה"},day:{n:"ימים ביציאה",u:"ימים",one:"יום"},shabbat:{n:"שבת",u:"שבתות",one:"שבת"},other:{n:"אחר",u:"",one:""}};
+  const PUN_WHY=["איחור","ציוד חסר","אי-ציות","ניקיון","טלפון","הופעה","שינה בשמירה","יציאה ללא אישור"];
+  const punEv=()=>visRO(events).filter(x=>x.kind==="pun");
+  const punOpen=()=>punEv().filter(x=>x.status!=="done"&&x.status!=="canceled");
+  const punTxt=x=>x.ptype==="other"?(x.other||"אחר"):x.amount===1?(x.ptype==="hours"?"שעה ביציאה":x.ptype==="day"?"יום ביציאה":"שבת"):(x.amount+" "+(x.ptype==="hours"?"שעות ביציאה":x.ptype==="day"?"ימים ביציאה":"שבתות"));
+  const satKey=k=>{const d=parseKey(k);d.setDate(d.getDate()+((6-d.getDay()+7)%7));return key(d);};
+  const nextSats=n=>{const out=[];let k=satKey(todayKey());for(let i=0;i<n;i++){out.push(k);const d=parseKey(k);d.setDate(d.getDate()+7);k=key(d);}return out;};
+  const shortD=k=>{const d=parseKey(k);return d.getDate()+"."+(d.getMonth()+1);};
+  let puType=null,puPicked=[],puOpenS=null,puFilter="",puHist=false,puWhenK="";
+  // how much a soldier owes, one line per kind ("6 שעות · יום · 2 שבתות")
+  function debtOf(list){
+    const sum={hours:0,day:0,shabbat:0},oth=[];
+    list.forEach(x=>{if(x.ptype==="other")oth.push(x.other||"אחר");else sum[x.ptype]=(sum[x.ptype]||0)+(+x.amount||0);});
+    const P=[];
+    if(sum.hours)P.push({t:sum.hours===1?"שעה":sum.hours+" שעות",k:"hours"});
+    if(sum.day)P.push({t:sum.day===1?"יום":sum.day+" ימים",k:"day"});
+    if(sum.shabbat)P.push({t:sum.shabbat===1?"שבת":sum.shabbat+" שבתות",k:"shabbat"});
+    oth.forEach(o=>P.push({t:o,k:"other"}));
+    return {sum,P};
+  }
+  const recentN=sid=>{const from=key(new Date(Date.now()-30*864e5));return punEv().filter(x=>x.soldierId===sid&&x.status!=="canceled"&&(x.date||"")>=from).length;};
+
+  /* the form */
+  function puDrawSel(){
+    const box=$("puSel");box.textContent="";
+    puPicked.forEach(id=>{const s=soldierById(id);if(!s)return;const c=el("span","pch",s.name);const x=el("button",null,"✕");x.type="button";x.setAttribute("aria-label","הסרה");x.onclick=()=>{puPicked=puPicked.filter(z=>z!==id);puDrawSel();};c.append(x);box.append(c);});
+  }
+  function puPickerInit(){
+    // each pick adds a soldier and clears the search, so several can be added
+    makePicker("puPick","חיפוש חייל…",true,v=>{if(v&&v.startsWith("s:")){const id=v.slice(2);if(!puPicked.includes(id))puPicked.push(id);puDrawSel();}});
+    const sq=$("puSquads");sq.textContent="";
+    const squads=[...new Set(vis(soldiers).map(s=>(s.squad||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"he"));
+    if(squads.length>1)squads.forEach(q=>{const b=el("button","chipbtn","+ כל כיתה "+q);b.type="button";b.onclick=()=>{vis(soldiers).filter(s=>(s.squad||"").trim()===q&&!isCmdSoldier(s)).forEach(s=>{if(!puPicked.includes(s.id))puPicked.push(s.id);});puDrawSel();};sq.append(b);});
+  }
+  function puDrawTypes(){
+    const box=$("puTypes");box.textContent="";
+    ["hours","day","shabbat","other"].forEach(k=>{const b=el("button","chipbtn"+(puType===k?" on":""),PUN_T[k].n);b.type="button";b.setAttribute("role","radio");b.setAttribute("aria-checked",String(puType===k));
+      b.onclick=()=>{puType=k;puDrawTypes();};box.append(b);});
+    $("puAmtWrap").hidden=!puType||puType==="other";$("puOtherWrap").hidden=puType!=="other";
+    if(puType&&puType!=="other")$("puAmtL").textContent="כמה "+PUN_T[puType].u;
+    puDrawWhen();
+  }
+  function puDrawWhen(){
+    const box=$("puWhen");box.textContent="";
+    const opts=puType==="shabbat"?nextSats(4).map((k,i)=>[k,(i===0?"השבת הקרובה":"שבת")+" "+shortD(k)]):[];
+    opts.forEach(([k,t])=>{const b=el("button","chipbtn"+(puWhenK===k?" on":""),t);b.type="button";b.onclick=()=>{puWhenK=puWhenK===k?"":k;$("puOn").value=puWhenK;puDrawWhen();};box.append(b);});
+    box.hidden=!opts.length;
+  }
+  function puReset(){
+    $("formPU").reset();$("formPU").hidden=true;$("openPU").hidden=false;puType=null;puPicked=[];puWhenK="";showErr("puErr","");
+  }
+  $("openPU").onclick=()=>{
+    puReset();$("formPU").hidden=false;$("openPU").hidden=true;$("puDate").value=todayKey();$("puAmt").value="";
+    const wc=$("puWhyChips");wc.textContent="";
+    PUN_WHY.forEach(w=>{const b=el("button","chipbtn",w);b.type="button";b.onclick=()=>{const i=$("puWhy");i.value=i.value.trim()?i.value.trim()+", "+w:w;};wc.append(b);});
+    puPickerInit();puDrawSel();puDrawTypes();
+  };
+  $("cancelPU").onclick=puReset;
+  $("puMinus").onclick=()=>{const i=$("puAmt");i.value=Math.max(1,(+i.value||1)-1);};
+  $("puPlus").onclick=()=>{const i=$("puAmt");i.value=Math.min(99,(+i.value||0)+1);};
+  $("puOn").onchange=()=>{puWhenK=$("puOn").value;puDrawWhen();};
+  $("formPU").onsubmit=async e=>{
+    e.preventDefault();
+    if(!puPicked.length)return showErr("puErr","בחרו לפחות חייל אחד.");
+    const why=$("puWhy").value.trim();if(!why)return showErr("puErr","כתבו מה קרה.");
+    if(!puType)return showErr("puErr","בחרו את העונש שהחלטתם עליו.");
+    let amount=0,other="";
+    if(puType==="other"){other=$("puOther").value.trim();if(!other)return showErr("puErr","כתבו מה העונש.");}
+    else{amount=Math.round(+$("puAmt").value);if(!(amount>=1))return showErr("puErr","כתבו כמה "+PUN_T[puType].u+".");}
+    const date=$("puDate").value||todayKey(),on=$("puOn").value||"",note=$("puNote").value.trim();
+    const b=$("puSave");b.disabled=true;
+    const ops=puPicked.map(id=>{const s=soldierById(id);return s&&(bt=>bt.set(fs.doc("events/"+newId()),{kind:"pun",soldierId:s.id,unit:s.unit,ptype:puType,amount,other,why,date,on,note,status:"open",at:Date.now(),addedBy:uid,addedByName:(me&&me.name)||""}));}).filter(Boolean);
+    try{const bt=fs.batch();ops.forEach(f=>f(bt));await qc(bt.commit());const n=ops.length;puReset();toast(n===1?"המען נשמר":"נשמרו "+n+" מענים");}
+    catch(err){console.warn(err);showErr("puErr",errMsg(err));}
+    b.disabled=false;
+  };
+
+  /* serving, partly or fully; scheduling; canceling */
+  async function punServe(x,n){
+    const by=(me&&me.name)||"",log=(x.log||[]).concat([{n:n||x.amount||0,at:Date.now(),by}]);
+    if(x.ptype!=="other"&&n&&n<x.amount)return patch("events/"+x.id,{amount:x.amount-n,served:(x.served||0)+n,log});
+    return patch("events/"+x.id,{status:"done",served:(x.served||0)+(x.ptype==="other"?0:(n||x.amount)),doneAt:Date.now(),doneByName:by,log});
+  }
+  function punItem(x,hist){
+    const li=el("div","puit"+(hist?" done":""));
+    const t1=el("div","t1");t1.append(el("b",null,punTxt(x)));
+    if(x.on&&!hist)t1.append(el("span","pubadge"+(x.ptype==="shabbat"?" sh":""),(x.ptype==="shabbat"?"שבת ":"")+shortD(x.on)));
+    if(hist)t1.append(el("span","mini",x.status==="canceled"?"בוטל":"✓ רוצה"));
+    li.append(t1,el("div","mini",(x.why||"")+" · "+fmtG(x.date||key(new Date(x.at)))+(x.addedByName?' · ע"י '+x.addedByName:"")));
+    if(x.served&&!hist)li.append(el("div","mini","כבר רוצו "+x.served+" "+PUN_T[x.ptype].u));
+    if(x.note)li.append(el("div","mini punote",x.note));
+    if(hist){if(x.status==="canceled"&&x.cancelWhy)li.append(el("div","mini","סיבת ביטול: "+x.cancelWhy));
+      if(x.doneByName)li.append(el("div","mini",(x.status==="canceled"?"בוטל":"סומן")+' ע"י '+x.doneByName+" · "+fmtG(key(new Date(x.doneAt||x.at)))));
+      const re=el("button","linkbtn","החזרה לפתוח");re.type="button";re.onclick=()=>patch("events/"+x.id,{status:"open",doneAt:0});li.append(re);return li;}
+    const acts=el("div","acts");
+    if(x.ptype!=="other"&&x.amount>1){
+      const part=el("div","part");const inp=el("input");inp.type="number";inp.min=1;inp.max=x.amount;inp.value=x.amount;inp.inputMode="numeric";inp.setAttribute("aria-label","כמה רוצו");
+      const ok=el("button","approve sm","✓ רוצו");ok.type="button";ok.onclick=async()=>{const n=Math.max(1,Math.min(x.amount,Math.round(+inp.value||x.amount)));ok.disabled=true;await punServe(x,n);toast(n<x.amount?"נרשם: רוצו "+n+", נשארו "+(x.amount-n):"✓ רוצה במלואו");};
+      part.append(inp,ok);acts.append(part);
+    }else{const ok=el("button","approve sm","✓ רוצה");ok.type="button";ok.onclick=async()=>{ok.disabled=true;await punServe(x,x.amount||0);toast("✓ רוצה");};acts.append(ok);}
+    const d=el("input");d.type="date";d.value=x.on||"";d.setAttribute("aria-label","מתי ירוצה");d.onchange=()=>patch("events/"+x.id,{on:d.value||""});acts.append(d);
+    const cn=el("button","linkbtn muted","ביטול");cn.type="button";
+    cn.onclick=()=>{const r=prompt("סיבת הביטול (לא חובה):","");if(r===null)return;patch("events/"+x.id,{status:"canceled",cancelWhy:r.trim(),doneAt:Date.now(),doneByName:(me&&me.name)||""});};
+    acts.append(cn,delBtn(()=>remove("events/"+x.id)));
+    li.append(acts);return li;
+  }
+  function puSoldierRow(sid,L,hist){
+    const ok=hist?"h:"+sid:sid,s=soldierById(sid),li=el("li","purow tap"+(puOpenS===ok?" open":""));
+    const ph=el("div","ph"),who=el("div","who");
+    who.append(s?sLink(s.name,s.id):el("b",null,"חייל שנמחק"));
+    const debt=el("div","debt");
+    if(!hist){debtOf(L).P.forEach(p=>debt.append(el("span","pubadge"+(p.k==="shabbat"?" sh":""),p.t)));const rn=recentN(sid);if(rn>=3)debt.append(el("span","pubadge rep",rn+" בחודש האחרון"));}
+    else debt.append(el("span","mini",L.length+" מענים"));
+    who.append(debt);ph.append(who,el("span","chev","›"));li.append(ph);
+    ph.onclick=e=>{if(e.target.closest("a"))return;puOpenS=puOpenS===ok?null:ok;renderPun();};
+    if(puOpenS===ok){const it=el("div","puitems");L.forEach(x=>it.append(punItem(x,hist)));li.append(it);}
+    return li;
+  }
+  function renderPun(){
+    const open=punOpen();
+    $("cntPu").textContent=open.length?(new Set(open.map(x=>x.soldierId)).size)+" חיילים · "+open.length+" פתוחים":"אין מענים פתוחים";
+    if($("v-pun").hidden)return;
+    $("puCount").textContent=open.length||"";
+    {// totals that also filter
+      const box=$("puSum");box.textContent="";const {sum}=debtOf(open);
+      [["hours","שעות ביציאה"],["day","ימים ביציאה"],["shabbat","שבתות"]].forEach(([k,t])=>{const b=el("button",puFilter===k?"on":"");b.type="button";b.append(el("b",null,String(sum[k]||0)),el("span",null,t));b.onclick=()=>{puFilter=puFilter===k?"":k;renderPun();};box.append(b);});
+    }
+    {// this coming Shabbat: who stays, and Shabbat punishments not yet given a date
+      const sat=satKey(todayKey()),box=$("puNext");box.textContent="";
+      const stay=open.filter(x=>x.ptype==="shabbat"&&x.on===sat),loose=open.filter(x=>x.ptype==="shabbat"&&!x.on);
+      box.hidden=!stay.length&&!loose.length;
+      const nh=el("div","nh");nh.append(el("b",null,"השבת הקרובה · "+shortD(sat)),el("span","mini",stay.length?stay.length+" נשארים":"אף אחד לא שובץ"));box.append(nh);
+      if(stay.length){const nm=el("div","names");stay.forEach(x=>{const s=soldierById(x.soldierId);if(s)nm.append(sLink(s.name,s.id));});box.append(nm);}
+      if(loose.length){const r=el("div","mini",loose.length===1?"שבת אחת עוד לא קיבלה תאריך":loose.length+" שבתות עוד לא קיבלו תאריך");box.append(r);
+        const nm=el("div","names");loose.forEach(x=>{const s=soldierById(x.soldierId);if(!s)return;const b=el("button","chipbtn","+ "+s.name);b.type="button";b.title="שיבוץ לשבת הקרובה";b.onclick=()=>{patch("events/"+x.id,{on:sat});toast(s.name+" שובץ לשבת "+shortD(sat));};nm.append(b);});
+        box.append(el("span","mini","לחיצה על שם משבצת אותו לשבת הקרובה:"),nm);}
+    }
+    {// filter chips
+      const fb=$("puF");fb.textContent="";
+      [["","הכול"],["hours","שעות"],["day","ימים"],["shabbat","שבתות"],["other","אחר"]].forEach(([k,t])=>{const b=el("button","chipbtn"+(puFilter===k?" on":""),t);b.type="button";b.onclick=()=>{puFilter=k;renderPun();};fb.append(b);});
+    }
+    const q=$("puQ").value.trim();
+    const pass=x=>(!puFilter||x.ptype===puFilter)&&(!q||((soldierById(x.soldierId)||{}).name||"").includes(q));
+    const by=new Map();open.filter(pass).forEach(x=>{if(!by.has(x.soldierId))by.set(x.soldierId,[]);by.get(x.soldierId).push(x);});
+    const w=L=>{const {sum}=debtOf(L);return sum.shabbat*100+sum.day*10+sum.hours+L.length*0.01;};
+    const ul=$("puList");ul.textContent="";
+    [...by.entries()].sort((a,b)=>w(b[1])-w(a[1])).forEach(([sid,L])=>ul.append(puSoldierRow(sid,L.sort((a,b)=>(a.date||"").localeCompare(b.date||"")),false)));
+    $("puEmpty").hidden=by.size>0;$("puEmpty").textContent=open.length?"אין מענים שמתאימים לסינון.":"אין מענים פתוחים.";
+    const done=punEv().filter(x=>x.status==="done"||x.status==="canceled").filter(pass);
+    const hb=$("puHistBtn");hb.hidden=!done.length;hb.textContent=(puHist?"▾ ":"▸ ")+"היסטוריה ("+done.length+")";hb.setAttribute("aria-expanded",String(puHist));
+    const uh=$("puHist");uh.hidden=!puHist;uh.textContent="";
+    if(puHist){const hb2=new Map();done.sort((a,b)=>(b.doneAt||0)-(a.doneAt||0)).forEach(x=>{if(!hb2.has(x.soldierId))hb2.set(x.soldierId,[]);hb2.get(x.soldierId).push(x);});
+      hb2.forEach((L,sid)=>uh.append(puSoldierRow(sid,L,true)));}
+  }
+  $("puQ").oninput=()=>renderPun();
+  $("puHistBtn").onclick=()=>{puHist=!puHist;renderPun();};
+  $("puWa").onclick=()=>{
+    const open=punOpen();if(!open.length){toast("אין מענים פתוחים לשליחה");return;}
+    const L=["*מענים פתוחים"+(viewName()?" – "+viewName():"")+"*",waDate(Date.now()),""];
+    const by=new Map();open.forEach(x=>{if(!by.has(x.soldierId))by.set(x.soldierId,[]);by.get(x.soldierId).push(x);});
+    let i=0;by.forEach((X,sid)=>{const s=soldierById(sid);L.push((++i)+". "+(s?s.name:"חייל")+" – "+debtOf(X).P.map(p=>p.t).join(" + "));});
+    const sat=satKey(todayKey()),stay=open.filter(x=>x.ptype==="shabbat"&&x.on===sat);
+    if(stay.length){L.push("","*נשארים בשבת "+shortD(sat)+":*");stay.forEach(x=>{const s=soldierById(x.soldierId);L.push("• "+(s?s.name:"חייל"));});}
+    sendWA(L.join("\n"));
+  };
+  // on the soldier's own page: what he owes, with a shortcut to add one
+  function punDetail(s){
+    let box=$("dPun");if(!box){box=el("div","pdbox");box.id="dPun";$("dStatus").after(box);}
+    box.textContent="";const L=punOpen().filter(x=>x.soldierId===s.id);
+    const nh=el("div","nh");nh.append(el("b",null,"מענים"+(L.length?" ("+L.length+")":"")));
+    const add=el("button","ghost sm","+ מען");add.type="button";add.onclick=()=>{location.hash="pun";setTimeout(()=>{$("openPU").click();puPicked=[s.id];puDrawSel();},80);};
+    nh.append(add);box.append(nh);
+    if(L.length){const d=el("div","debt");d.style.display="flex";d.style.flexWrap="wrap";d.style.gap="6px";debtOf(L).P.forEach(p=>d.append(el("span","pubadge"+(p.k==="shabbat"?" sh":""),p.t)));box.append(d);
+      L.forEach(x=>box.append(el("div","mini","• "+punTxt(x)+" — "+(x.why||"")+(x.on?" · ירוצה "+shortD(x.on):""))));}
+    else box.append(el("span","mini","אין מענים פתוחים."));
+  }
+
   /* ---------- one language for every rubric: the bell (what needs you) and the gear (its settings), always in the same corner ---------- */
   const BELL_SVG=$("vfBell").querySelector("svg").outerHTML,GEAR_SVG=$("setBtn").querySelector("svg").outerHTML;
   const RUB={
@@ -5724,11 +5991,12 @@ const top=el("div","top");
     sched:{n:'לו"ז',go:"sched",scr:["v-sched"]},
     absent:{n:"היעדרויות",go:"absent",scr:["v-absent"]},
     fit:{n:"כושר",go:"fit",scr:["v-fit"],hide:"fit"},
+    pun:{n:"מענים",go:"pun",scr:["v-pun"],hide:"pun"},
     nmr:{n:'נמ"ר',go:"nmr",scr:[],hide:"nmr"},
     veh:{n:"רכב",go:"veh",scr:[],hide:"veh"},
     orbat:{n:"מבנה וארגון לקרב",go:"orbat",scr:["v-orbat"],hide:"orbat"}
   };
-  const TILE_RUB={attend:"attend",verify:"verify",reqs:"reqs",med:"med",gaps:"gaps",wear:"wear",sched:"sched",absent:"absent",fit:"fit",nmr:"nmr",veh:"veh",orbat:"orbat"};
+  const TILE_RUB={attend:"attend",verify:"verify",reqs:"reqs",med:"med",gaps:"gaps",wear:"wear",sched:"sched",absent:"absent",fit:"fit",pun:"pun",nmr:"nmr",veh:"veh",orbat:"orbat"};
   const secRub=id=>(id==="v-nmr"||id==="v-nmrd")?vk:Object.keys(RUB).find(k=>RUB[k].scr.includes(id))||"home";
   const muted=r=>{try{return localStorage.getItem("amute:"+r)==="1";}catch(_){return false;}};
   const setMuted=(r,v)=>{try{localStorage.setItem("amute:"+r,v?"1":"0");}catch(_){}};
@@ -5783,6 +6051,12 @@ const top=el("div","top");
       const old=key(new Date(Date.now()-30*864e5));
       last.forEach(x=>{if(x.date<old)return;const res=x.results||{};const miss=S.filter(s=>res[s.id]==null||res[s.id]==="").length;
         if(miss&&miss<S.length)add("fit","info",x.act+": "+miss+" בלי תוצאה","מדידה מ-"+fmtG(x.date),goHash("fit"));});
+    }
+    {// punishments: who stays this Shabbat, Shabbats with no date yet
+      const op=punOpen(),sat=satKey(t),stay=op.filter(x=>x.ptype==="shabbat"&&x.on===sat),loose=op.filter(x=>x.ptype==="shabbat"&&!x.on);
+      if(stay.length)add("pun","info","השבת הקרובה נשארים: "+stay.map(x=>nm(x.soldierId)).join(", "),"שבת "+shortD(sat),goHash("pun"));
+      if(loose.length)add("pun","warn",(loose.length===1?"שבת עונש אחת":loose.length+" שבתות עונש")+" בלי תאריך",loose.map(x=>nm(x.soldierId)).join(", "),goHash("pun"));
+      const today=op.filter(x=>x.on===t&&x.ptype!=="shabbat");if(today.length)add("pun","info","מרצים היום: "+today.map(x=>nm(x.soldierId)+" ("+punTxt(x)+")").join(", "),"",goHash("pun"));
     }
     ["nmr","veh"].forEach(k=>{// vehicle kit: what wasn't checked today
       kindEv(k).forEach(x=>{const items=x.items||[];if(!items.length)return;const m=getMarks(rollKey(k,x.id)),left=items.filter(i=>!m.has(i.id)).length;
