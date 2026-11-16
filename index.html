@@ -97,7 +97,26 @@ ul.list .info{min-width:0;flex:1}
 .del.armed{color:var(--danger);font-weight:700}
 .empty{text-align:center;color:var(--muted);padding:24px 8px;border:1px dashed var(--line);border-radius:14px}
 .search{margin-bottom:12px}
-.sh{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:2px solid var(--fg)}
+.sh{display:grid;gap:14px;padding:16px;margin-bottom:14px;border-radius:24px;border:1px solid var(--line);background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%),linear-gradient(180deg,var(--surface),var(--tile));box-shadow:inset 0 1px 0 var(--hi),0 10px 24px -18px var(--shadow)}
+.shtop{display:flex;align-items:center;gap:14px}
+.shtop .av.lg{width:78px;height:78px;flex:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 55%,transparent),0 6px 16px -8px var(--shadow)}
+.sh .n2{font-family:var(--mono);font-size:15px;color:var(--muted);letter-spacing:.04em;margin-top:2px;direction:ltr;text-align:right}
+.shunit{font-size:14px;color:var(--muted);margin-top:2px;cursor:pointer}
+.shacts{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.shacts .phone{display:contents}
+.shacts a.tel,.shacts a.wa,.shacts .addtel,.shacts .morebtn,.shacts .sqpick select{height:40px;border-radius:999px;font:inherit;font-size:15px;display:inline-flex;align-items:center;gap:6px;text-decoration:none;cursor:pointer;margin:0}
+.shacts a.tel{flex:1 1 auto;justify-content:center;padding:0 14px;background:var(--accent);color:var(--accent-fg);border:0;font-weight:800;font-family:var(--mono);direction:ltr;letter-spacing:.02em;box-shadow:0 6px 14px -10px var(--accent)}
+.shacts a.tel::before{content:none}
+.sh .shacts a.tel,.sh .shacts a.tel span{color:var(--accent-fg)!important;display:inline-flex}
+.shacts a.tel svg{width:18px;height:18px;flex:none}
+.shacts a.wa{width:40px;justify-content:center;padding:0;color:#25d366;border:1px solid color-mix(in srgb,#25d366 45%,var(--line));background:color-mix(in srgb,#25d366 10%,transparent)}
+.shacts a.wa svg{width:20px;height:20px}
+.shacts .addtel{padding:0 14px;background:none;border:1px dashed var(--line);color:var(--muted)}
+.shacts .sqpick{margin:0}
+.shacts .sqpick select{padding:0 30px 0 14px;width:auto;border:1px solid var(--line);background-color:var(--bg)}
+.shacts .morebtn{padding:0 14px;border:1px solid var(--line);background:none;color:var(--muted)}
+.shacts .phone .ubtns{display:flex;gap:6px;flex:1 1 100%}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .sh .info{min-width:0}
 .sh .n1{font-family:var(--display);font-weight:400;font-size:24px}
 h2.sec{font-family:var(--display);font-weight:400;font-size:20px;margin:18px 0 8px}
@@ -817,6 +836,19 @@ ul.pulist li.purow{display:block;padding:12px 14px}
 .mlink{font-size:13.5px;font-weight:700;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:999px;padding:3px 12px;text-decoration:none}
 .morebox .linkbtn{justify-self:start}
 .morebox a.tel{color:var(--fg);font-weight:700;text-decoration:none;direction:ltr;font-variant-numeric:tabular-nums}
+.sh .shacts a.tel::before{content:none!important}
+.sh .shacts .sqpick,.sh .shacts .morebtn{flex:1 1 0;min-width:0;justify-content:center}
+.sh .shacts .sqpick select{width:100%;justify-content:center;text-align:center}
+.sh .shacts .sqpick{display:flex}
+.sh .shacts a.tel,.sh .shacts .addtel{flex:1 1 calc(100% - 56px)}
+.sh .shacts .phone .ubtns{flex:1 1 100%}
+.sh .shacts{display:grid;grid-template-columns:1fr 1fr 40px;gap:8px}
+.sh .shacts a.tel,.sh .shacts .addtel{grid-column:1 / 3;flex:none;width:auto}
+.sh .shacts a.wa{grid-column:3}
+.sh .shacts .addtel{grid-column:1 / 4}
+.sh .shacts .sqpick{grid-column:1;flex:none;min-width:0}
+.sh .shacts .morebtn{grid-column:2 / 4;flex:none;min-width:0}
+.sh .shacts .phone .ubtns{grid-column:1 / 4}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1540,8 +1572,15 @@ ul.pulist li.purow{display:block;padding:12px 14px}
       <div class="row2"><button class="primary" type="submit" id="deSave">שמירה</button><button class="ghost" type="button" id="deCancel">ביטול</button></div>
     </form>
     <div class="sh">
-      <div class="av lg" id="dAv"></div>
-      <div class="info"><div class="n1" id="dName"></div><div class="n2" id="dNum"></div><div id="dPhone" class="phone"></div><div class="sqrow"><label class="sqpick">כיתה<select id="dSquad"><option value="">ללא כיתה</option><option value="א">כיתה א</option><option value="ב">כיתה ב</option><option value="ג">כיתה ג</option></select></label><button class="morebtn" type="button" id="dMoreBtn" aria-expanded="false" aria-controls="dMore">יותר פרטים <span aria-hidden="true">▾</span></button></div></div>
+      <div class="shtop">
+        <div class="av lg" id="dAv"></div>
+        <div class="info"><div class="n1" id="dName"></div><div class="n2" id="dNum"></div><div class="shunit" id="dUnit"></div></div>
+      </div>
+      <div class="shacts">
+        <div id="dPhone" class="phone"></div>
+        <label class="sqpick"><span class="sr">כיתה</span><select id="dSquad" aria-label="כיתה"><option value="">ללא כיתה</option><option value="א">כיתה א</option><option value="ב">כיתה ב</option><option value="ג">כיתה ג</option></select></label>
+        <button class="morebtn" type="button" id="dMoreBtn" aria-expanded="false" aria-controls="dMore">יותר פרטים <span aria-hidden="true">▾</span></button>
+      </div>
     </div>
     <div class="morebox" id="dMore" hidden></div>
     <div class="statusbox" id="dStatus"></div>
@@ -3280,7 +3319,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!s){$("dStatus").textContent="";$("dName").textContent="החייל לא נמצא";$("dNum").textContent="";$("dDel").textContent="";["t-tzalam","t-cal","t-req"].forEach(i=>$(i).hidden=true);return;}
     setTab(curTab);
     $("dName").textContent="";$("dName").append(s.name);if(s.role&&s.role!=="חייל"){const rb=el("span","role",s.role);$("dName").append(" ",rb);}
-    $("dEdit").hidden=false;$("dNum").textContent=s.num+"  ·  "+unitText(s.unit).replace(/ · /g," / ");
+    $("dEdit").hidden=false;$("dNum").textContent=s.num||"";$("dNum").hidden=!s.num;
+    {// the unit, short: the last two levels (company · platoon); the full path when tapped
+      const full=unitText(s.unit),parts=full.split(" · "),u=$("dUnit");u.textContent=parts.slice(-2).join(" · ");u.title=full;u.onclick=()=>{u.textContent=u.textContent===full?parts.slice(-2).join(" · "):full;};}
     const av=avatar(s.photo,"lg");av.id="dAv";$("dAv").replaceWith(av);
     renderPhone(s);renderMore(s);
     renderStatus(s);
@@ -3347,9 +3388,13 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       cn.onclick=()=>{editingPhone=null;renderDetail();};
       const r=el("div","ubtns");r.append(inp,sv,cn);box.append(r);inp.focus();return;
     }
-    if(s.phone){const a=el("a","tel",s.phone);a.href=telHref(s.phone);box.append(a);}
-    const ed=el("button","linkbtn",s.phone?"עריכה":"+ הוספת טלפון");ed.type="button";ed.onclick=()=>{editingPhone=s.id;renderDetail();};
-    box.append(ed);
+    if(s.phone){
+      const loc=String(s.phone).replace(/^\+972[\s-]*/,"0").replace(/\s+/g,"");
+      const a=el("a","tel");a.href=telHref(s.phone);a.setAttribute("aria-label","התקשרות");a.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>';a.append(el("span",null,loc));
+      const wa=el("a","wa");wa.href="https://wa.me/"+String(s.phone).replace(/\D/g,"").replace(/^0/,"972");wa.target="_blank";wa.rel="noopener";wa.setAttribute("aria-label","וואטסאפ");
+      wa.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>';
+      box.append(a,wa);
+    }else{const ed=el("button","addtel","+ טלפון");ed.type="button";ed.onclick=()=>{editingPhone=s.id;renderDetail();};box.append(ed);}
   }
   /* more details: home address and the parents' phones, folded behind a small button */
   let moreOpen=false,moreEdit=null;
