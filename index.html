@@ -3359,11 +3359,12 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(moreEdit===s.id){
       const f=(lbl,v,ph,type,cls)=>{const l=el("label","f",lbl);const i=el("input");i.type=type||"text";if(cls)i.className=cls;if(type==="tel")i.inputMode="tel";i.value=v||"";i.placeholder=ph||"";l.append(i);box.append(l);return i;};
       const ad=f("כתובת מגורים",s.address,"רחוב, מספר, עיר");
-      const n1=f("שם הורה 1",P[0].name,"למשל: אמא — רונית"),t1=f("טלפון הורה 1",P[0].phone,"050-0000000","tel","ltr");
-      const n2=f("שם הורה 2",P[1].name,"למשל: אבא — יוסי"),t2=f("טלפון הורה 2",P[1].phone,"050-0000000","tel","ltr");
+      const n1=f("שם האבא",P[0].name,"למשל: יוסי"),t1=f("טלפון האבא",P[0].phone,"050-0000000","tel","ltr");
+      const n2=f("שם האמא",P[1].name,"למשל: רונית"),t2=f("טלפון האמא",P[1].phone,"050-0000000","tel","ltr");
       const r=el("div","row2");const sv=el("button","primary","שמירה");sv.type="button";const cn=el("button","ghost","ביטול");cn.type="button";
       sv.onclick=async()=>{sv.disabled=true;
-        const parents=[{name:n1.value.trim(),phone:t1.value.trim()},{name:n2.value.trim(),phone:t2.value.trim()}].filter(p=>p.name||p.phone);
+        // always two places: [0] is the father, [1] the mother
+        const parents=[{who:"אבא",name:n1.value.trim(),phone:t1.value.trim()},{who:"אמא",name:n2.value.trim(),phone:t2.value.trim()}];
         const ok=await patch("soldiers/"+s.id,{address:ad.value.trim(),parents});moreEdit=null;if(ok)toast("הפרטים נשמרו");renderMore(soldierById(s.id)||s);};
       cn.onclick=()=>{moreEdit=null;renderMore(s);};
       r.append(sv,cn);box.append(r);ad.focus();return;
@@ -3375,14 +3376,14 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const gm=el("a","mlink","מפה");gm.href="https://maps.google.com/?q="+encodeURIComponent(s.address);gm.target="_blank";gm.rel="noopener";
       const lk=el("span","mlinks");lk.append(wz,gm);row("כתובת",[t,lk]);
     }else row("כתובת",[el("span","mini","לא הוזנה")]);
-    const ps=(s.parents||[]).filter(p=>p&&(p.name||p.phone));
-    if(ps.length)ps.forEach((p,i)=>{
-      const parts=[el("span","mt",p.name||"הורה "+(i+1))];
+    const ps=P.map((p,i)=>Object.assign({lbl:i?"אמא":"אבא"},p||{})).filter(p=>p.name||p.phone);
+    if(ps.length)ps.forEach(p=>{
+      const parts=[el("span","mt",p.name||p.lbl)];
       if(p.phone){const a=el("a","tel",p.phone);a.href=telHref(p.phone);
         const wa=el("a","mlink","וואטסאפ");wa.href="https://wa.me/"+String(p.phone).replace(/\D/g,"").replace(/^0/,"972");wa.target="_blank";wa.rel="noopener";
         const lk=el("span","mlinks");lk.append(a,wa);parts.push(lk);}
-      row(ps.length>1?"הורה "+(i+1):"הורים",parts);});
-    else row("הורים",[el("span","mini","לא הוזנו")]);
+      row(p.lbl,parts);});
+    else{row("אבא",[el("span","mini","לא הוזן")]);row("אמא",[el("span","mini","לא הוזן")]);}
     const ed=el("button","linkbtn",s.address||ps.length?"עריכה":"+ הוספת פרטים");ed.type="button";ed.onclick=()=>{moreEdit=s.id;renderMore(s);};
     box.append(ed);
   }
