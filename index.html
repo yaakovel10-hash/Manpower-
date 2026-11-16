@@ -876,6 +876,14 @@ ul.tslist li.tsrow{display:block;padding:12px 14px}
 .tsrow .chev{color:var(--muted);font-size:18px;transition:transform .15s}
 .tsrow.open .chev{transform:rotate(90deg)}
 .tsbox{margin:10px 0 0}
+.rsgroup{border:1px solid var(--line);border-radius:16px;background:var(--bg);overflow:hidden}
+.rsghead{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;padding:14px;color:var(--fg);font:inherit;cursor:pointer;text-align:start}
+.rsghead .rstx b{font-size:16px}
+.rschev{color:var(--muted);font-size:20px;transition:transform .18s}
+.rsgroup.open .rschev{transform:rotate(90deg)}
+.rsgbody{display:grid;gap:8px;padding:0 10px 12px}
+.rsgbody[hidden]{display:none}
+.rsgbody .rstog{background:var(--surface)}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -6451,6 +6459,15 @@ const top=el("div","top");
   }
   addEventListener("hashchange",closeSheet);
   const shSec=(b,t)=>b.append(el("div","rssec",t));
+  // a folded group: only its title (and a one-line summary) until tapped
+  function shGroup(b,t,sub){
+    const w=el("div","rsgroup"),h=el("button","rsghead");h.type="button";h.setAttribute("aria-expanded","false");
+    const tx=el("span","rstx");const tb=el("b",null,t),ts=el("span","mini",sub||"");tx.append(tb,ts);h.append(tx,el("span","rschev","›"));
+    const body=el("div","rsgbody");body.hidden=true;
+    h.onclick=()=>{body.hidden=!body.hidden;h.setAttribute("aria-expanded",String(!body.hidden));w.classList.toggle("open",!body.hidden);};
+    w.append(h,body);b.append(w);
+    return {body,sub:v=>{ts.textContent=v;}};
+  }
   const shAct=(b,t,f,cls)=>{const x=el("button","rsact"+(cls?" "+cls:""),t);x.type="button";x.onclick=()=>{closeSheet();f();};b.append(x);return x;};
   const shTog=(b,t,sub,on,f)=>{const l=el("label","rstog");const tx=el("span","rstx");tx.append(el("b",null,t));if(sub)tx.append(el("span","mini",sub));
     const c=document.createElement("input");c.type="checkbox";c.setAttribute("switch","");c.checked=on;c.onchange=()=>f(c.checked);l.append(tx,c);b.append(l);};
@@ -6485,12 +6502,14 @@ const top=el("div","top");
   function openGear(r){
     const R=RUB[r],b=sheet("הגדרות · "+(R?R.n:"מסך ראשי"));
     if(r==="home"){
-      shSec(b,"רובריקות במסך הראשי");
-      HIDEABLE.forEach(([k,n,,c])=>shTog(b,n,"",tileShown(k),v=>{$(c).checked=v;$(c).onchange();alertsRefresh();}));
-      b.append(el("div","rsnote","לשינוי הסדר: לחיצה ארוכה על רובריקה וגרירה למקום החדש."));
-      shSec(b,"התראות");
-      b.append(el("div","rsnote","מה שמסומן — נספר על הפעמון ועל הרובריקה. מה שמושתק עדיין מופיע כשפותחים את הפעמון בתוך הרובריקה."));
-      Object.keys(RUB).filter(rubOn).forEach(k=>shTog(b,RUB[k].n,"",!muted(k),v=>{setMuted(k,!v);alertsRefresh();}));
+      {const sum=()=>HIDEABLE.filter(([k])=>tileShown(k)).length+" מתוך "+HIDEABLE.length+" מוצגות";
+        const g=shGroup(b,"רובריקות במסך הראשי",sum());
+        HIDEABLE.forEach(([k,n,,c])=>shTog(g.body,n,"",tileShown(k),v=>{$(c).checked=v;$(c).onchange();alertsRefresh();g.sub(sum());}));
+        g.body.append(el("div","rsnote","לשינוי הסדר: לחיצה ארוכה על רובריקה וגרירה למקום החדש."));}
+      {const ks=Object.keys(RUB).filter(rubOn),sum=()=>{const m=ks.filter(muted).length;return m?m+" מושתקות":"הכול פעיל";};
+        const g=shGroup(b,"התראות",sum());
+        g.body.append(el("div","rsnote","מה שמסומן — נספר על הפעמון ועל הרובריקה. מה שמושתק עדיין מופיע כשפותחים את הפעמון בתוך הרובריקה."));
+        ks.forEach(k=>shTog(g.body,RUB[k].n,"",!muted(k),v=>{setMuted(k,!v);alertsRefresh();g.sub(sum());}));}
       shSec(b,"כללי");
       shTog(b,"רטט בסימון סוויץ'","",$("setHaptic").checked,v=>{$("setHaptic").checked=v;$("setHaptic").onchange();});
       shAct(b,"↺ שחזור נתונים שנמחקו",bkOpenUI);
