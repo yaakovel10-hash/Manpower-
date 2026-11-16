@@ -3261,7 +3261,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!s){$("dStatus").textContent="";$("dName").textContent="החייל לא נמצא";$("dNum").textContent="";$("dDel").textContent="";["t-tzalam","t-cal","t-req"].forEach(i=>$(i).hidden=true);return;}
     setTab(curTab);
     $("dName").textContent="";$("dName").append(s.name);if(s.role&&s.role!=="חייל"){const rb=el("span","role",s.role);$("dName").append(" ",rb);}
-    $("dEdit").hidden=!isAdmin;$("dNum").textContent=s.num+"  ·  "+unitText(s.unit).replace(/ · /g," / ");
+    $("dEdit").hidden=false;$("dNum").textContent=s.num+"  ·  "+unitText(s.unit).replace(/ · /g," / ");
     const av=avatar(s.photo,"lg");av.id="dAv";$("dAv").replaceWith(av);
     renderPhone(s);
     renderStatus(s);
@@ -3335,7 +3335,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   /* admin only: edit a soldier and set his role */
   let dePhotoData=null;
   $("dEdit").onclick=()=>{
-    if(!isAdmin)return;const s=soldierById(curSoldier);if(!s)return;
+    const s=soldierById(curSoldier);if(!s)return;
     const f=$("dEditForm");if(!f.hidden){f.hidden=true;return;}
     $("deRole").value=s.role||"חייל";$("deName").value=s.name||"";$("deNum").value=s.num||"";$("deSquad").value=s.squad||"";$("dePhone").value=s.phone||"";
     dePhotoData=null;const pv=$("dePrev");pv.innerHTML="";pv.style.backgroundImage=s.photo?"url("+s.photo+")":"";pv.style.backgroundSize="cover";if(!s.photo)pv.innerHTML=personSvg;
@@ -3358,7 +3358,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     img.src=url;
   };
   $("dEditForm").onsubmit=async e=>{
-    e.preventDefault();if(!isAdmin)return;
+    e.preventDefault();
     const s=soldierById(curSoldier);if(!s)return;
     const num=$("deNum").value.trim();
     if(num&&vis(soldiers).some(x=>x.id!==s.id&&x.num===num))return showErr("deErr","כבר קיים חייל עם המספר האישי הזה.");
