@@ -2726,7 +2726,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const s=it.owner&&it.owner!=="me"?soldiers.find(x=>x.id===it.owner):null;
       const u=s?s.unit:unit;
       const ex=vis(weapons).find(w=>nn(w.num)===nn(it.num)&&wType(w.type).toLowerCase()===type.toLowerCase());
-      if(ex){nUpd++;ops.push(b=>b.update(fs.doc("weapons/"+ex.id),Object.assign({prevOwnerName:""},own,{unit:u})));}
+      if(ex){nUpd++;const pv=(own.owner||own.ownerMember)?"":(ownerNameOf(ex)||ex.prevOwnerName||"");ops.push(b=>b.update(fs.doc("weapons/"+ex.id),Object.assign({prevOwnerName:pv},own,{unit:u})));}
       else{nNew++;ops.push(b=>b.set(fs.doc("weapons/"+newId()),Object.assign({type,num:it.num,unit:u,addedBy:uid,importId,at:Date.now()},own)));}
     });
     const btn=$("impSave");btn.disabled=true;$("impStatus").textContent="שומר…";
@@ -2782,7 +2782,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     go.onclick=async()=>{go.disabled=true;go.textContent="מוחק…";
       const ops=docs.map(o=>b=>b.delete(fs.doc(o.c+"/"+o.d.id)));
       const sids=new Set(S.map(o=>o.d.id));
-      weapons.filter(w=>sids.has(w.owner)&&!docs.some(o=>o.d.id===w.id)).forEach(w=>ops.push(b=>b.update(fs.doc("weapons/"+w.id),{owner:""})));
+      weapons.filter(w=>sids.has(w.owner)&&!docs.some(o=>o.d.id===w.id)).forEach(w=>ops.push(b=>b.update(fs.doc("weapons/"+w.id),{owner:"",prevOwnerName:ownerNameOf(w)||w.prevOwnerName||""})));
       try{for(let i=0;i<ops.length;i+=400){const b=fs.batch();ops.slice(i,i+400).forEach(f=>f(b));await qc(b.commit());}
         box.textContent="";box.append(el("div",null,"הייבוא בוטל."));}
       catch(e){console.warn(e);go.disabled=false;go.textContent="מחיקה";showErr("impErr",errMsg(e));}
@@ -3053,7 +3053,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const ic=el("div","wicon");svgSet(ic,weaponIcon(w.type));
       const info=el("div","info");info.append(el("div","n1",wType(w.type)),el("div","n2",w.num));
       const fl=faultLine(w);if(fl)info.append(fl);
-      li.append(ic,info,delBtn(()=>patch("weapons/"+w.id,{owner:""},"tErr"),"זיכוי"));ul.append(li);
+      li.append(ic,info,delBtn(()=>patch("weapons/"+w.id,{owner:"",prevOwnerName:ownerNameOf(w)||""},"tErr"),"זיכוי"));ul.append(li);
     });
     $("emptyT").hidden=mine.length>0;
     const sel=$("assignSel"),prev=sel.value;sel.textContent="";
@@ -3328,7 +3328,7 @@ const top=el("div","top");
     const wo=$("wcOwner");wo.textContent="";
     if(w.ownerMember)wo.append("חתום: "+(w.ownerMember===uid?"אני":(w.ownerName||"מפקד")));
     else if(s)wo.append("חתום: ",sLink(s.name,s.id));
-    else wo.append("לא חתום"+(w.prevOwnerName?" · היה של "+w.prevOwnerName:""));
+    else wo.append("לא חתום"+lastLine(w));
     const box=$("wcFaults");
     if(!force&&box.contains(document.activeElement))return;
     box.textContent="";
@@ -3392,6 +3392,17 @@ const top=el("div","top");
   addEventListener("scroll",()=>{if(!$("wMenu").hidden)closeMenu();},{passive:true});
   let freeOnly=false,alertMode=false;
   const isFree=w=>!w.ownerMember&&(!w.owner||!soldiers.some(x=>x.id===w.owner));
+  // who holds it now (a soldier or a commander), by name
+  function ownerNameOf(w){if(!w)return "";if(w.ownerMember)return w.ownerName||(w.ownerMember===uid&&me?me.name:"")||"";const s=w.owner&&soldiers.find(x=>x.id===w.owner);return s?s.name||"":"";}
+  // who held it last, for one that nobody holds now: saved when it was released; for older ones, the name of a deleted soldier from the backups on this phone
+  let bkNames=null;
+  function lastOwnerOf(w){
+    if(w.prevOwnerName)return w.prevOwnerName;
+    if(w.owner&&bkNames&&bkNames.has(w.owner))return bkNames.get(w.owner);
+    return "";
+  }
+  setTimeout(async()=>{try{const m=new Map();for(const b of (await bkList()).reverse())(b.soldiers||[]).forEach(x=>{if(x&&x.id&&x.name)m.set(x.id,x.name);});bkNames=m;if(m.size&&ready)renderAllNow(true);}catch(_){}},4000);
+  const lastLine=w=>{const n=lastOwnerOf(w);return n?" · חתום אחרון: "+n:" · לא ידוע מי היה חתום";};
   $("fFree").onclick=()=>{freeOnly=!freeOnly;renderW();};
   $("atGear").onclick=()=>{location.hash="soldiers";};
   $("vfGear").onclick=e=>{e.stopPropagation();$("vfMenu").hidden=!$("vfMenu").hidden;};
@@ -3428,7 +3439,7 @@ const top=el("div","top");
       const s=soldierById(w.owner);const on3=el("div","n3");
       if(w.ownerMember)on3.append("שייך ל: "+(w.ownerMember===uid?"אני":(w.ownerName||"מפקד"))+" (מפקד)");
       else if(s)on3.append("שייך ל: ",sLink(s.name,s.id));
-      else on3.append("לא חתום"+(w.prevOwnerName?" · היה של "+w.prevOwnerName:"")+" · "+unitText(w.unit));
+      else on3.append("לא חתום"+lastLine(w)+" · "+unitText(w.unit));
       info.append(on3);
       const fl=faultLine(w);if(fl)info.append(fl);
       if(w.stored)info.append(el("div","n3 storedtag","📦 מאופסן"));
@@ -3469,7 +3480,7 @@ const top=el("div","top");
     const unit=s?s.unit:(pathOf($("wUnit").value)||(prevW&&prevW.unit));
     if(!unit)return showErr("wErr","בחרו מסגרת לנשק.");
     const btn=e.submitter;if(btn)btn.disabled=true;
-    const ok=editingW?await patch("weapons/"+editingW,{type,num,owner,ownerMember,ownerName,unit,prevOwnerName:(owner||ownerMember)?"":((weapons.find(x=>x.id===editingW)||{}).prevOwnerName||"")},"wErr"):await write("weapons/"+newId(),{type,num,owner,ownerMember,ownerName,unit,addedBy:uid,at:Date.now()},"wErr");
+    const ok=editingW?await patch("weapons/"+editingW,{type,num,owner,ownerMember,ownerName,unit,prevOwnerName:(owner||ownerMember)?"":(()=>{const o=weapons.find(x=>x.id===editingW)||{};return ownerNameOf(o)||o.prevOwnerName||"";})()},"wErr"):await write("weapons/"+newId(),{type,num,owner,ownerMember,ownerName,unit,addedBy:uid,at:Date.now()},"wErr");
     if(btn)btn.disabled=false;if(ok)resetW();
   };
 
@@ -3521,7 +3532,7 @@ const top=el("div","top");
     const ul=$("listMine");ul.textContent="";
     M.forEach(w=>{const li=el("li");const ic=el("div","wicon");svgSet(ic,weaponIcon(w.type));
       const info=el("div","info");info.append(el("div","n1",wType(w.type)),el("div","n2",w.num));
-      li.append(ic,info,delBtn(()=>patch("weapons/"+w.id,{owner:"",ownerMember:"",ownerName:""},"mwErr"),"זיכוי"));ul.append(li);});
+      li.append(ic,info,delBtn(()=>patch("weapons/"+w.id,{owner:"",ownerMember:"",ownerName:"",prevOwnerName:ownerNameOf(w)||""},"mwErr"),"זיכוי"));ul.append(li);});
     $("emptyMine").hidden=M.length>0;
     const sel=$("mwAssignSel");if(!sel)return;const prev=sel.value;sel.textContent="";
     const free=vis(weapons).filter(w=>!w.ownerMember&&(!w.owner||!soldierById(w.owner)));
@@ -4627,7 +4638,7 @@ const top=el("div","top");
     const L=['*התראות אמל"ח'+(viewName()?" – "+viewName():"")+"*",waDate(Date.now())];
     if(F.length){L.push("","*תקלות פתוחות ("+F.length+")*");F.forEach(w=>{const of=openFaults(w);
       L.push("• "+wType(w.type)+" "+(w.num||"")+(own(w)?" ("+own(w)+")":"")+": "+of.map(f=>f.desc).join(" · "));});}
-    if(U.length){L.push("","*נשקים לא חתומים ("+U.length+")*");U.forEach(w=>L.push("• "+wType(w.type)+" "+(w.num||"")+(w.prevOwnerName?" (היה של "+w.prevOwnerName+")":"")));}
+    if(U.length){L.push("","*נשקים לא חתומים ("+U.length+")*");U.forEach(w=>L.push("• "+wType(w.type)+" "+(w.num||"")+(lastOwnerOf(w)?" (חתום אחרון: "+lastOwnerOf(w)+")":"")));}
     sendWA(L.join("\n"));
   };
   $("gpWa").onclick=()=>{
