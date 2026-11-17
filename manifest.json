@@ -22,5 +22,51 @@
       "purpose": "any"
     }
   ],
-  "id": "./"
+  "id": "./",
+  "shortcuts": [
+    {
+      "name": "נוכחות",
+      "short_name": "נוכחות",
+      "url": "./#attend",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "לו\"ז",
+      "short_name": "לו\"ז",
+      "url": "./#sched",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "היעדרויות",
+      "short_name": "היעדרויות",
+      "url": "./#absent",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "בקש\"צים",
+      "short_name": "בקש\"צים",
+      "url": "./#reqs",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
 }

@@ -884,6 +884,31 @@ ul.tslist li.tsrow{display:block;padding:12px 14px}
 .rsgbody{display:grid;gap:8px;padding:0 10px 12px}
 .rsgbody[hidden]{display:none}
 .rsgbody .rstog{background:var(--surface)}
+/* ---- widgets ---- */
+.wgrid{display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:dense;gap:12px;margin:0 0 14px}
+.wgrid[hidden]{display:none}
+.wg{display:grid;align-content:start;gap:4px;min-height:118px;padding:12px 14px;border-radius:22px;border:1px solid var(--line);color:var(--fg);text-decoration:none;overflow:hidden;position:relative;
+  background:radial-gradient(130% 100% at 100% 0%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 60%),linear-gradient(180deg,var(--surface),var(--tile));box-shadow:inset 0 1px 0 var(--hi),0 10px 22px -18px var(--shadow)}
+.wg:active{transform:scale(.985)}
+.wg.w2{grid-column:span 2}
+.wt{font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.wbig{font-size:38px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums;margin-top:4px}
+.wsub{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.wnow{font-size:20px;font-weight:800;line-height:1.2;margin-top:2px}
+.wnext{font-size:14px;color:var(--muted);border-top:1px dashed var(--line);padding-top:6px;margin-top:4px}
+.wring{--p:0;width:74px;height:74px;border-radius:50%;display:grid;place-items:center;align-content:center;margin:2px auto 2px 0;
+  background:radial-gradient(closest-side,var(--surface) 78%,transparent 80% 100%),conic-gradient(var(--accent) calc(var(--p)*1%),var(--line) 0)}
+.wring b{font-size:22px;line-height:1}.wring span{font-size:11px;color:var(--muted)}
+.wchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.wchip{display:inline-flex;gap:5px;align-items:baseline;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:13px}
+.wchip b{font-weight:700}.wchip span{color:var(--muted);font-size:12px}
+.wchip.more{color:var(--muted)}
+.wrow2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+.wz{display:grid}.wz b{font-size:22px;font-variant-numeric:tabular-nums}.wz span{font-size:12px;color:var(--muted)}
+.wgset{display:flex;gap:6px;align-items:center}
+.wgset .rstog{flex:1;min-width:0}
+.wgmv{width:38px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:17px;cursor:pointer}
+.wgmv:disabled{opacity:.3}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -990,6 +1015,7 @@ ul.tslist li.tsrow{display:block;padding:12px 14px}
     <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="setShowReqs" data-k="reqs"> בקש"צים</label><label class="allday"><input type="checkbox" id="setShowMed" data-k="med"> רפואה</label><label class="allday"><input type="checkbox" id="setShowFit" data-k="fit"> כושר</label><label class="allday"><input type="checkbox" id="setShowPun" data-k="pun"> מענים</label><label class="allday"><input type="checkbox" id="setShowTash" data-k="tash"> ת"ש</label><button type="button" class="ghost bkopen" id="bkOpen">↺ שחזור נתונים שנמחקו</button></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
+    <div class="wgrid" id="widgets" hidden></div>
     <nav class="tiles" id="homeTiles">
       <a class="tile t-green" href="#attend">
         <span class="badge" id="pendBadge" hidden></span>
@@ -6263,6 +6289,7 @@ const top=el("div","top");
      $("cntAt").textContent=here.length+" בבסיס"+(S.length-here.length?" · "+(S.length-here.length)+" בבית":"")+(m.size?" · ✓"+here.filter(s=>m.has(s.id)).length:"");
      $("cntVf").textContent=vis(weapons).length+" פריטים";}
     try{alertsRefresh();}catch(e){console.warn(e);}
+    try{renderWidgets();}catch(e){console.warn(e);}
   }
 
 
@@ -6501,6 +6528,91 @@ const top=el("div","top");
     sendWA(L.join("\n"));
   };
 
+
+  /* ---------- widgets: small live cards on the home screen, picked and ordered in the home settings ---------- */
+  const WG={
+    now:{n:'לו"ז עכשיו',w:2,go:"sched"},
+    att:{n:"נוכחות היום",w:1,go:"attend"},
+    away:{n:"לא בנוכחות עכשיו",w:2,go:"absent"},
+    pend:{n:"ממתינים לאישור",w:1,go:"reqs"},
+    back:{n:"חוזרים היום",w:1,go:"absent"},
+    shab:{n:"השבת הקרובה",w:1,go:"pun"},
+    zman:{n:"זמני היום",w:1,go:"sched"},
+    flt:{n:'תקלות אמל"ח',w:1,go:"alerts"},
+    gaps:{n:"פערים פתוחים",w:1,go:"gaps"}
+  };
+  const WG_DEF=["now","att","away","pend"];
+  const wgList=()=>{try{const v=JSON.parse(localStorage.getItem("widgets")||"null");if(Array.isArray(v))return v.filter(k=>WG[k]);}catch(_){}return WG_DEF.slice();};
+  const wgSave=v=>{try{localStorage.setItem("widgets",JSON.stringify(v));}catch(_){}renderWidgets();};
+  const wHM=d=>d?pad2(d.getHours())+":"+pad2(d.getMinutes()):"—";
+  function wgBody(k,c){
+    const t=todayKey(),nm=id=>{const s=soldierById(id);return s?s.name:"";};
+    const big=(v,sub)=>{c.append(el("div","wbig",String(v)));if(sub)c.append(el("div","wsub",sub));};
+    if(k==="now"){
+      const P=unitEv().filter(x=>x.src==="paste"&&x.start&&onDay(x,t)).sort((a,b)=>a.start.localeCompare(b.start)),pos=P.length?nowPos(P,t):null;
+      const cur=pos&&pos.cur>=0&&pos.label==="עכשיו"?P[pos.cur]:null,nx=cur?P[pos.cur+1]:(pos&&pos.label==="בקרוב"?P[0]:null);
+      if(!P.length){const ue=unitEv().filter(x=>onDay(x,t)).length;big(ue||"—",ue?"אירועים היום":'אין לו"ז להיום');return;}
+      if(cur){c.append(el("div","wnow",cur.title||""),el("div","wsub","מ-⁦"+cur.start+"⁩"+(cur.end?" עד ⁦"+cur.end+"⁩":"")));}
+      else c.append(el("div","wnow",pos&&pos.label==="הסתיים"?'הלו"ז של היום הסתיים':"עוד לא התחיל"));
+      if(nx)c.append(el("div","wnext","אחר כך · ⁦"+nx.start+"⁩ "+(nx.title||"")));
+      return;}
+    if(k==="att"){
+      const S=vis(soldiers).filter(s=>!isCmdSoldier(s)),here=S.filter(s=>!awayInfo(s.id)),m=getMarks(rollKey("att")),ok=here.filter(s=>m.has(s.id)).length;
+      const pct=here.length?Math.round(ok/here.length*100):0;
+      const ring=el("div","wring");ring.style.setProperty("--p",pct);ring.append(el("b",null,String(here.length)),el("span",null,"מתוך "+S.length));
+      c.append(ring,el("div","wsub",m.size?"✓ "+ok+" סומנו":"הנוכחות עוד לא נבדקה"));return;}
+    if(k==="away"){
+      const A=vis(soldiers).filter(s=>!isCmdSoldier(s)).map(s=>({s,a:awayInfo(s.id)})).filter(x=>x.a);
+      if(!A.length){c.append(el("div","wnow","כולם בנוכחות ✓"));return;}
+      const ch=el("div","wchips");A.slice(0,10).forEach(({s,a})=>{const x=el("span","wchip");x.append(el("b",null,s.name),el("span",null,a.tag||""));ch.append(x);});
+      if(A.length>10)ch.append(el("span","wchip more","+"+(A.length-10)));
+      c.append(ch);return;}
+    if(k==="pend"){
+      const R=vis(requests).filter(r=>r.status==="pending"&&canDecideReq(r.unit)),M=medEv().filter(r=>r.status==="pending"&&canDecideReq(r.unit));
+      big(R.length+M.length,R.length+M.length?[R.length?R.length+' בקש"צ':"",M.length?M.length+" רפואה":""].filter(Boolean).join(" · "):"אין בקשות");
+      return;}
+    if(k==="back"){
+      const B=absEv().filter(x=>(x.to||x.date)===t&&x.date<=t).map(x=>nm(x.soldierId)).concat(vis(requests).concat(medEv()).filter(r=>r.status==="approved"&&(r.to||r.from)===t).map(r=>nm(r.soldierId))).filter(Boolean);
+      big(B.length||"—",B.length?[...new Set(B)].slice(0,3).join(", ")+(B.length>3?"…":""):"אף אחד לא חוזר היום");return;}
+    if(k==="shab"){
+      const sat=satKey(t),fri=parseKey(sat);fri.setDate(fri.getDate()-1);const z=zmanim(fri),zs=zmanim(parseKey(sat));
+      c.append(el("div","wnow","שבת "+shortD(sat)),el("div","wsub","🕯 ⁦"+wHM(z.candles)+"⁩ · ✨ ⁦"+wHM(zs.tzeit)+"⁩"));
+      const st=punOpen().filter(x=>x.ptype==="shabbat"&&x.on===sat);if(st.length)c.append(el("div","wnext",st.length+" נשארים בעונש"));return;}
+    if(k==="zman"){
+      const z=zmanim(new Date());
+      c.append(el("div","wrow2",""));const r=c.lastChild;
+      [["זריחה",z.rise],["שקיעה",z.set]].forEach(([a,b])=>{const d=el("div","wz");d.append(el("b",null,wHM(b)),el("span",null,a));r.append(d);});
+      c.append(el("div","wsub",z.nm||""));return;}
+    if(k==="flt"){
+      const F=vis(weapons).filter(w=>openFaults(w).length);big(F.length||"✓",F.length?F.slice(0,2).map(w=>wType(w.type)+" "+(w.num||"")).join(", ")+(F.length>2?"…":""):"אין תקלות פתוחות");return;}
+    if(k==="gaps"){
+      const G=vis(soldiers).filter(s=>sNotes(s).length);big(G.length||"✓",G.length?"חיילים עם פערים":"אין פערים פתוחים");return;}
+  }
+  function renderWidgets(){
+    const box=$("widgets");if(!box)return;const L=wgList();box.textContent="";box.hidden=!L.length||!me;
+    L.forEach(k=>{const W=WG[k];const a=el("a","wg w"+W.w+" wg-"+k);a.href="#"+W.go;a.append(el("div","wt",W.n));
+      try{wgBody(k,a);}catch(e){console.warn("widget",k,e);}
+      box.append(a);});
+  }
+  // in the home settings: which widgets, in what order
+  function wgSettings(b){
+    const sum=()=>{const n=wgList().length;return n?n+" מוצגים":"אין";};
+    const g=shGroup(b,"ווידג'טים במסך הראשי",sum());
+    const draw=()=>{g.body.textContent="";const L=wgList();
+      g.body.append(el("div","rsnote","כרטיסים קטנים ומתעדכנים מעל הרובריקות. מסמנים מה להציג, והחצים קובעים את הסדר."));
+      L.concat(Object.keys(WG).filter(k=>!L.includes(k))).forEach(k=>{const on=L.includes(k);
+        const row=el("div","wgset");
+        const tg=el("label","rstog");const tx=el("span","rstx");tx.append(el("b",null,WG[k].n));const c=document.createElement("input");c.type="checkbox";c.checked=on;
+        c.onchange=()=>{const v=wgList().filter(x=>x!==k);if(c.checked)v.push(k);wgSave(v);g.sub(sum());draw();};tg.append(tx,c);row.append(tg);
+        if(on){const i=L.indexOf(k);const up=el("button","wgmv","↑");up.type="button";up.disabled=i===0;up.setAttribute("aria-label","למעלה");
+          up.onclick=()=>{const v=wgList();[v[i-1],v[i]]=[v[i],v[i-1]];wgSave(v);draw();};
+          const dn=el("button","wgmv","↓");dn.type="button";dn.disabled=i===L.length-1;dn.setAttribute("aria-label","למטה");
+          dn.onclick=()=>{const v=wgList();[v[i+1],v[i]]=[v[i],v[i+1]];wgSave(v);draw();};row.append(up,dn);}
+        g.body.append(row);});};
+    draw();
+  }
+  setInterval(()=>{if(ready&&!$("v-home").hidden)renderWidgets();},60000);
+
   /* ---------- one language for every rubric: the bell (what needs you) and the gear (its settings), always in the same corner ---------- */
   const BELL_SVG=$("vfBell").querySelector("svg").outerHTML,GEAR_SVG=$("setBtn").querySelector("svg").outerHTML;
   const RUB={
@@ -6679,6 +6791,7 @@ const top=el("div","top");
         const g=shGroup(b,"התראות",sum());
         g.body.append(el("div","rsnote","מה שמסומן — נספר על הפעמון ועל הרובריקה. מה שמושתק עדיין מופיע כשפותחים את הפעמון בתוך הרובריקה."));
         ks.forEach(k=>shTog(g.body,RUB[k].n,"",!muted(k),v=>{setMuted(k,!v);alertsRefresh();g.sub(sum());}));}
+      wgSettings(b);
       shSec(b,"כללי");
       shTog(b,"רטט בסימון סוויץ'","",$("setHaptic").checked,v=>{$("setHaptic").checked=v;$("setHaptic").onchange();});
       shAct(b,"↺ שחזור נתונים שנמחקו",bkOpenUI);
