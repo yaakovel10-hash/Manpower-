@@ -6576,7 +6576,7 @@ const top=el("div","top");
       big(B.length||"—",B.length?[...new Set(B)].slice(0,3).join(", ")+(B.length>3?"…":""):"אף אחד לא חוזר היום");return;}
     if(k==="shab"){
       const sat=satKey(t),fri=parseKey(sat);fri.setDate(fri.getDate()-1);const z=zmanim(fri),zs=zmanim(parseKey(sat));
-      c.append(el("div","wnow","שבת "+shortD(sat)),el("div","wsub","🕯 ⁦"+wHM(z.candles)+"⁩ · ✨ ⁦"+wHM(zs.tzeit)+"⁩"));
+      c.append(el("div","wnow","שבת "+shortD(sat)),el("div","wsub","כניסה ⁦"+wHM(z.candles)+"⁩ · יציאה ⁦"+wHM(zs.tzeit)+"⁩"));
       const st=punOpen().filter(x=>x.ptype==="shabbat"&&x.on===sat);if(st.length)c.append(el("div","wnext",st.length+" נשארים בעונש"));return;}
     if(k==="zman"){
       const z=zmanim(new Date());
