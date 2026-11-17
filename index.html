@@ -6541,7 +6541,7 @@ const top=el("div","top");
     flt:{n:'תקלות אמל"ח',w:1,go:"alerts"},
     gaps:{n:"פערים פתוחים",w:1,go:"gaps"}
   };
-  const WG_DEF=["now","att","away","pend"];
+  const WG_DEF=[]; // none until the user picks some in the home settings
   const wgList=()=>{try{const v=JSON.parse(localStorage.getItem("widgets")||"null");if(Array.isArray(v))return v.filter(k=>WG[k]);}catch(_){}return WG_DEF.slice();};
   const wgSave=v=>{try{localStorage.setItem("widgets",JSON.stringify(v));}catch(_){}renderWidgets();};
   const wHM=d=>d?pad2(d.getHours())+":"+pad2(d.getMinutes()):"—";
