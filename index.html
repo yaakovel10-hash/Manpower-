@@ -909,6 +909,8 @@ ul.tslist li.tsrow{display:block;padding:12px 14px}
 .wgset .rstog{flex:1;min-width:0}
 .wgmv{width:38px;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);font-size:17px;cursor:pointer}
 .wgmv:disabled{opacity:.3}
+.reqfoot{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.req.editing{display:grid;gap:8px}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -3820,8 +3822,37 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   };
 
   /* ---------- requests ---------- */
+  // editing a request after it was sent: the one who entered it or a deciding commander; one that's already over — only a master-key holder
+  const reqEd=new Map();
+  const reqPast=r=>(r.to||r.from||"")<todayKey();
+  const canEditReq=r=>reqPast(r)?(isMaster||isAdmin):(canDecideReq(r.unit)||r.addedBy===uid||isMaster||isAdmin);
+  function reqEditCard(r,base,c){
+    const D=reqEd.get(r.id);
+    c.append(el("b",null,"עריכת הבקשה"));
+    const f=(lbl,k,type,attrs)=>{const l=el("label","f",lbl);const i=el(type==="textarea"?"textarea":"input");if(type!=="textarea")i.type=type;Object.assign(i,attrs||{});i.value=D[k]||"";i.oninput=()=>{D[k]=i.value;};l.append(i);return l;};
+    const r1=el("div","row2");r1.append(f("מתאריך","from","date"),f("שעת יציאה","fromTime","time"));
+    const r2=el("div","row2");r2.append(f("עד תאריך","to","date"),f("שעת חזרה","toTime","time"));
+    c.append(r1,r2,f("סיבה","reason","text",{maxLength:200}));
+    const il=el("label","f",base==="events"?"דחיפות":"חשיבות");const is=el("select");Object.entries(IMP).forEach(([v,t])=>{const o=el("option",null,t);o.value=v;is.append(o);});is.value=String(D.imp||2);is.onchange=()=>{D.imp=Number(is.value);};il.append(is);c.append(il);
+    c.append(f("הערות","notes","textarea",{maxLength:500}));
+    const er=el("p","err");er.hidden=true;c.append(er);
+    const row=el("div","row2");const sv=el("button","primary","שמירה");sv.type="button";const cn=el("button","ghost","ביטול");cn.type="button";
+    sv.onclick=async()=>{
+      const from=D.from,to=D.to||D.from;
+      if(!from){er.hidden=false;er.textContent="בחרו תאריך התחלה.";return;}
+      if(to<from){er.hidden=false;er.textContent="תאריך הסיום מוקדם מתאריך ההתחלה.";return;}
+      if(to===from&&D.fromTime&&D.toTime&&D.toTime<=D.fromTime){er.hidden=false;er.textContent="שעת החזרה מוקדמת משעת היציאה.";return;}
+      if(!String(D.reason||"").trim()){er.hidden=false;er.textContent="כתבו סיבה.";return;}
+      sv.disabled=true;
+      const ok=await patch(base+"/"+r.id,{from,to,fromTime:D.fromTime||"",toTime:D.toTime||"",reason:String(D.reason).trim(),imp:Number(D.imp)||2,notes:String(D.notes||"").trim(),editedAt:Date.now(),editedByName:(me&&me.name)||""});
+      if(ok){reqEd.delete(r.id);toast("הבקשה עודכנה");renderAllNow(true);}else sv.disabled=false;};
+    cn.onclick=()=>{reqEd.delete(r.id);renderAllNow(true);};
+    row.append(sv,cn);c.append(row);
+    return c;
+  }
   function reqCard(r,withName,base){base=base||"requests";
     const canDecide=canDecideReq(r.unit);
+    if(reqEd.has(r.id)){const c=el("div","req editing");return reqEditCard(r,base,c);}
     const sol=soldierById(r.soldierId);
       const c=el("div","req"+(r.status==="approved"&&reqOutNow(r)?" out":""));
       if(withName){const a=el("a","who",sol?sol.name:"חייל שנמחק");if(sol)a.href="#soldier-"+sol.id;const sub=sol?[sol.squad?"כיתה "+sol.squad:"",reqOutNow(r)&&r.status==="approved"?"🏠 בחוץ עכשיו":""].filter(Boolean).join(" · "):"";const hd=el("div");hd.append(a);if(sub)hd.append(el("span","mini"," · "+sub));c.append(hd);}
@@ -3834,11 +3865,14 @@ const top=el("div","top");
       {const who=reqBy(r);c.append(el("div","mini","✍️ הוזן ע\"י "+(who||"לא ידוע")+(r.at?" · "+fmtG(key(new Date(r.at))):"")));}
       if(r.returnedAt)c.append(el("div","mini","↩ חזר לנוכחות ב-\u2066"+(r.toTime||"")+"\u2069 · "+fmtG(r.to||"")+(r.returnedByName?' (ע"י '+r.returnedByName+")":"")));
       if(r.status!=="pending"&&r.decidedAt)c.append(el("div","mini",(r.status==="approved"?"אושר":"נדחה")+(r.decidedByName?' ע"י '+r.decidedByName:"")+" · "+fmtG(key(new Date(r.decidedAt)))));
+      if(r.editedAt)c.append(el("div","mini","✏️ נערך"+(r.editedByName?' ע"י '+r.editedByName:"")+" · "+fmtG(key(new Date(r.editedAt)))));
       if(canDecide){const row=el("div","row2");
         if(r.status!=="approved"){const a=el("button","approve","אישור");a.type="button";a.onclick=()=>decide(r,"approved",base);row.append(a);}
         if(r.status!=="rejected"){const n=el("button","reject","דחייה");n.type="button";n.onclick=()=>decide(r,"rejected",base);row.append(n);}
         c.append(row);}
-      const d=el("div");d.style.textAlign="left";d.append(delBtn(()=>remove(base+"/"+r.id)));c.append(d);
+      const d=el("div","reqfoot");
+      if(canEditReq(r)){const e=el("button","linkbtn","✏️ עריכה");e.type="button";e.onclick=()=>{reqEd.set(r.id,{from:r.from||"",to:r.to||"",fromTime:r.fromTime||"",toTime:r.toTime||"",reason:r.reason||"",imp:r.imp||2,notes:r.notes||""});renderAllNow(true);};d.append(e);}
+      d.append(delBtn(()=>remove(base+"/"+r.id)));c.append(d);
     return c;
   }
   function renderReqs(){
