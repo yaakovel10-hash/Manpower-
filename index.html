@@ -4452,11 +4452,11 @@ const top=el("div","top");
     const items=listItems(L).map(x=>({x,s:soldiers.find(z=>z.id===x.sid)})).filter(o=>o.s);
     if(!items.length){toast("הרשימה ריקה");return;}
     const RLM="‏",out=["*"+(L.title||"רשימה")+"*",waDate(L.at||Date.now())+(viewName()?" · "+viewName():""),""];
-    items.forEach(({x,s},i)=>out.push(RLM+(i+1)+". "+s.name+(x.note?" – "+x.note:"")));
+    items.forEach(({x,s},i)=>out.push(RLM+"✅ "+(i+1)+". "+s.name+(x.note?" – "+x.note:"")));
     out.push("","סה\"כ "+items.length);
     // everyone in the unit who isn't on the list
     const inL=new Set(items.map(o=>o.s.id)),rest=vis(soldiers).filter(s=>!inL.has(s.id)).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
-    if(rest.length){out.push("","*לא סומנו* ("+rest.length+")");rest.forEach(s=>out.push(RLM+"• "+s.name));}
+    if(rest.length){out.push("","*לא סומנו* ("+rest.length+")");rest.forEach(s=>out.push(RLM+"❌ "+s.name));}
     sendWA(out.join("\n"));
   }
   $("lstOld").onclick=()=>{const box=$("lstOldBox");box.hidden=!box.hidden;if(box.hidden)return;box.textContent="";
@@ -4488,9 +4488,12 @@ const top=el("div","top");
     Ls.forEach(L=>{const items=listItems(L).map(x=>({x,s:soldiers.find(z=>z.id===x.sid)})).filter(o=>o.s);
       out.push("","*"+(L.title||"רשימה")+"* ("+items.length+")");
       if(!items.length)out.push(RLM+"—");
-      items.forEach(({x,s},i)=>{inAny.add(s.id);out.push(RLM+(i+1)+". "+s.name+(x.note?" – "+x.note:""));});});
+      items.forEach(({x,s},i)=>{inAny.add(s.id);out.push(RLM+"✅ "+(i+1)+". "+s.name+(x.note?" – "+x.note:""));});
+      // who isn't on this list
+      const inL=new Set(items.map(o=>o.s.id)),miss=vis(soldiers).filter(s=>!inL.has(s.id)).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
+      miss.forEach(s=>out.push(RLM+"❌ "+s.name));});
     const rest=vis(soldiers).filter(s=>!inAny.has(s.id)).sort((a,b)=>(a.name||"").localeCompare(b.name||"","he"));
-    if(rest.length){out.push("","*לא סומנו באף רשימה* ("+rest.length+")");rest.forEach(s=>out.push(RLM+"• "+s.name));}
+    if(rest.length){out.push("","*לא סומנו באף רשימה* ("+rest.length+")");rest.forEach(s=>out.push(RLM+"❌ "+s.name));}
     sendWA(out.join("\n"));
   }
   $("atSquad").onchange=renderAttend;
