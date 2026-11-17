@@ -918,6 +918,9 @@ ul.tslist li.tsrow{display:block;padding:12px 14px}
 .stamp.no{color:#d8322b}
 @keyframes stampIn{from{transform:rotate(-16deg) scale(1.6);opacity:0}to{transform:rotate(-16deg) scale(1);opacity:.9}}
 @media (prefers-reduced-motion:reduce){.stamp{animation:none}}
+.dlsend{list-style:none;padding:0 0 8px}
+.dlsendbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:14px;border:1px solid color-mix(in srgb,#25d366 45%,var(--line));background:color-mix(in srgb,#25d366 12%,var(--surface));color:var(--fg);font:inherit;font-weight:700;cursor:pointer}
+.dlsendbtn:disabled{opacity:.6;cursor:default;border-color:var(--line);background:var(--surface)}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -3542,12 +3545,21 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const ul=$("dLists");if(ul.hidden)return;ul.textContent="";
     if(!L.length){ul.append(el("li","mini",'עוד אין רשימות. יוצרים רשימה במסך "חיילים".'));return;}
     const mk="dl:"+s.id,marks=new Set(L.filter(x=>listItems(x).some(i=>i.sid===s.id)).map(x=>x.id));setMarks(mk,marks);
+    {// send him, on WhatsApp, the lists he isn't marked on yet
+      const li=el("li","dlsend");const b=el("button","dlsendbtn");b.type="button";
+      const upd=()=>{const n=L.filter(x=>!getMarks(mk).has(x.id)).length;b.textContent=n?"📤 לשלוח ל"+(String(s.name||"").split(" ")[0]||"חייל")+" במה הוא לא מסומן ("+n+")":"✓ מסומן בכל הרשימות";b.disabled=!n;};
+      b.onclick=()=>{const miss=L.filter(x=>!getMarks(mk).has(x.id)).sort((a,c)=>(a.at||0)-(c.at||0));if(!miss.length)return;
+        const txt=miss.map((x,i)=>(i+1)+". "+(x.title||"רשימה")).join("\n");
+        const ph=String(s.phone||"").replace(/\D/g,"").replace(/^0/,"972");
+        location.href="https://wa.me/"+(ph.length>=11?ph:"")+"?text="+encodeURIComponent(txt);};
+      upd();li.append(b);ul.append(li);li._upd=upd;}
     L.forEach(x=>{let row=null;row=rollRow(x.id,marks,mk,()=>{
       const on=getMarks(mk).has(x.id),was=listItems(x).some(i=>i.sid===s.id);
       row.classList.toggle("ok",on); // show the change right away; the shared data follows
       if(on&&!was)listUpdate(x,{["sel."+s.id]:{note:"",t:Date.now()}});
       if(!on&&was)listUpdate(x,{["sel."+s.id]:firebase.firestore.FieldValue.delete()});
       const n=[...getMarks(mk)].length;$("dListN").textContent=n+"/"+L.length;
+      {const sl=ul.querySelector(".dlsend");if(sl&&sl._upd)sl._upd();}
     },inner=>{const info=el("div","info");info.append(el("div","n1",x.title||"רשימה"),el("div","n3",listItems(x).length+" · "+waDate(x.at||0)+(x.byName?" · "+x.byName:"")));inner.append(info);});ul.append(row);});
   }
   $("dListT").onclick=()=>{const ul=$("dLists");ul.hidden=!ul.hidden;$("dListT").setAttribute("aria-expanded",String(!ul.hidden));$("dListBox").classList.toggle("open",!ul.hidden);
