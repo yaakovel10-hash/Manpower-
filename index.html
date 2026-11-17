@@ -911,6 +911,17 @@ ul.tslist li.tsrow{display:block;padding:12px 14px}
 .wgmv:disabled{opacity:.3}
 .reqfoot{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .req.editing{display:grid;gap:8px}
+/* ---- the approved / rejected stamp ---- */
+.req.stamped{position:relative;overflow:hidden}
+.stamp{position:absolute;top:44px;left:14px;transform:rotate(-14deg);font-size:30px;font-weight:900;letter-spacing:.08em;line-height:1;padding:8px 16px 9px;border:4px solid currentColor;border-radius:10px;
+  box-shadow:0 0 0 3px var(--surface),0 0 0 6px currentColor;opacity:.88;pointer-events:none;mix-blend-mode:normal;
+  -webkit-mask-image:radial-gradient(circle at 20% 30%,transparent 0 2px,#000 3px),radial-gradient(circle at 70% 60%,transparent 0 1.5px,#000 2.5px),linear-gradient(#000,#000);
+  -webkit-mask-size:23px 19px,17px 23px,100% 100%;-webkit-mask-composite:source-in,source-in;mask-composite:intersect;
+  animation:stampIn .35s cubic-bezier(.2,1.4,.4,1) both}
+.stamp.ok{color:var(--ok)}
+.stamp.no{color:var(--danger)}
+@keyframes stampIn{from{transform:rotate(-14deg) scale(1.6);opacity:0}to{transform:rotate(-14deg) scale(1);opacity:.88}}
+@media (prefers-reduced-motion:reduce){.stamp{animation:none}}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -3857,7 +3868,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const c=el("div","req"+(r.status==="approved"&&reqOutNow(r)?" out":""));
       if(withName){const a=el("a","who",sol?sol.name:"חייל שנמחק");if(sol)a.href="#soldier-"+sol.id;const sub=sol?[sol.squad?"כיתה "+sol.squad:"",reqOutNow(r)&&r.status==="approved"?"🏠 בחוץ עכשיו":""].filter(Boolean).join(" · "):"";const hd=el("div");hd.append(a);if(sub)hd.append(el("span","mini"," · "+sub));c.append(hd);}
 const top=el("div","top");
-      top.append(el("span","when",reqWhen(r)),el("span","pill st-"+r.status,ST[r.status]||""));c.append(top);
+      top.append(el("span","when",reqWhen(r)));if(r.status==="pending")top.append(el("span","pill st-pending",ST.pending||""));c.append(top);
+      // decided: a rubber stamp across the card's corner
+      if(r.status==="approved"||r.status==="rejected"){const st=el("span","stamp "+(r.status==="approved"?"ok":"no"),r.status==="approved"?"אושר":"נדחה");st.setAttribute("role","img");st.setAttribute("aria-label",r.status==="approved"?"אושר":"נדחה");c.append(st);c.classList.add("stamped");}
       if(hParts)c.append(el("div","mini",hebFull(parseKey(r.from))));
       c.append(el("div","n1",r.reason));
       const im=el("div");im.append(el("span","imp imp-"+r.imp,(base==="events"?"דחיפות: ":"חשיבות: ")+(IMP[r.imp]||"")));c.append(im);
