@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>בקש"צ ובלאי</title>
+<meta name="theme-color" content="#4f5b2e">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Secular+One&family=Assistant:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#f1f0e8;--surface:#fbfaf4;--fg:#22241c;--muted:#6b6d5c;--line:#cfcdb9;--accent:#4f5b2e;--accent-fg:#f5f4e8;--danger:#a3372a;--ok:#2f7a3c;
+  --display:"Secular One","Assistant",system-ui,sans-serif;--body:"Assistant",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#171812;--surface:#20221a;--fg:#ecebdf;--muted:#9c9e88;--line:#3a3c2f;--accent:#a9b876;--accent-fg:#171812;--danger:#e07a6a;--ok:#7cc48a;color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+#form{display:grid;gap:14px;min-width:0}
+main>*,.card>*,.row2>*{min-width:0}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.5 var(--body);padding:18px 16px 40px}
+main{max-width:520px;margin:0 auto;display:grid;gap:14px}
+h1{font-family:var(--display);font-weight:400;font-size:28px;margin:0}
+.sub{color:var(--muted);margin-top:-8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:12px}
+label.f{display:grid;gap:4px;font-weight:600;font-size:15px}
+.hint{font-weight:400;color:var(--muted);font-size:13px}
+input,select,textarea{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;min-width:0;max-width:100%}
+textarea{min-height:80px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.ltr{direction:ltr;text-align:right}
+button{font:inherit;font-weight:700;border:0;border-radius:14px;padding:14px 16px;background:var(--accent);color:var(--accent-fg);width:100%;cursor:pointer}
+button.ghost{background:transparent;color:var(--fg);border:1px solid var(--line);padding:11px 14px;font-weight:600}
+button:disabled{opacity:.55}
+.err{color:var(--danger);font-weight:600;margin:0}
+.ok{color:var(--ok)}
+.big{font-family:var(--display);font-size:24px}
+.mini{color:var(--muted);font-size:14px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:5px}
+.seg button{background:transparent;color:var(--fg);padding:11px;border-radius:12px}
+.seg button.on{background:var(--accent);color:var(--accent-fg)}
+ul.sent{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+ul.sent li{border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:15px}
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <h1>בקש"צ ובלאי</h1>
+    <div class="sub" id="unitName">טוען…</div>
+  </div>
+
+  <div class="card" id="bad" hidden><b class="err" id="badT"></b><span class="mini" id="badS"></span></div>
+
+  <div id="form" hidden>
+  <div class="card">
+    <label class="f">שם מלא<input type="text" id="name" maxlength="50" autocomplete="name" placeholder="לדוגמה: ישראל ישראלי"></label>
+    <label class="f">מספר אישי<input type="tel" id="pid" class="ltr" inputmode="numeric" maxlength="9" placeholder="לדוגמה: 1234567"><span class="hint">כדי שהמפקד ידע שזה אתה. נשמר בטלפון לפעם הבאה.</span></label>
+  </div>
+  <div class="seg" role="tablist"><button type="button" data-k="req" class="on">📝 בקש"צ</button><button type="button" data-k="wear">👕 דיווח בלאי</button></div>
+
+  <form class="card" id="fReq">
+    <div class="row2">
+      <label class="f">מתאריך<input type="date" id="from" required></label>
+      <label class="f">עד תאריך<input type="date" id="to"><span class="hint">ליום אחד – להשאיר ריק</span></label>
+    </div>
+    <div class="row2">
+      <label class="f">שעת יציאה<input type="time" id="fromT"></label>
+      <label class="f">שעת חזרה<input type="time" id="toT"></label>
+    </div>
+    <label class="f">סיבת הבקשה<input type="text" id="reason" maxlength="100" required placeholder="לדוגמה: תור לרופא, חתונה של אח"></label>
+    <label class="f">חשיבות<select id="imp"><option value="1">נמוכה</option><option value="2" selected>בינונית</option><option value="3">גבוהה</option><option value="4">דחופה</option></select></label>
+    <label class="f">הערות למפקד<textarea id="notes" maxlength="500" placeholder="לא חובה. לדוגמה: אפשר לצאת גם אחרי ארוחת צהריים"></textarea></label>
+    <p class="err" id="err" hidden></p>
+    <button type="submit" id="send">שליחת הבקש"צ למפקדים</button>
+  </form>
+
+  <form class="card" id="fWear" hidden>
+    <label class="f">מה הבלאי<input type="text" id="wItem" list="wItems" maxlength="60" required placeholder="לדוגמה: נעליים, מכנסי ב', שכפ&quot;ץ"></label>
+    <datalist id="wItems"><option value="נעליים"><option value="מכנסי ב'"><option value="חולצת ב'"><option value="מעיל"><option value="פליז"><option value="כומתה"><option value="שכפ&quot;ץ"><option value="קסדה"><option value="אפוד"><option value="פונצ'ו"><option value="שק שינה"><option value="כפפות"><option value="חגור"><option value="תיק"></datalist>
+    <label class="f">מה קרה לו (לא חובה)<textarea id="wWhy" maxlength="300" placeholder="לדוגמה: קרוע בברך, סוליה נפרדה, מידה לא מתאימה"></textarea></label>
+    <p class="err" id="wErr" hidden></p>
+    <button type="submit" id="wSend">שליחת דיווח הבלאי</button>
+  </form>
+  </div>
+
+  <div class="card" id="done" hidden>
+    <div class="big ok" id="doneH">✓ נשלח</div>
+    <div id="doneT"></div>
+    <div class="mini" id="doneS"></div>
+    <button type="button" id="again">שליחה נוספת</button>
+  </div>
+
+  <div class="card" id="hist" hidden>
+    <b>מה ששלחתי מהטלפון הזה</b>
+    <ul class="sent" id="sent"></ul>
+  </div>
+</main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const bad=(t,s)=>{$("bad").hidden=false;$("badT").textContent=t;$("badS").textContent=s||"";$("form").hidden=true;$("unitName").textContent="";};
+  const err=t=>{$("err").hidden=!t;$("err").textContent=t||"";};
+  const pad=n=>String(n).padStart(2,"0"),key=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+  const fmt=k=>{if(!k)return "";const [y,m,d]=k.split("-");return Number(d)+"."+Number(m);};
+  const when=r=>{let s=fmt(r.from);if(r.fromTime)s+=" "+r.fromTime;if(r.to&&r.to!==r.from)s+=" – "+fmt(r.to);if(r.toTime)s+=(r.to&&r.to!==r.from?" ":" – ")+r.toTime;return s;};
+  const ls={get(k){try{return localStorage.getItem(k);}catch(_){return null;}},set(k,v){try{localStorage.setItem(k,v);}catch(_){}}};
+
+  const token=(location.hash.replace("#","").match(/[A-Za-z0-9]{12,40}/)||[])[0];
+  if(!token)return bad("הקישור לא שלם","בקשו מהמפקד לשלוח שוב את הקישור המלא.");
+  if(!window.firebase)return bad("הדף לא נטען","בדקו שיש אינטרנט ורעננו את הדף.");
+  firebase.initializeApp({
+    apiKey:"AIzaSyC-g0AaFEYJQrqTbq11R5kl0-yEKPdSi8c",
+    authDomain:"soldier-management-76628.firebaseapp.com",
+    projectId:"soldier-management-76628",
+    storageBucket:"soldier-management-76628.firebasestorage.app",
+    messagingSenderId:"621410368808",
+    appId:"1:621410368808:web:bd299df15b021a6367641d"
+  });
+  const fs=firebase.firestore();
+  let link=null;
+
+  const HK="mp-req-sent";
+  function drawHist(){
+    let L=[];try{L=JSON.parse(ls.get(HK)||"[]");}catch(_){}
+    L=L.filter(r=>r.t===token).slice(-8).reverse();
+    $("hist").hidden=!L.length;const ul=$("sent");ul.textContent="";
+    L.forEach(r=>{const li=document.createElement("li");li.textContent=r.k==="wear"?"👕 בלאי: "+r.item:"📝 "+when(r)+" · "+r.reason;ul.append(li);});
+  }
+  let tab="req";
+  const setTab=k=>{tab=k;document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.k===k));$("fReq").hidden=k!=="req";$("fWear").hidden=k!=="wear";};
+  document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>setTab(b.dataset.k));
+  if(/[?&#]wear\b/.test(location.href))setTab("wear");
+
+  fs.doc("reqLinks/"+token).get().then(d=>{
+    if(!d.exists)return bad("הקישור הזה כבר לא פעיל","יכול להיות שהמפקד החליף אותו. בקשו ממנו את הקישור החדש.");
+    link=d.data();
+    $("unitName").textContent=(link.unitName?link.unitName+" · ":"")+"מה ששולחים כאן מגיע ישר למפקדים";
+    $("form").hidden=false;
+    $("name").value=ls.get("mp-req-name")||"";$("pid").value=ls.get("mp-req-pid")||"";
+    $("from").value=key(new Date());
+    drawHist();
+  }).catch(e=>{console.warn(e);
+    bad(e&&e.code==="permission-denied"?"הקישור עוד לא מופעל":"אין חיבור כרגע",e&&e.code==="permission-denied"?"המפקד צריך לסיים להפעיל את האפשרות הזו. נסו שוב מאוחר יותר.":"בדקו שיש אינטרנט ורעננו את הדף.");});
+
+  // name + personal number, checked before either form is sent
+  function who(errF){
+    const sname=$("name").value.trim().replace(/\s+/g," "),pid=$("pid").value.replace(/\D/g,"");
+    if(sname.length<2){errF("כתבו שם מלא (למעלה).");$("name").focus();return null;}
+    if(pid.length<5){errF("המספר האישי קצר מדי. בדקו שהקלדתם את כל הספרות.");$("pid").focus();return null;}
+    return {sname,pid};
+  }
+  async function send(col,data,btn,label,errF,hist,doneH,doneT,doneS){
+    btn.disabled=true;btn.textContent="שולח…";
+    const id=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+    try{
+      await Promise.race([fs.doc(col+"/"+id).set(data),new Promise((_,j)=>setTimeout(()=>j({code:"timeout"}),15000))]);
+      ls.set("mp-req-name",data.addedByName);ls.set("mp-req-pid",data.pid);
+      let L=[];try{L=JSON.parse(ls.get(HK)||"[]");}catch(_){}
+      L.push(Object.assign({t:token,at:data.at},hist));ls.set(HK,JSON.stringify(L.slice(-30)));
+      $("form").hidden=true;$("done").hidden=false;$("doneH").textContent=doneH;$("doneT").textContent=doneT;$("doneS").textContent=doneS;drawHist();scrollTo({top:0});
+    }catch(x){console.warn(x);
+      errF(x&&x.code==="permission-denied"?"השליחה נחסמה. יכול להיות שהקישור הוחלף – בקשו מהמפקד את הקישור החדש."
+        :x&&x.code==="timeout"?"לוקח יותר מדי זמן. בדקו שיש אינטרנט ונסו שוב.":"השליחה לא הצליחה. בדקו שיש אינטרנט ונסו שוב.");
+    }finally{btn.disabled=false;btn.textContent=label;}
+  }
+
+  $("fReq").onsubmit=e=>{
+    e.preventDefault();err("");
+    const w=who(err);if(!w)return;
+    const from=$("from").value,to=$("to").value||from,fromTime=$("fromT").value,toTime=$("toT").value;
+    if(!from)return err("בחרו מתאריך.");
+    if(to<from)return err("תאריך הסיום מוקדם מתאריך ההתחלה. תקנו את \"עד תאריך\".");
+    if(to===from&&fromTime&&toTime&&toTime<=fromTime)return err("שעת החזרה מוקדמת משעת היציאה.");
+    const reason=$("reason").value.trim();if(!reason)return err("כתבו סיבה לבקשה.");
+    const r={soldierId:"",pid:w.pid,sname:w.sname,unit:link.unit,from,to,fromTime,toTime,reason,imp:Number($("imp").value),notes:$("notes").value.trim(),
+      status:"pending",decidedBy:"",addedBy:"link",addedByName:w.sname,via:"link",link:token,at:Date.now()};
+    send("requests",r,$("send"),'שליחת הבקש"צ למפקדים',err,{k:"req",from,to,fromTime,toTime,reason},'✓ הבקש"צ נשלח',when(r)+" · "+reason,"המפקדים רואים אותו עכשיו באפליקציה ויאשרו או ידחו. התשובה תגיע מהם.");
+  };
+  const wErr=t=>{$("wErr").hidden=!t;$("wErr").textContent=t||"";};
+  $("fWear").onsubmit=e=>{
+    e.preventDefault();wErr("");
+    const w=who(wErr);if(!w)return;
+    const item=$("wItem").value.trim();if(!item)return wErr("כתבו מה הבלאי.");
+    const x={kind:"wear",soldierId:"",ownerName:w.sname,ownerMember:"",pid:w.pid,unit:link.unit,item,why:$("wWhy").value.trim(),status:"open",date:"",
+      at:Date.now(),addedBy:"link",addedByName:w.sname,via:"link",link:token};
+    send("events",x,$("wSend"),"שליחת דיווח הבלאי",wErr,{k:"wear",item},"✓ דיווח הבלאי נשלח",item,"המפקדים רואים אותו עכשיו ברשימת הבלאי באפליקציה.");
+  };
+  $("again").onclick=()=>{$("done").hidden=true;$("form").hidden=false;["to","fromT","toT","reason","notes","wItem","wWhy"].forEach(i=>$(i).value="");$("from").value=key(new Date());$("imp").value="2";};
+})();
+</script>
+</body>
+</html>

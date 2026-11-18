@@ -104,6 +104,10 @@ ul.list .info{min-width:0;flex:1}
 .emptycta{display:block;margin:10px auto 0;width:auto;min-width:60%}
 .apptitle{font-size:15px;font-weight:700;color:var(--muted);margin:0 0 6px;text-align:center}
 h1.n1{margin:0}
+.slinkbtn{width:100%;margin-top:8px;font-size:14.5px}
+.slbox{direction:ltr;text-align:left;font-family:var(--mono);font-size:12.5px;word-break:break-all;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;user-select:all}
+.rsbody .slrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.linkreq{display:inline-block;font-size:12px;font-weight:700;color:var(--info);border:1px solid currentColor;border-radius:999px;padding:0 8px;margin-inline-start:6px}
 .empty{text-align:center;color:var(--muted);padding:24px 8px;border:1px dashed var(--line);border-radius:14px}
 .search{margin-bottom:12px}
 .sh{display:grid;gap:14px;padding:16px;margin-bottom:14px;border-radius:24px;border:1px solid var(--line);background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%),linear-gradient(180deg,var(--surface),var(--tile));box-shadow:inset 0 1px 0 var(--hi),0 10px 24px -18px var(--shadow)}
@@ -1389,6 +1393,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
   <section id="v-reqs" hidden>
     <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>בקש"צים</h1><span class="count" id="rqCount"></span><button class="pencil wa" type="button" id="rqWa" aria-label="שליחת הבקש&quot;צים בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
     <button class="primary" id="openRQ" type="button">+ בקש"צ חדש</button>
+    <button class="ghost slinkbtn" type="button" data-slink="req">🔗 קישור לחיילים: הגשת בקש"צ בלי אפליקציה</button>
     <form class="add" id="formRQ" hidden>
       <div class="f">חייל<div class="picker" id="rqPick"></div></div>
       <div class="row2">
@@ -1541,6 +1546,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       <button class="primary" type="button" id="openWR">+ הוספת בלאי</button>
       <button class="ghost" type="button" id="wrAllDone">✓ הכול טופל</button>
     </div>
+    <button class="ghost slinkbtn" type="button" data-slink="wear">🔗 קישור לחיילים: דיווח בלאי בלי אפליקציה</button>
     <form class="add" id="formWR" hidden>
       <label class="f">מה הבלאי<input type="text" id="wrItem" list="wrItems" maxlength="60" required placeholder="למשל: נעליים, מכנסי ב', שכפ&quot;ץ"></label>
       <datalist id="wrItems"><option value="נעליים"><option value="מכנסי ב'"><option value="חולצת ב'"><option value="מעיל"><option value="פליז"><option value="כומתה"><option value="שכפ&quot;ץ"><option value="קסדה"><option value="אפוד"><option value="פונצ'ו"><option value="שק שינה"><option value="כפפות"><option value="חגור"><option value="תיק"></datalist>
@@ -4051,7 +4057,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(reqEd.has(r.id)){const c=el("div","req editing");return reqEditCard(r,base,c);}
     const sol=soldierById(r.soldierId);
       const c=el("div","req"+(r.status==="approved"&&reqOutNow(r)?" out":""));
-      if(withName){const a=el("a","who",sol?sol.name:"חייל שנמחק");if(sol)a.href="#soldier-"+sol.id;const sub=sol?[sol.squad?"כיתה "+sol.squad:"",reqOutNow(r)&&r.status==="approved"?"🏠 בחוץ עכשיו":""].filter(Boolean).join(" · "):"";const hd=el("div");hd.append(a);if(sub)hd.append(el("span","mini"," · "+sub));c.append(hd);}
+      if(withName){const a=el("a","who",sol?sol.name:r.via==="link"?(r.sname||"חייל")+(r.pid?" · מ.א "+r.pid:""):"חייל שנמחק");if(sol)a.href="#soldier-"+sol.id;const sub=sol?[sol.squad?"כיתה "+sol.squad:"",reqOutNow(r)&&r.status==="approved"?"🏠 בחוץ עכשיו":""].filter(Boolean).join(" · "):"";const hd=el("div");hd.append(a);if(sub)hd.append(el("span","mini"," · "+sub));c.append(hd);}
 const top=el("div","top");
       top.append(el("span","when",reqWhen(r)));if(r.status==="pending")top.append(el("span","pill st-pending",ST.pending||""));c.append(top);
       // decided: a rubber stamp across the card's corner
@@ -4060,7 +4066,9 @@ const top=el("div","top");
       c.append(el("div","n1",r.reason));
       const im=el("div");im.append(el("span","imp imp-"+r.imp,(base==="events"?"דחיפות: ":"חשיבות: ")+(IMP[r.imp]||"")));c.append(im);
       if(r.notes)c.append(el("div","notes",r.notes));
-      {const who=reqBy(r);c.append(el("div","mini","✍️ הוזן ע\"י "+(who||"לא ידוע")+(r.at?" · "+fmtG(key(new Date(r.at))):"")));}
+      if(r.via==="link"){const m=el("div","mini","📱 הוגש ע\"י החייל בקישור"+(r.at?" · "+fmtG(key(new Date(r.at))):""));c.append(m);
+        if(!sol){const w=el("div","mini","⚠️ לא נמצא חייל עם המספר האישי הזה. ");const b=el("button","linkbtn","שיוך לחייל");b.type="button";b.onclick=()=>linkAssign("requests",r);w.append(b);c.append(w);}}
+      else{const who=reqBy(r);c.append(el("div","mini","✍️ הוזן ע\"י "+(who||"לא ידוע")+(r.at?" · "+fmtG(key(new Date(r.at))):"")));}
       if(r.returnedAt)c.append(el("div","mini","↩ חזר לנוכחות ב-\u2066"+(r.toTime||"")+"\u2069 · "+fmtG(r.to||"")+(r.returnedByName?' (ע"י '+r.returnedByName+")":"")));
       if(r.status!=="pending"&&r.decidedAt)c.append(el("div","mini",(r.status==="approved"?"אושר":"נדחה")+(r.decidedByName?' ע"י '+r.decidedByName:"")+" · "+fmtG(key(new Date(r.decidedAt)))));
       if(r.editedAt)c.append(el("div","mini","✏️ נערך"+(r.editedByName?' ע"י '+r.editedByName:"")+" · "+fmtG(key(new Date(r.editedAt)))));
@@ -5290,7 +5298,7 @@ const top=el("div","top");
     const li=el("li","wrrow"+(wrOpen===x.id?" open":""));
     const ic=el("div","wricon");svgSet(ic,SHIRT_SVG);
     const info=el("div","info");info.append(el("div","n1",x.item||"בלאי"));
-    const n3=el("div","n3");n3.append(s?sLink(s.name,s.id):(x.ownerName||"—"));
+    const n3=el("div","n3");n3.append(s?sLink(s.name,s.id):(x.ownerName||"—"));if(x.via==="link"){n3.append(el("span","linkreq","📱 מהקישור"));}
     n3.append(" · "+(hist?"טופל "+fmtG(key(new Date(x.doneAt||x.at))):"נפתח "+fmtG(key(new Date(x.at)))));info.append(n3);
     if(x.why)info.append(el("div","n3 why",x.why));
     li.append(ic,info);
@@ -5561,7 +5569,7 @@ const top=el("div","top");
         :tab==="approved"?appr.slice().sort((a,b)=>(reqOutNow(b)-reqOutNow(a))||(a.from||"").localeCompare(b.from||"")||(a.fromTime||"").localeCompare(b.fromTime||""))
         :R.filter(r=>!pend.includes(r)&&!appr.includes(r)).sort((a,b)=>(b.from||"").localeCompare(a.from||""));
       const q=$$("Q").value.trim();
-      if(q)L=L.filter(r=>{const so=soldierById(r.soldierId);return ((so&&so.name)||"").includes(q)||(r.reason||"").includes(q)||(r.notes||"").includes(q);});
+      if(q)L=L.filter(r=>{const so=soldierById(r.soldierId);return ((so&&so.name)||r.sname||"").includes(q)||(r.reason||"").includes(q)||(r.notes||"").includes(q);});
       $$("Count").textContent=pend.length||"";
       const box=$$("List");box.textContent="";
       L.slice(0,tab==="past"?150:500).forEach(r=>box.append(reqCard(r,true,o.base)));
@@ -5585,7 +5593,7 @@ const top=el("div","top");
       if(btn)btn.disabled=false;if(ok){reset();tab="pending";toast(o.toastNoun+" של "+s.name+" נשמר");render();}
     };
     $$("Wa").onclick=()=>{
-      const t=todayKey(),R=o.src(),nm=r=>{const so=soldierById(r.soldierId);return so?so.name:"?";};
+      const t=todayKey(),R=o.src(),nm=r=>{const so=soldierById(r.soldierId);return so?so.name:(r.sname||"?");};
       const pend=R.filter(r=>r.status==="pending").sort((a,b)=>(a.from||"").localeCompare(b.from||""));
       const appr=R.filter(r=>r.status==="approved"&&(r.to||r.from||"")>=t).sort((a,b)=>(a.from||"").localeCompare(b.from||""));
       if(!pend.length&&!appr.length){toast("אין מה לשלוח");return;}
@@ -6707,7 +6715,7 @@ const top=el("div","top");
   function renderAllFull(skip){
     setTimeout(saveHomeSnap,0);
     setTimeout(syncWearNotes,0);
-    ensureLink();mergeSweep();try{fixOldPaste();}catch(e){console.warn(e);}
+    ensureLink();mergeSweep();try{linkSweep();}catch(e){console.warn(e);}try{fixOldPaste();}catch(e){console.warn(e);}
     const R=(id,f)=>{if(skip!==id)f();};
     renderMe();R("v-soldiers",renderS);R("v-weapons",renderW);
     if(curSoldier)R("v-soldier",renderDetail);
@@ -7308,6 +7316,66 @@ const top=el("div","top");
   }
   iconWords();
 
+
+  /* ---------- a link for soldiers: send a בקש"צ or report בלאי from a plain web page, without the app ---------- */
+  const SL_BASE=location.origin+location.pathname.replace(/[^/]*$/,"")+"req.html";
+  const slTried=new Set();
+  const normPid=v=>String(v||"").replace(/\D/g,"").replace(/^0+/,"");
+  // match what arrived from the link to the soldier with the same personal number (or the same full name)
+  function linkSweep(){
+    if(!soldiersLoaded)return;
+    const L=[...requests.filter(r=>r.via==="link"&&!r.soldierId).map(r=>["requests",r]),...events.filter(x=>x.via==="link"&&x.kind==="wear"&&!x.soldierId).map(x=>["events",x])];
+    L.forEach(([col,r])=>{if(slTried.has(r.id))return;slTried.add(r.id);
+      const p=normPid(r.pid),nm=String(r.sname||r.ownerName||"").trim();
+      let m=p?soldiers.filter(s=>normPid(s.num)===p):[];
+      if(!m.length&&nm)m=soldiers.filter(s=>String(s.name||"").trim()===nm);
+      if(m.length!==1)return;
+      patch(col+"/"+r.id,col==="events"?{soldierId:m[0].id,ownerName:""}:{soldierId:m[0].id});});
+  }
+  function linkAssign(col,r){
+    const b=sheet("שיוך לחייל");
+    b.append(el("div","mini","הבקשה נשלחה בשם "+(r.sname||r.ownerName||"?")+(r.pid?" (מ.א "+r.pid+")":"")+". בחרו את החייל הנכון:"));
+    const pk=el("div","picker");pk.id="slPick";b.append(pk);
+    makePicker("slPick","חיפוש חייל…",true,v=>{const pp=pickedPerson(v),s=pp&&pp.soldier;if(!s)return;
+      patch(col+"/"+r.id,col==="events"?{soldierId:s.id,ownerName:""}:{soldierId:s.id}).then(ok=>{if(ok){toast("שויך ל"+s.name+" ✓");closeSheet();}});});
+  }
+  async function openSoldierLink(kind){
+    const b=sheet("קישור לחיילים");
+    b.append(el("div","mini",'שולחים לחיילים את הקישור (למשל בקבוצת הוואטסאפ). הם פותחים אותו בדפדפן, בלי להתקין ובלי להתחבר, ושולחים בקש"צ או דיווח בלאי. הבקשות מגיעות לכאן ומחכות לאישור.'));
+    const sel=el("select");const lab=el("label","f","מסגרת");lab.append(sel);
+    const n=unitOptions(sel,curView()!=="*"&&unitById(curView())?curView():(memberOk()?me.unitId:undefined));
+    if(!n){b.append(el("p","err","אין מסגרת פתוחה. קודם פותחים מסגרת במסך ניהול מסגרות."));return;}
+    if(n>1)b.append(lab);
+    const box=el("div");b.append(box);
+    const draw=async()=>{
+      box.textContent="";box.append(el("div","mini","טוען…"));
+      const u=unitById(sel.value);if(!u){box.textContent="";return;}
+      let cur=null;
+      try{const q=await scoped("reqLinks").get();cur=q.docs.map(d=>({id:d.id,...d.data()})).find(x=>x.unit&&pathKey(x.unit)===pathKey(u.path))||null;}
+      catch(e){console.warn(e);box.textContent="";box.append(el("p","err",e&&e.code==="permission-denied"?"האפשרות עוד לא הופעלה: מנהל המערכת צריך לעדכן את כללי האבטחה ב-Firebase.":"אין חיבור כרגע. נסו שוב."));return;}
+      box.textContent="";
+      const make=async()=>{
+        const t=Array.from(crypto.getRandomValues(new Uint8Array(15)),x=>"abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"[x%57]).join("");
+        const ok=await write("reqLinks/"+t,{unit:Object.assign({},u.path),unitName:unitLabel(u),by:uid,byName:(me&&me.name)||"",at:Date.now()});
+        if(!ok){box.append(el("p","err","לא הצלחתי ליצור קישור. אם זה חוזר – מנהל המערכת צריך לעדכן את כללי האבטחה ב-Firebase."));return null;}
+        return t;};
+      if(!cur){const c=el("button","primary","יצירת קישור לחיילים");c.type="button";c.onclick=async()=>{c.disabled=true;c.textContent="יוצר…";if(await make())draw();else{c.disabled=false;c.textContent="יצירת קישור לחיילים";}};box.append(c);return;}
+      const url=SL_BASE+"#"+cur.id+(kind==="wear"?"&wear":"");
+      box.append(el("div","rssec","הקישור של "+unitLabel(u)),el("div","slbox",url));
+      const row=el("div","slrow");
+      const cp=el("button","primary","העתקת הקישור");cp.type="button";cp.onclick=async()=>{try{await navigator.clipboard.writeText(url);cp.textContent="הועתק ✓";toast("הקישור הועתק ✓");}catch(_){toast("לחצו לחיצה ארוכה על הקישור כדי להעתיק");}};
+      const wa=el("button","ghost","שליחה בוואטסאפ");wa.type="button";
+      wa.onclick=()=>window.open("https://wa.me/?text="+encodeURIComponent((kind==="wear"?'לדיווח בלאי (וגם להגשת בקש"צ)':'להגשת בקש"צ (וגם לדיווח בלאי)')+" – פותחים את הקישור וממלאים:\n"+url),"_blank");
+      row.append(cp,wa);box.append(row);
+      const op=el("a","linkbtn","פתיחת הדף כמו שהחיילים רואים");op.href=url;op.target="_blank";box.append(op);
+      const rp=el("button","linkbtn","החלפת הקישור (הקישור הישן יפסיק לעבוד)");rp.type="button";
+      let armed=false;rp.onclick=async()=>{if(!armed){armed=true;rp.textContent="לחצו שוב כדי להחליף";return;}
+        rp.disabled=true;const t=await make();if(t){await remove("reqLinks/"+cur.id);toast("נוצר קישור חדש ✓");draw();}else rp.disabled=false;};
+      box.append(el("div"),rp);
+    };
+    sel.onchange=draw;draw();
+  }
+  document.querySelectorAll("[data-slink]").forEach(b=>b.onclick=()=>openSoldierLink(b.dataset.slink));
   /* ---------- first-time guidance: a first-action button under every empty list, and a start card on home ---------- */
   function goAndClick(hash,btn){
     const b=btn&&$(btn);
