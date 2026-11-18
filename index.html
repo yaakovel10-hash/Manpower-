@@ -2059,7 +2059,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   const LV=["b","g","p","m","k"];
   const LVN={b:"חטיבה",g:"גדוד",p:"פלוגה",m:"מחלקה",k:"כיתה"};
   const LVC={b:"חטיבה",g:"גדוד",p:"פלוגה",m:"מחלקת",k:"כיתה"};
-  const normU=v=>String(v||"").replace(/["'׳״`]/g,"").replace(/\s+/g," ").trim();
+  // small text helpers run thousands of times per screen; remember their answers
+  const memo=f=>{let m=new Map();return v=>{const k=v==null?"":String(v);let r=m.get(k);if(r===undefined){if(m.size>8000)m=new Map();r=f(k);m.set(k,r);}return r;};};
+  const normU=memo(v=>String(v||"").replace(/["'׳״`]/g,"").replace(/\s+/g," ").trim());
   const mgr=()=>isAdmin||isMaster;
   const unitById=id=>units.find(u=>u.id===id);
   const myUnit=()=>me&&me.unitId?unitById(me.unitId):null;
@@ -2171,9 +2173,10 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     b.textContent=off?("אופליין · מוצגים נתונים שמורים"+(pending?" · "+pending+" שינויים יישלחו כשתחזור הקליטה":"")):("שולח "+pending+" שינויים…");
   }
   addEventListener("online",netUI);addEventListener("offline",netUI);
-  async function write(path,data,errId){const t0=Date.now();try{await qc(fs.doc(path).set(data));if(errId)showErr(errId,"");doneToast(t0,"נשמר ✓");return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));else errToast(t0,e);return false;}}
-  async function patch(path,data,errId){const t0=Date.now();try{await qc(fs.doc(path).update(data));if(errId){showErr(errId,"");doneToast(t0,"השינויים נשמרו ✓");}return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));else errToast(t0,e);return false;}}
-  async function remove(path){const t0=Date.now();try{await qc(fs.doc(path).delete());doneToast(t0,"נמחק ✓");return true;}catch(e){console.warn(path,e);errToast(t0,e);return false;}}
+  let fsReadyR;const fsReady=new Promise(r=>{fsReadyR=r;});
+  async function write(path,data,errId){const t0=Date.now();try{if(!fs)await fsReady;await qc(fs.doc(path).set(data));if(errId)showErr(errId,"");doneToast(t0,"נשמר ✓");return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));else errToast(t0,e);return false;}}
+  async function patch(path,data,errId){const t0=Date.now();try{if(!fs)await fsReady;await qc(fs.doc(path).update(data));if(errId){showErr(errId,"");doneToast(t0,"השינויים נשמרו ✓");}return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));else errToast(t0,e);return false;}}
+  async function remove(path){const t0=Date.now();try{if(!fs)await fsReady;await qc(fs.doc(path).delete());doneToast(t0,"נמחק ✓");return true;}catch(e){console.warn(path,e);errToast(t0,e);return false;}}
   function unitOptions(sel,val){
     const prev=val!=null?val:sel.value;sel.textContent="";
     const list=units.filter(u=>u.open&&inScope(u.path)&&inView(u.path)).sort((a,b)=>pathKey(a.path).localeCompare(pathKey(b.path),"he"));
@@ -2545,10 +2548,14 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   const ROLE_TOK={"מכ":'מ"כ',"ממ":'מ"מ',"סמל":"סמל","סמח":'סמ"ח',"סמפ":'סמ"פ',"מפ":'מ"פ',"רספ":'רס"פ',"רסל":'רס"ל',"קמנ":'קמ"ן'};
   const baseToks=n=>nameToks(n).filter(t=>!ROLE_TOK[t]);
   const roleInName=n=>{const t=nameToks(n).find(t=>ROLE_TOK[t]);return t?ROLE_TOK[t]:"";};
-  const cleanName=n=>String(n||"").replace(/\([^)]*\)/g," ").replace(/(^|\s)(מ["״׳']?כ|מ["״׳']?מ|סמל|סמ["״׳']?ח|סמ["״׳']?פ|מ["״׳']?פ|רס["״׳']?פ|רס["״׳']?ל|קמ["״׳']?ן)(?=\s|$)/g," ").replace(/\s+/g," ").trim();
+  const cleanName=memo(n=>String(n||"").replace(/\([^)]*\)/g," ").replace(/(^|\s)(מ["״׳']?כ|מ["״׳']?מ|סמל|סמ["״׳']?ח|סמ["״׳']?פ|מ["״׳']?פ|רס["״׳']?פ|רס["״׳']?ל|קמ["״׳']?ן)(?=\s|$)/g," ").replace(/\s+/g," ").trim());
   const sameName=(a,b)=>{const x=baseToks(a),y=baseToks(b);return x.length>=2&&x.length===y.length&&x.every(w=>y.includes(w));};
   // the same person: same name in the same unit, and nothing that tells them apart (two different personal numbers or two different phones' accounts)
-  const dupsOf=s=>soldiers.filter(x=>x.id!==s.id&&sameName(x.name,s.name)&&sameUpTo(x.unit,s.unit,5)&&(!x.memberId||!s.memberId||x.memberId===s.memberId)&&(!x.num||!s.num||x.num===s.num));
+  let nameIdx={a:null,m:null};
+  const nameKey=n=>{const t=baseToks(n);return t.length>=2?t.slice().sort().join(" "):"";};
+  const sameNameCands=s=>{if(nameIdx.a!==soldiers){const m=new Map();soldiers.forEach(x=>{const k=nameKey(x.name);if(!k)return;let L=m.get(k);if(!L)m.set(k,L=[]);L.push(x);});nameIdx={a:soldiers,m};}
+    const k=nameKey(s.name);return k?(nameIdx.m.get(k)||[]):[];};
+  const dupsOf=s=>sameNameCands(s).filter(x=>x.id!==s.id&&sameName(x.name,s.name)&&sameUpTo(x.unit,s.unit,5)&&(!x.memberId||!s.memberId||x.memberId===s.memberId)&&(!x.num||!s.num||x.num===s.num));
   async function mergeSoldiers(keep,drop){
     const ops=[];
     weapons.filter(w=>w.owner===drop.id).forEach(w=>ops.push(b=>b.update(fs.doc("weapons/"+w.id),{owner:keep.id,unit:keep.unit})));
@@ -3085,7 +3092,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   }
   /* ---------- free-text weapon lists (e.g. "דו"ח צלם") ---------- */
   let impItems=[],impMode="soldiers";
-  const nameToks=t=>normU(String(t||"").replace(/[\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff\u00a0]/g," ")).replace(/[-–:,.*()"'׳״]/g," ").split(/\s+/).filter(w=>w&&HEB.test(w)).map(w=>w.replace(/ך$/,"כ").replace(/ם$/,"מ").replace(/ן$/,"נ").replace(/ף$/,"פ").replace(/ץ$/,"צ"));
+  const nameToksM=memo(t=>normU(String(t||"").replace(/[\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff\u00a0]/g," ")).replace(/[-–:,.*()"'׳״]/g," ").split(/\s+/).filter(w=>w&&HEB.test(w)).map(w=>w.replace(/ך$/,"כ").replace(/ם$/,"מ").replace(/ן$/,"נ").replace(/ף$/,"פ").replace(/ץ$/,"צ")));
+  const nameToks=t=>nameToksM(t).slice();
   function matchOwner(text){
     const w=nameToks(text);if(!w.length)return null;
     if(me&&me.name){const mt=nameToks(me.name);if(w.every(x=>mt.includes(x)))return "me";}
@@ -4429,14 +4437,18 @@ const top=el("div","top");
   let awayC={k:null,m:null};
   function awayInfo(sid){
     const d=new Date(),k=visRO(events).length+"|"+visRO(requests).length+"|"+dataVer+"|"+curView()+"|"+d.getHours()+":"+d.getMinutes()+"|"+todayKey();
-    if(awayC.k!==k)awayC={k,m:new Map()};
+    if(awayC.k!==k){const I=new Map(),g=id=>{let o=I.get(id);if(!o){o={med:[],req:[],abs:[]};I.set(id,o);}return o;};
+      visRO(events).forEach(x=>{if(x.kind==="med"&&x.status==="approved")g(x.soldierId).med.push(x);else if(x.kind==="abs")g(x.soldierId).abs.push(x);});
+      visRO(requests).forEach(r=>{if(r.status==="approved")g(r.soldierId).req.push(r);});
+      awayC={k,m:new Map(),I};}
     if(awayC.m.has(sid))return awayC.m.get(sid);
     const r=awayCalc(sid);awayC.m.set(sid,r);return r;
   }
   function awayCalc(sid){
-    {const m=medEv().find(x=>x.soldierId===sid&&x.status==="approved"&&reqOutNow(x));if(m)return {tag:"רפואה",text:"רפואה: "+(m.reason||"")+" · חוזר "+fmtG(m.to||m.from)+(m.toTime?" ב-\u2066"+m.toTime+"\u2069":"")};}
-    const r=awayReq(sid);if(r)return {tag:'בקש"צ',text:'בקש"צ מאושר: '+(r.reason||"")+" · חוזר "+fmtG(r.to||r.from)+(r.toTime?" ב-\u2066"+r.toTime+"\u2069":"")};
-    const t=todayKey(),a=visRO(events).find(x=>x.kind==="abs"&&x.soldierId===sid&&absNow(x,t));
+    const ix=(awayC.I&&awayC.I.get(sid))||{med:[],req:[],abs:[]};
+    {const m=ix.med.find(x=>reqOutNow(x));if(m)return {tag:"רפואה",text:"רפואה: "+(m.reason||"")+" · חוזר "+fmtG(m.to||m.from)+(m.toTime?" ב-\u2066"+m.toTime+"\u2069":"")};}
+    const r=ix.req.find(x=>reqOutNow(x));if(r)return {tag:'בקש"צ',text:'בקש"צ מאושר: '+(r.reason||"")+" · חוזר "+fmtG(r.to||r.from)+(r.toTime?" ב-\u2066"+r.toTime+"\u2069":"")};
+    const t=todayKey(),a=ix.abs.find(x=>absNow(x,t));
     if(a)return {tag:a.absType||"היעדרות",text:(a.absType||"היעדרות")+" · "+(a.allDay?"כל היום":"\u2066"+a.start+"–"+a.end+"\u2069")+(a.to&&a.to!==a.date?" · עד "+fmtG(a.to):"")};
     return null;
   }
@@ -4469,7 +4481,8 @@ const top=el("div","top");
   }
   const rollKey=(kind,extra)=>"roll:"+kind+":"+curView()+":"+todayKey()+(extra?":"+extra:"");
   function getMarks(k){try{return new Set(JSON.parse(localStorage.getItem(k)||"[]"));}catch(_){return new Set();}}
-  function setMarks(k,set){try{localStorage.setItem(k,JSON.stringify([...set]));}catch(_){}}
+  let marksVer=0;
+  function setMarks(k,set){marksVer++;try{localStorage.setItem(k,JSON.stringify([...set]));}catch(_){}}
   function squadSelect(sel){
     const v=sel.value||"*";sel.textContent="";
     [["*","כל הכיתות"],["א","כיתה א"],["ב","כיתה ב"],["ג","כיתה ג"],["","ללא כיתה"]].forEach(([a,b])=>{const o=el("option",null,b);o.value=a;sel.append(o);});
@@ -6714,8 +6727,8 @@ const top=el("div","top");
   // every screen's renderer; the hidden ones only refresh their home-tile numbers
   function renderAllFull(skip){
     setTimeout(saveHomeSnap,0);
-    setTimeout(syncWearNotes,0);
-    ensureLink();mergeSweep();try{linkSweep();}catch(e){console.warn(e);}try{fixOldPaste();}catch(e){console.warn(e);}
+    if(fs)setTimeout(syncWearNotes,0);
+    if(fs)choresLater();
     const R=(id,f)=>{if(skip!==id)f();};
     renderMe();R("v-soldiers",renderS);R("v-weapons",renderW);
     if(curSoldier)R("v-soldier",renderDetail);
@@ -6723,6 +6736,9 @@ const top=el("div","top");
     R("v-mine",renderMine);R("v-attend",renderAttend);R("v-verify",renderVerify);R("v-sched",renderSched);R("v-absent",renderAbsent);R("v-wear",renderWear);R("v-nmr",renderNmr);R("v-nmrd",renderNmrD);R("v-gaps",renderGaps);R("v-orbat",renderOrbat);R("v-zr",renderZR);R("v-reqs",renderReqList);R("v-med",renderMedList);R("v-fit",renderFit);R("v-pun",renderPun);R("v-tash",renderTash);R("v-fitp",renderFitCard);
     renderHomeCounts();try{renderOnboard();}catch(e){console.warn(e);}
   }
+  let choresT=null;
+  function choresLater(){if(choresT)return;choresT=setTimeout(()=>{choresT=null;if(!ready||!fs)return;
+    try{ensureLink();}catch(e){console.warn(e);}try{mergeSweep();}catch(e){console.warn(e);}try{linkSweep();}catch(e){console.warn(e);}try{fixOldPaste();}catch(e){console.warn(e);}},700);}
   function renderHomeCounts(){
     {const t=key(new Date()),ue=unitEv().filter(x=>onDay(x,t)).length,ab=absEv().filter(x=>onDay(x,t)).length+vis(requests).filter(r=>r.status==="approved"&&r.from&&r.from<=t&&(r.to||r.from)>=t).length;
      const P=unitEv().filter(x=>x.src==="paste"&&x.start&&onDay(x,t)).sort((a,b)=>a.start.localeCompare(b.start)),pos=P.length?nowPos(P,t):null;
@@ -7086,7 +7102,9 @@ const top=el("div","top");
 
   // what needs attention, per rubric; each item: level (bad / warn / info), text, detail, where a tap takes you
   let ALR={};
-  function alertsCompute(){
+  let alrKey="";
+  function alertsCompute(force){
+    {const k=[verS,verW,verE,verR,verM,verU,verMe,dataVer,marksVer,curView(),todayKey(),Math.floor(Date.now()/60000)].join("|");if(!force&&k===alrKey)return;alrKey=k;}
     const A={},t=todayKey(),tom=(()=>{const d=new Date();d.setDate(d.getDate()+1);return key(d);})();
     const add=(k,lvl,tx,sub,go)=>{(A[k]=A[k]||[]).push({lvl,t:tx,s:sub||"",go});};
     const nm=id=>{const s=soldierById(id);return s?s.name:"חייל";};
@@ -7427,11 +7445,14 @@ const top=el("div","top");
     const n=myLen();const k=n<0?"none":n+"|"+(n?LV.slice(0,n).map(x=>myUnit().path[x]).join("|"):"all");
     if(k===scopeKey)return;
     unsubs.forEach(u=>{try{u();}catch(_){}});unsubs=[];scopeKey=k;
-    soldiers=[];weapons=[];events=[];requests=[];soldiersLoaded=false;
+    const keepFast=fastKeep;fastKeep=false;
+    if(!keepFast||n<0){soldiers=[];weapons=[];events=[];requests=[];soldiersLoaded=false;}
     for(const k in snapMaps)delete snapMaps[k];
     if(n<0)return;
-    let got=0;$("status").textContent="טוען נתונים…";
-    const sub=(col,set,label)=>unsubs.push(scoped(col).onSnapshot(s=>{set(applySnap(col,s));dataVer++;renderAll();if(++got===4)$("status").textContent=navigator.onLine?"מסונכרן בזמן אמת":"אופליין · מוצגים נתונים שמורים";},e=>{console.warn(col,e);$("status").textContent="שגיאה בטעינת "+label+(e.code==="permission-denied"?" (אין הרשאה)":"")+".";}));
+    let got=0;const seen=new Set(),t0=Date.now();if(!keepFast)$("status").textContent="טוען נתונים…";
+    const sub=(col,set,label)=>unsubs.push(scoped(col).onSnapshot(s=>{set(applySnap(col,s));dataVer++;seen.add(col);
+      if(seen.size>=4||Date.now()-t0>1500){renderAll();if(seen.size>=4)fastSaveSoon();}else setTimeout(renderAll,1600);
+      if(++got===4)$("status").textContent=navigator.onLine?"מסונכרן בזמן אמת":"אופליין · מוצגים נתונים שמורים";},e=>{console.warn(col,e);$("status").textContent="שגיאה בטעינת "+label+(e.code==="permission-denied"?" (אין הרשאה)":"")+".";}));
     sub("soldiers",v=>{soldiers=v.sort((a,b)=>(b.at||0)-(a.at||0));soldiersLoaded=true;verS++;},"החיילים");
     sub("weapons",v=>{weapons=v.sort((a,b)=>(b.at||0)-(a.at||0));verW++;},'האמל"ח');
     sub("events",v=>{events=v;verE++;},"האירועים");
@@ -7447,6 +7468,38 @@ const top=el("div","top");
       if(mk!==membersKey){membersKey=mk;verM++;dataVer++;}verSeen++;renderAll();},e=>console.warn("members",e)));
   }
   function stopAll(){[...unsubs,...mgmtUnsubs].forEach(u=>{try{u();}catch(_){}});unsubs=[];mgmtUnsubs=[];scopeKey=null;soldiers=[];weapons=[];events=[];requests=[];tokens={};allMembers=[];}
+
+  /* ---------- fast start: the last data this phone saw, kept in one record, drawn before Firebase even loads ----------
+     (Firebase's own offline cache is read document by document and is slow on phones; this is one read) */
+  let fastUid=null,fastKeep=false,fastDone=false,fastT=null,fastLast=-1;
+  function fastDB(){return new Promise((res,rej)=>{try{const r=indexedDB.open("mp-fast",1);r.onupgradeneeded=()=>r.result.createObjectStore("s");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}catch(e){rej(e);}});}
+  async function fastGet(){const db=await fastDB();return new Promise(res=>{const q=db.transaction("s").objectStore("s").get("boot");q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null);});}
+  async function fastPut(v){const db=await fastDB();return new Promise(res=>{const t=db.transaction("s","readwrite");t.objectStore("s").put(v,"boot");t.oncomplete=t.onerror=()=>res();});}
+  function fastClear(){fastDB().then(db=>{db.transaction("s","readwrite").objectStore("s").delete("boot");}).catch(()=>{});}
+  function fastSaveSoon(){if(fastT)return;fastT=setTimeout(fastSave,1500);}
+  function fastSave(now){
+    if(fastT){clearTimeout(fastT);}fastT=null;if(!ready||!uid||!soldiersLoaded||fastLast===dataVer)return;
+    const go=()=>{try{fastLast=dataVer;
+      const v=JSON.parse(JSON.stringify({ver:1,at:Date.now(),uid,email:authUser&&authUser.email||"",ev:!!(authUser&&authUser.emailVerified),isMaster,me,units,soldiers,weapons,events,requests}));
+      fastPut(v).catch(e=>console.warn("fast",e));}catch(e){console.warn("fast",e);}};
+    if(now)go();else (window.requestIdleCallback||(f=>setTimeout(f,50)))(go,{timeout:4000});
+  }
+  // leaving the app: save right away (the phone may close it before an idle moment comes)
+  addEventListener("pagehide",()=>fastSave(true));
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")fastSave(true);});
+  function fastStart(){
+    let on=false;try{on=localStorage.getItem("signedIn")==="1";}catch(_){}
+    if(!on||!window.indexedDB)return;
+    fastGet().then(v=>{
+      if(!v||v.ver!==1||fastDone||!v.uid||!v.me)return;
+      fastUid=v.uid;authUser={uid:v.uid,email:v.email,emailVerified:v.ev};uid=v.uid;
+      isAdmin=!!v.ev&&ADMIN_EMAILS.map(x=>x.toLowerCase()).includes(String(v.email||"").toLowerCase());isMaster=!!v.isMaster||isAdmin;
+      me=v.me;units=v.units||[];soldiers=v.soldiers||[];weapons=v.weapons||[];events=v.events||[];requests=v.requests||[];soldiersLoaded=true;
+      verS++;verW++;verE++;verR++;verU++;verMe++;dataVer++;fastLast=dataVer;
+      ready=true;renderAll();route();
+    }).catch(e=>console.warn("fast",e));
+  }
+  fastStart();
 
   /* ---------- boot ---------- */
   /* ---------- instant start: show the home screen as it was last time, while the data loads ---------- */
@@ -7465,20 +7518,23 @@ const top=el("div","top");
   if(String(FIREBASE_CONFIG.apiKey).includes("PASTE")){show(["v-config"]);return;}
   if(!window.firebase){$("bootStatus").textContent="לא ניתן לטעון את Firebase. בדקו חיבור לאינטרנט.";return;}
   firebase.initializeApp(FIREBASE_CONFIG);
-  auth=firebase.auth();fs=firebase.firestore();
+  auth=firebase.auth();fs=firebase.firestore();fsReadyR();
   fs.enablePersistence({synchronizeTabs:true}).catch(e=>console.warn("offline cache",e&&e.code));
   netUI();
   auth.getRedirectResult().catch(e=>showErr("lErr",authErr(e)));
   let meUnsub=null,unitsUnsub=null;
   auth.onAuthStateChanged(async u=>{
+    fastDone=true;const keep=!!u&&fastUid===u.uid;fastUid=null;fastKeep=keep;
     authUser=u;uid=u?u.uid:null;
     if(meUnsub){meUnsub();meUnsub=null;}if(unitsUnsub){unitsUnsub();unitsUnsub=null;}
-    stopAll();me=null;units=[];editingMe=false;isMaster=false;linkDone=false;
+    if(keep){unsubs=[];mgmtUnsubs=[];scopeKey=null;tokens={};allMembers=[];}
+    else{stopAll();me=null;units=[];}
+    editingMe=false;isMaster=false;linkDone=false;
     isAdmin=!!u&&u.emailVerified&&ADMIN_EMAILS.map(x=>x.toLowerCase()).includes((u.email||"").toLowerCase());
-    if(!u){try{localStorage.removeItem("signedIn");localStorage.removeItem("homeSnap");}catch(_){}painted=false;ready=true;route();return;}
+    if(!u){try{localStorage.removeItem("signedIn");localStorage.removeItem("homeSnap");}catch(_){}fastClear();painted=false;ready=true;route();return;}
     try{localStorage.setItem("signedIn","1");}catch(_){}
-    ready=false;
-    if(!painted){$("bootStatus").hidden=false;$("bootStatus").textContent="טוען…";ALL.forEach(i=>$(i).hidden=true);}
+    if(!keep)ready=false;
+    if(!painted&&!keep){$("bootStatus").hidden=false;$("bootStatus").textContent="טוען…";ALL.forEach(i=>$(i).hidden=true);}
     // "key holder" check: use the answer remembered on this phone now, and confirm with the server in the background
     {const k="isMaster:"+uid;let cached=isAdmin;try{cached=isAdmin||localStorage.getItem(k)==="1";}catch(_){}
      isMaster=cached;
