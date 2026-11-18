@@ -4638,7 +4638,9 @@ const top=el("div","top");
     const oa=el("option",null,'כל הצל"מ ('+W.length+")");oa.value="*";tsel.append(oa);
     types.forEach(t=>{const o=el("option",null,t+" ("+W.filter(w=>wType(w.type)===t).length+")");o.value=t;tsel.append(o);});
     let pick=tv==="*"||types.includes(tv)?tv:"";
-    if(!pick&&!vfTouched)pick=types.find(t=>/^\s*(נשק|m-?4)/i.test(t))||types.find(t=>/נשק|m-?4|m-?16|רובה/i.test(t))||"";
+    // first time on the screen: the type chosen last time, else everything
+    if(!pick&&!vfTouched){let last="";try{last=localStorage.getItem("vfType")||"";}catch(_){}pick=last==="*"||types.includes(last)?last:"*";}
+    if(W.length&&pick)try{localStorage.setItem("vfType",pick);}catch(_){}
     tsel.value=pick;
     const ty=tsel.value,sq=squadSelect($("vfSquad"));
     const ul=$("vfList"),ua=$("vfAway");ul.textContent="";ua.textContent="";
