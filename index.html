@@ -921,6 +921,22 @@ ul.tslist li.tsrow{display:block;padding:12px 14px}
 .dlsend{list-style:none;padding:0 0 8px}
 .dlsendbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;border-radius:14px;border:1px solid color-mix(in srgb,#25d366 45%,var(--line));background:color-mix(in srgb,#25d366 12%,var(--surface));color:var(--fg);font:inherit;font-weight:700;cursor:pointer}
 .dlsendbtn:disabled{opacity:.6;cursor:default;border-color:var(--line);background:var(--surface)}
+#trNew{margin-bottom:12px}
+.trbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:6px}
+.trbar .wfilter{flex:1;margin:0}
+.trprog{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin:8px 0 4px;display:flex;direction:rtl}
+.trprog .tf{height:100%;background:var(--ok);border-radius:999px;transition:width .25s}
+ul.trtrack li.trrow{display:block;padding:12px 14px}
+.trtag{font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;border:1px solid var(--line);color:var(--muted);font-variant-numeric:tabular-nums}
+.trtag.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 45%,var(--line));background:color-mix(in srgb,var(--ok) 10%,transparent)}
+.trtag.mid{color:color-mix(in srgb,var(--warn) 75%,var(--fg));border-color:color-mix(in srgb,var(--warn) 45%,var(--line))}
+.trtag.bad{color:#fff;background:var(--danger);border-color:var(--danger)}
+.trscore{display:grid;justify-items:center;min-width:54px}
+.trscore b{font-size:22px;font-variant-numeric:tabular-nums;line-height:1}
+.trscore span{font-size:11px;color:var(--muted)}
+.trscore.ok b{color:var(--ok)}.trscore.bad b{color:var(--danger)}
+.trmiss{margin-top:8px;display:grid;gap:3px;border-top:1px dashed var(--line);padding-top:8px}
+.trm{font-size:14px}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1342,7 +1358,7 @@ ul.tslist li.tsrow{display:block;padding:12px 14px}
 
   <section id="v-fit" hidden>
     <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>כושר</h1><span class="count" id="ftCount"></span><button class="pencil wa" type="button" id="ftWa" aria-label="שליחת התוצאות בוואטסאפ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4.2A8.5 8.5 0 1 1 8 19.4z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.6-2-1-1 .8a4.5 4.5 0 0 1-2.7-2.7l.8-1-1-2z"/></svg></button></div>
-    <div class="rqtabs" id="ftTabs"><button type="button" data-t="res">תוצאות</button><button type="button" data-t="prog">התקדמות</button></div>
+    <div class="rqtabs" id="ftTabs"><button type="button" data-t="train">אימונים</button><button type="button" data-t="res">מדידות</button><button type="button" data-t="prog">התקדמות</button></div>
     <div id="ftResTab">
       <div class="row2" id="ftBtns"><button class="primary" id="ftNew" type="button">+ מדידה חדשה</button><label class="ghost filebtn" for="ftFile">📥 ייבוא מקובץ / תמונה</label></div>
       <input type="file" id="ftFile" accept="image/*,application/pdf,.pdf,.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" hidden>
@@ -1386,6 +1402,36 @@ ul.tslist li.tsrow{display:block;padding:12px 14px}
       <h2 class="sec" id="ftHistH">ימי מדידה</h2>
       <ul class="list" id="ftHist"></ul>
       <div class="empty" id="ftEmpty" hidden>עוד אין מדידות. לוחצים על "+ מדידה חדשה", בוחרים פעילות ומזינים לכל חייל את התוצאה.</div>
+    </div>
+    <div id="ftTrTab" hidden>
+      <button class="primary" type="button" id="trNew">+ הוספת אימון</button>
+      <form class="add" id="trForm" hidden>
+        <strong>אימון חדש</strong>
+        <div class="f">סוג האימון<div class="chips" id="trTypes" role="radiogroup" aria-label="סוג האימון"></div></div>
+        <label class="f" id="trOtherW" hidden>שם האימון<input type="text" id="trOther" maxlength="40" placeholder="למשל: אימון קרב מגע"></label>
+        <label class="f">תאריך<input type="date" id="trDate"></label>
+        <label class="f">הערה (לא חובה)<input type="text" id="trNote" maxlength="120" placeholder="למשל: 5 ק&quot;מ, קצב 5:30"></label>
+        <p class="err" id="trErr" hidden></p>
+        <div class="row2"><button class="primary" type="submit">לסימון מי עשה</button><button class="ghost" type="button" id="trCancel">ביטול</button></div>
+      </form>
+      <div id="trSess" hidden>
+        <div class="ftshead"><div><b id="trSTitle"></b><span class="mini" id="trSSub"></span></div><button class="primary sm" type="button" id="trSDone">סיום</button></div>
+        <div class="trbar"><div class="wfilter"><select id="trSquad" aria-label="כיתה"></select></div><button class="ghost sm" type="button" id="trAll">כולם עשו</button></div>
+        <p class="mini">גוררים או לוחצים: ירוק = עשה, אדום = לא עשה. מי שלא בבסיס מסומן "פטור" ולא נספר כחוסר.</p>
+        <div class="trprog"><div class="tf" id="trBar"></div></div><span class="mini" id="trCnt"></span>
+        <ul class="list roll" id="trRows"></ul>
+        <h2 class="sec" id="trExH" hidden>פטורים</h2>
+        <ul class="list" id="trEx"></ul>
+        <button class="linkbtn muted" type="button" id="trDel">מחיקת האימון</button>
+      </div>
+      <div id="trMain">
+        <h2 class="sec">מעקב חוסרים</h2>
+        <div class="wfilter"><select id="trPer" aria-label="תקופה"><option value="30">30 הימים האחרונים</option><option value="60">60 יום</option><option value="0">הכול</option></select><select id="trPType" aria-label="סוג"></select></div>
+        <ul class="list trtrack" id="trTrack"></ul>
+        <div class="empty" id="trTrEmpty" hidden></div>
+        <h2 class="sec" id="trHistH">אימונים</h2>
+        <ul class="list" id="trHist"></ul>
+      </div>
     </div>
     <div id="ftProgTab" hidden>
       <div class="wfilter"><select id="ftPAct" aria-label="פעילות"></select><select id="ftPSquad" aria-label="כיתה"></select></div>
@@ -5465,7 +5511,7 @@ const top=el("div","top");
   const fmtFit=(v,t)=>{if(v==null)return "";if(t==="pass")return v?"עבר":"לא עבר";
     if(t==="time"){const tot=Math.round(v*10)/10,h=Math.floor(tot/3600),mi=Math.floor((tot%3600)/60),se=tot%60,ss=(se<10?"0":"")+(Number.isInteger(se)?se:se.toFixed(1));return (h?h+":"+String(mi).padStart(2,"0"):mi)+":"+ss;}
     return String(+(+v).toFixed(2));};
-  let ftTab="res",ftOpen=null;
+  let ftTab="train",ftOpen=null;
   // all measurements of one activity, oldest first: [{date,v,at}] per soldier
   function fitSeries(act){const M=new Map();
     fitEv().filter(x=>x.act===act).sort((a,b)=>(a.date||"").localeCompare(b.date||"")||(a.at||0)-(b.at||0)).forEach(x=>{
@@ -5478,8 +5524,91 @@ const top=el("div","top");
     if($("v-fit").hidden)return;
     $("ftCount").textContent=E.length||"";
     $("ftTabs").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.t===ftTab));
-    $("ftResTab").hidden=ftTab!=="res";$("ftProgTab").hidden=ftTab!=="prog";
-    if(ftTab==="res")renderFitRes();else renderFitProg();
+    $("ftResTab").hidden=ftTab!=="res";$("ftProgTab").hidden=ftTab!=="prog";$("ftTrTab").hidden=ftTab!=="train";
+    if(ftTab==="res")renderFitRes();else if(ftTab==="train")renderTrain();else renderFitProg();
+  }
+
+  /* ---------- training sessions: what kind, who did it and who didn't, and who keeps missing which kind ---------- */
+  const TR_TYPES=["ריצה","כוח","אינטרוולים","מסע","קרב מגע","גמישות"];
+  const trEv=()=>visRO(events).filter(x=>x.kind==="train");
+  let trType=null,trOpen=null,trOpenS=null;
+  const trDid=x=>x.did||{},trEx=x=>x.ex||{};
+  function trDrawTypes(){
+    const box=$("trTypes");box.textContent="";
+    const used=[...new Set(trEv().map(x=>x.type).filter(t=>t&&!TR_TYPES.includes(t)))];
+    TR_TYPES.concat(used,["אחר"]).forEach(t=>{const b=el("button","chipbtn"+(trType===t?" on":""),t);b.type="button";b.setAttribute("role","radio");b.setAttribute("aria-checked",String(trType===t));b.onclick=()=>{trType=t;trDrawTypes();};box.append(b);});
+    $("trOtherW").hidden=trType!=="אחר";
+  }
+  $("trNew").onclick=()=>{trType=null;$("trForm").reset();$("trDate").value=todayKey();showErr("trErr","");$("trForm").hidden=false;$("trNew").hidden=true;trDrawTypes();};
+  $("trCancel").onclick=()=>{$("trForm").hidden=true;$("trNew").hidden=false;};
+  $("trForm").onsubmit=async e=>{e.preventDefault();
+    if(!trType)return showErr("trErr","בחרו סוג אימון.");
+    const type=trType==="אחר"?$("trOther").value.trim():trType;if(!type)return showErr("trErr","כתבו את שם האימון.");
+    const date=$("trDate").value||todayKey();
+    // who isn't on base that day is excused, not missing
+    const ex={};fitSoldiers("*").forEach(s=>{const a=awayInfo(s.id);if(a&&date===todayKey())ex[s.id]=a.tag||"לא בבסיס";});
+    const id=newId(),u=writeUnit();
+    const ok=await write("events/"+id,{kind:"train",type,date,note:$("trNote").value.trim(),did:{},ex,unit:u,at:Date.now(),addedBy:uid,addedByName:(me&&me.name)||""},"trErr");
+    if(ok){$("trForm").hidden=true;$("trNew").hidden=false;trOpen=id;renderFit();scrollTo({top:0});}
+  };
+  $("trSDone").onclick=()=>{const x=trEv().find(z=>z.id===trOpen);trOpen=null;renderFit();
+    if(x){const n=Object.keys(trDid(x)).length;toast("נשמר: "+x.type+" · "+n+" עשו");}};
+  $("trDel").onclick=()=>{const id=trOpen;if(!id)return;trOpen=null;remove("events/"+id);renderFit();};
+  $("trSquad").onchange=()=>renderFit();
+  $("trAll").onclick=()=>{const x=trEv().find(z=>z.id===trOpen);if(!x)return;const sq=$("trSquad").value||"*",ex=trEx(x),u={};
+    fitSoldiers(sq).forEach(s=>{if(!ex[s.id]&&!trDid(x)[s.id])u["did."+s.id]=1;});if(Object.keys(u).length)patch("events/"+x.id,u);
+    setMarks("tr:"+x.id,new Set(Object.keys(trDid(x)).concat(Object.keys(u).map(k=>k.slice(4)))));renderFit();};
+  $("trPer").onchange=()=>renderFit();$("trPType").onchange=()=>renderFit();
+  function renderTrain(){
+    const E=trEv().sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.at||0)-(a.at||0));
+    const cur=trOpen&&E.find(x=>x.id===trOpen);if(trOpen&&!cur)trOpen=null;
+    $("trSess").hidden=!cur;$("trMain").hidden=!!cur;$("trNew").hidden=!!cur||!$("trForm").hidden;
+    if(cur){
+      $("trSTitle").textContent=cur.type;$("trSSub").textContent=" · "+fmtG(cur.date)+(cur.note?" · "+cur.note:"");
+      if(!$("trSquad").options.length)squadSelect($("trSquad"));
+      const sq=$("trSquad").value||"*",ex=trEx(cur),S=fitSoldiers(sq),mk="tr:"+cur.id;
+      const marks=new Set(Object.keys(trDid(cur)));setMarks(mk,marks);
+      const act=S.filter(s=>!ex[s.id]),cnt=()=>{const n=act.filter(s=>marks.has(s.id)).length;progress($("trBar"),$("trCnt"),n,act.length);$("trCnt").textContent=n+" מתוך "+act.length+" עשו";};
+      const ul=$("trRows");ul.textContent="";
+      act.forEach(s=>{const row=rollRow(s.id,marks,mk,()=>{const on=marks.has(s.id);patch("events/"+cur.id,{["did."+s.id]:on?1:firebase.firestore.FieldValue.delete()});cnt();},
+        b=>{const i=el("div","info");i.append(el("div","n1",s.name),el("div","n3",s.squad?"כיתה "+s.squad:""));b.append(i);});ul.append(row);});
+      cnt();
+      const ue=$("trEx");ue.textContent="";const E2=S.filter(s=>ex[s.id]);$("trExH").hidden=!E2.length;
+      E2.forEach(s=>{const li=el("li");const i=el("div","info");i.append(el("div","n1",s.name),el("div","n3","פטור · "+ex[s.id]));
+        const b=el("button","linkbtn","להחזיר לרשימה");b.type="button";b.onclick=()=>patch("events/"+cur.id,{["ex."+s.id]:firebase.firestore.FieldValue.delete()});li.append(i,b);ue.append(li);});
+      return;
+    }
+    // follow-up: per soldier and kind, how many he did out of the ones he wasn't excused from
+    const per=+$("trPer").value,from=per?key(new Date(Date.now()-per*864e5)):"";
+    const types=[...new Set(E.map(x=>x.type))];
+    {const sel=$("trPType"),v=sel.value;sel.textContent="";const o=el("option",null,"כל הסוגים");o.value="";sel.append(o);types.forEach(t=>{const p=el("option",null,t);p.value=t;sel.append(p);});sel.value=types.includes(v)?v:"";}
+    const ft=$("trPType").value,X=E.filter(x=>(!from||x.date>=from)&&(!ft||x.type===ft));
+    const S=fitSoldiers("*"),rows=[];
+    S.forEach(s=>{const by={};let tot=0,did=0;
+      X.forEach(x=>{if(trEx(x)[s.id])return;const k=x.type;by[k]=by[k]||{n:0,d:0,miss:[]};by[k].n++;tot++;if(trDid(x)[s.id]){by[k].d++;did++;}else by[k].miss.push(x);});
+      if(tot)rows.push({s,by,tot,did,miss:tot-did});});
+    rows.sort((a,b)=>b.miss-a.miss||(a.did/a.tot)-(b.did/b.tot)||String(a.s.name).localeCompare(String(b.s.name),"he"));
+    const ul=$("trTrack");ul.textContent="";
+    $("trTrEmpty").hidden=rows.length>0;$("trTrEmpty").textContent=E.length?"אין אימונים בתקופה הזו.":'עוד אין אימונים. לוחצים "+ הוספת אימון", בוחרים סוג ומסמנים מי עשה.';
+    rows.forEach(r=>{const li=el("li","trrow"+(trOpenS===r.s.id?" open":""));const hd=el("div","tshd");const who=el("div","who");
+      who.append(sLink(r.s.name,r.s.id));
+      const tg=el("div","tstags");
+      Object.entries(r.by).sort((a,b)=>(b[1].n-b[1].d)-(a[1].n-a[1].d)).forEach(([t,v])=>{const m=v.n-v.d,rate=v.n?m/v.n:0;
+        tg.append(el("span","trtag"+(m===0?" ok":rate>=0.4&&m>=2?" bad":" mid"),t+" "+v.d+"/"+v.n));});
+      who.append(tg);
+      const sc=el("div","trscore"+(r.miss===0?" ok":r.miss/r.tot>=0.4?" bad":""));sc.append(el("b",null,String(r.did)),el("span",null,"מתוך "+r.tot));
+      hd.append(who,sc);li.append(hd);
+      hd.onclick=e=>{if(e.target.closest("a"))return;trOpenS=trOpenS===r.s.id?null:r.s.id;renderFit();};
+      if(trOpenS===r.s.id){const box=el("div","trmiss");const M=Object.values(r.by).flatMap(v=>v.miss).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+        if(!M.length)box.append(el("div","mini","✓ לא פספס אף אימון בתקופה הזו."));
+        else{box.append(el("div","mini","פספס:"));M.forEach(x=>box.append(el("div","trm","❌ "+x.type+" · "+fmtG(x.date))));}
+        li.append(box);}
+      ul.append(li);});
+    // the trainings themselves
+    const uh=$("trHist");uh.textContent="";$("trHistH").hidden=!E.length;
+    E.slice(0,60).forEach(x=>{const ex=trEx(x),tot=S.filter(s=>!ex[s.id]).length,d=S.filter(s=>!ex[s.id]&&trDid(x)[s.id]).length;
+      const li=el("li","tap");const i=el("div","info");i.append(el("div","n1",x.type+" · "+fmtG(x.date)),el("div","n3",d+" מתוך "+tot+" עשו"+(x.note?" · "+x.note:"")+(x.addedByName?" · "+x.addedByName:"")));
+      li.append(i);li.onclick=()=>{trOpen=x.id;renderFit();scrollTo({top:0});};uh.append(li);});
   }
   function fitSoldiers(sq){return visRO(soldiers).filter(s=>!isCmdSoldier(s)&&(sq==="*"||(s.squad||"")===sq)).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));}
   let ftDay=null,ftDayAct=null;
@@ -6761,6 +6890,11 @@ const top=el("div","top");
     {// absences: who comes back today, who leaves tomorrow
       absEv().filter(x=>(x.to||x.date)===t&&x.date<=t).forEach(x=>add("absent","info","חוזר היום: "+nm(x.soldierId),(x.absType||"")+(x.allDay?"":" · עד ⁦"+(x.end||"")+"⁩"),toS(x.soldierId)));
       absEv().filter(x=>x.date===tom).forEach(x=>add("absent","info","יוצא מחר: "+nm(x.soldierId),x.absType||"",toS(x.soldierId)));
+    }
+    {// trainings: who keeps missing a kind
+      const from=key(new Date(Date.now()-30*864e5)),X=trEv().filter(x=>x.date>=from);
+      if(X.length)S.forEach(s=>{const by={};X.forEach(x=>{if((x.ex||{})[s.id])return;const k=x.type;by[k]=by[k]||{n:0,m:0};by[k].n++;if(!(x.did||{})[s.id])by[k].m++;});
+        Object.entries(by).forEach(([k,v])=>{if(v.m>=3&&v.m/v.n>=0.5)add("fit","warn",s.name+" מפספס "+k,"פספס "+v.m+" מתוך "+v.n+" בחודש האחרון",()=>{location.hash="fit";});});});
     }
     {// fitness: the latest test of each kind, soldiers with no result
       const last=new Map();fitEv().forEach(x=>{if(!x.act||!x.date)return;const p=last.get(x.act);if(!p||x.date>p.date)last.set(x.act,x);});
