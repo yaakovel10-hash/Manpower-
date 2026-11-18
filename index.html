@@ -95,6 +95,15 @@ ul.list .info{min-width:0;flex:1}
 .wicon svg{width:36px;height:36px}
 .del{background:none;border:0;color:var(--muted);font:inherit;font-size:14px;cursor:pointer;padding:6px;flex:none}
 .del.armed{color:var(--danger);font-weight:700}
+.onboard{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:14px;display:grid;gap:10px;margin:6px 0 12px}
+.onboard .obt{font-size:17px}
+.onboard .obs{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.onboard .obs.done{opacity:.55}.onboard .obs.done .obn{background:var(--ok,#2f7a3c)}
+.onboard .obn{width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-weight:700}
+.onboard .obx{display:grid}.onboard .obs button{width:auto;padding:10px 12px;font-size:14px}
+.emptycta{display:block;margin:10px auto 0;width:auto;min-width:60%}
+.apptitle{font-size:15px;font-weight:700;color:var(--muted);margin:0 0 6px;text-align:center}
+h1.n1{margin:0}
 .empty{text-align:center;color:var(--muted);padding:24px 8px;border:1px dashed var(--line);border-radius:14px}
 .search{margin-bottom:12px}
 .sh{display:grid;gap:14px;padding:16px;margin-bottom:14px;border-radius:24px;border:1px solid var(--line);background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%),linear-gradient(180deg,var(--surface),var(--tile));box-shadow:inset 0 1px 0 var(--hi),0 10px 24px -18px var(--shadow)}
@@ -996,6 +1005,17 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
 .fptf{height:100%;background:var(--ok);border-radius:999px}.fptf.mid{background:var(--warn)}.fptf.bad{background:var(--danger)}
 .fptm{margin:-4px 0 4px}
 .wchart{margin-top:2px}
+/* ---- clarity: words under icons, hints under fields, finger-sized buttons ---- */
+.bar{flex-wrap:wrap;row-gap:8px}
+.bar h1{flex:0 1 auto;overflow-wrap:normal}
+.pencil.haslab{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;height:52px!important;width:52px!important;padding:4px 0 3px}
+.pencil.haslab svg{width:22px;height:22px;flex:none}
+.pencil .plab{font-size:10.5px;font-weight:700;line-height:1;color:currentColor;opacity:.85;font-family:var(--body);white-space:nowrap}
+.bartools{gap:6px}
+.fhint{display:block;font-size:12.5px;color:var(--muted);margin:-4px 2px 4px;line-height:1.4}
+button,.btn,a.tile,select,input[type=text],input[type=tel],input[type=email],input[type=password],input[type=search],input[type=date],input[type=time]{min-height:44px}
+button.linkbtn,button.chipbtn,button.del,button.ftx,.knob,.pencil,.chip,button.rsx,button.bkx,.wgmv{min-height:0}
+.del{min-height:36px;padding:6px 10px}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1024,8 +1044,8 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
     </div>
     <form class="panel" id="mailForm">
       <strong>או עם מייל וסיסמה</strong>
-      <label class="f">מייל<input type="email" id="mlEmail" class="ltr" autocomplete="username" inputmode="email" required></label>
-      <label class="f">סיסמה<input type="password" id="mlPass" class="ltr" autocomplete="current-password" minlength="6" required></label>
+      <label class="f">מייל<input type="email" id="mlEmail" class="ltr" autocomplete="username" inputmode="email" required placeholder="לדוגמה: name@gmail.com"></label>
+      <label class="f">סיסמה<input type="password" id="mlPass" class="ltr" autocomplete="current-password" minlength="6" required placeholder="לפחות 6 תווים"></label>
       <p class="err" id="mlErr" hidden></p>
       <div class="row2"><button class="primary" type="submit" id="mlIn">כניסה</button><button class="ghost" type="button" id="mlNew">משתמש חדש</button></div>
       <button class="linkbtn" type="button" id="mlForgot">שכחתי סיסמה</button>
@@ -1047,7 +1067,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
     </form>
     <form class="panel" id="keyForm">
       <strong>יש לך סיסמת מפתח?</strong>
-      <label class="f">סיסמת מפתח<input type="password" id="keyIn" class="ltr" required autocomplete="off"></label>
+      <label class="f">סיסמת מפתח<input type="password" id="keyIn" class="ltr" required autocomplete="off" placeholder="הסיסמה שקיבלתם מהמנהל"></label><span class="fhint">סיסמה מיוחדת שהמנהל נותן, למי שצריך לראות את כל המסגרות.</span>
       <p class="err" id="keyErr" hidden></p>
       <button class="ghost" type="submit">כניסה עם סיסמת מפתח</button>
     </form>
@@ -1063,8 +1083,8 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
     </div>
     <div class="joinunit" id="joinUnit" hidden></div>
     <form class="add" id="setupForm">
-      <label class="f">שם מלא<input type="text" id="uName" maxlength="40" required autocomplete="name"></label>
-      <label class="f">מספר אישי<input type="tel" id="uPid" class="ltr" inputmode="numeric" maxlength="12" required></label>
+      <label class="f">שם מלא<input type="text" id="uName" maxlength="40" required autocomplete="name" placeholder="לדוגמה: ישראל ישראלי"></label>
+      <label class="f">מספר אישי<input type="tel" id="uPid" class="ltr" inputmode="numeric" maxlength="12" required placeholder="לדוגמה: 1234567"></label><span class="fhint">7 ספרות, מופיע בחוגר. כך מחברים אותך לחייל שלך ברשימה.</span>
       <label class="f">תפקיד
         <select id="uTitle" required>
           <option value="" disabled selected>בחרו תפקיד</option>
@@ -1086,6 +1106,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
 
   <!-- HOME -->
   <section id="v-home" hidden>
+    <h1 class="apptitle">מעקב כוח אדם · מסך ראשי</h1>
     <header class="top">
       <div class="who">
         <span class="lbl">שם משתמש</span>
@@ -1103,6 +1124,13 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <div class="wgrid" id="widgets" hidden></div>
+    <div class="onboard" id="onboard" hidden>
+      <b class="obt">איך מתחילים? 3 צעדים</b>
+      <div class="obs" id="obS1"><span class="obn">1</span><span class="obx"><b>מוסיפים חיילים</b><span class="mini">אחד אחד, או ייבוא מקובץ אקסל / תמונה</span></span><button class="primary" type="button" data-ob="soldiers|openS">הוספת חיילים</button></div>
+      <div class="obs" id="obS2"><span class="obn">2</span><span class="obx"><b>מוסיפים אמל"ח</b><span class="mini">נשקים וציוד, ומי חתום על מה</span></span><button class="primary" type="button" data-ob="weapons|openW">הוספת אמל"ח</button></div>
+      <div class="obs" id="obS3"><span class="obn">3</span><span class="obx"><b>מזמינים מפקדים</b><span class="mini">שולחים להם את קישור ההצטרפות של המסגרת</span></span><button class="ghost" type="button" data-ob="units|">לקישור ההצטרפות</button></div>
+      <span class="mini">הכרטיס ייעלם לבד אחרי שיהיו חיילים ואמל"ח.</span>
+    </div>
     <nav class="tiles" id="homeTiles">
       <a class="tile t-green" href="#attend">
         <span class="badge" id="pendBadge" hidden></span>
@@ -1202,7 +1230,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       <strong>סיסמת מפתח</strong>
       <div class="mkshow" id="mkShow"></div>
       <span class="mini">מי שמזין את הסיסמה הזו יכול לפתוח ולסגור מסגרות ורואה את כל הנתונים. החלפת הסיסמה מבטלת את כל מי שנכנס עם הסיסמה הקודמת.</span>
-      <label class="f">סיסמה חדשה (לפחות 8 תווים)<input type="text" id="masterIn" class="ltr" minlength="8" required autocomplete="new-password"></label>
+      <label class="f">סיסמה חדשה (לפחות 8 תווים)<input type="text" id="masterIn" class="ltr" minlength="8" required autocomplete="new-password" placeholder="לפחות 8 תווים, לדוגמה: Hod2026!"></label><span class="fhint">מי שמזין אותה רואה את כל המסגרות. שתפו רק עם מי שצריך.</span>
       <p class="err" id="masterErr" hidden></p>
       <button class="ghost" type="submit">שמירת סיסמת מפתח</button>
     </form>
@@ -1214,12 +1242,12 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
     <form class="add" id="scSet" hidden>
       <label class="f">מיקום לזמני היום ולשבת<select id="scLoc"></select></label>
       <span class="mini" id="scLocNote"></span>
-      <div class="row2" id="scAddRow" hidden><input type="text" id="scAddName" maxlength="30" placeholder='שם המקום, למשל בא"ח גולני'><button class="primary" type="button" id="scAddSave">שמירה</button></div>
+      <div class="row2" id="scAddRow" hidden><input type="text" id="scAddName" maxlength="30" placeholder='שם המקום, למשל בא"ח גולני'><button class="primary" type="button" id="scAddSave">שמירת המקום</button></div>
       <button class="linkbtn" type="button" id="scAddBtn">+ הוספת מקום לפי המיקום שבו אני נמצא עכשיו</button>
       <button class="linkbtn muted" type="button" id="scDelBtn" hidden>מחיקת המקום הזה מהרשימה</button>
       <label class="allday"><input type="checkbox" id="scShowHol" checked> חגים ומועדים</label>
       <label class="allday"><input type="checkbox" id="scShowZ" checked> זמני היום, כניסת ויציאת שבת</label>
-      <button class="ghost" type="button" id="scSetDone">סגירה</button>
+      <button class="ghost" type="button" id="scSetDone">סגירת ההגדרות</button>
     </form>
     <div class="row2"><button class="primary" type="button" id="openSE">+ הוספת אירוע</button><button class="ghost" type="button" id="openSP">📋 הדבקת לו"ז</button></div>
     <form class="add" id="formSP" hidden>
@@ -1242,9 +1270,9 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
         <label class="f">עד שעה<input type="time" id="seUntil"></label>
       </div>
       <div class="f">צבע<div class="swatches" id="seColors" role="radiogroup" aria-label="צבע האירוע"></div></div>
-      <label class="f">הערות (לא חובה)<input type="text" id="seNote" maxlength="200"></label>
+      <label class="f">הערות (לא חובה)<input type="text" id="seNote" maxlength="200" placeholder="לדוגמה: להביא מים ונשק"></label>
       <p class="err" id="seErr" hidden></p>
-      <div class="row2"><button class="primary" type="submit" id="seSave">שמירה</button><button class="ghost" type="button" id="cancelSE">ביטול</button></div>
+      <div class="row2"><button class="primary" type="submit" id="seSave">שמירת האירוע</button><button class="ghost" type="button" id="cancelSE">ביטול</button></div>
     </form>
     <div class="cal-head">
       <button class="nav" type="button" id="scPrev" aria-label="חודש קודם">›</button>
@@ -1266,7 +1294,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       <span class="mini">כשבוחרים סוג בהוספת היעדרות, השעות ומספר הימים ימולאו אוטומטית. אפשר לשנות אותם בכל היעדרות.</span>
       <div id="abCfgList" class="cfglist"></div>
       <p class="err" id="abCfgErr" hidden></p>
-      <div class="row2"><button class="primary" type="button" id="abCfgSave">שמירת הגדרות</button><button class="ghost" type="button" id="abCfgClose">סגירה</button></div>
+      <div class="row2"><button class="primary" type="button" id="abCfgSave">שמירת הגדרות</button><button class="ghost" type="button" id="abCfgClose">סגירת ההגדרות</button></div>
     </div>
     <button class="primary" type="button" id="openAB">+ הוספת היעדרות</button>
     <form class="add" id="formAB" hidden>
@@ -1278,7 +1306,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
         <label class="f">עד תאריך<input type="date" id="abTo"></label>
       </div>
       <div class="f">כמה ימים
-        <div class="daysel"><button class="nav" type="button" id="abDaysMinus" aria-label="פחות">−</button><input type="number" id="abDays" min="1" max="90" value="1" inputmode="numeric" aria-label="מספר ימים"><button class="nav" type="button" id="abDaysPlus" aria-label="יותר">+</button>
+        <div class="daysel"><button class="nav" type="button" id="abDaysMinus" aria-label="פחות">−</button><input type="number" id="abDays" min="1" max="90" value="1" inputmode="numeric" aria-label="מספר ימים" placeholder="1"><button class="nav" type="button" id="abDaysPlus" aria-label="יותר">+</button>
         <span class="chips" id="abDayChips"></span></div>
       </div>
       <label class="allday"><input type="checkbox" id="abAllDay"> כל היום</label>
@@ -1286,9 +1314,9 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
         <label class="f">משעה<input type="time" id="abStart"></label>
         <label class="f">עד שעה<input type="time" id="abEnd"></label>
       </div>
-      <label class="f">הערות (לא חובה)<input type="text" id="abNote" maxlength="200"></label>
+      <label class="f">הערות (לא חובה)<input type="text" id="abNote" maxlength="200" placeholder="לדוגמה: חוזר ברכבת של 18:00"></label>
       <p class="err" id="abErr" hidden></p>
-      <div class="row2"><button class="primary" type="submit" id="abSave">שמירה</button><button class="ghost" type="button" id="cancelAB">ביטול</button></div>
+      <div class="row2"><button class="primary" type="submit" id="abSave">שמירת ההיעדרות</button><button class="ghost" type="button" id="cancelAB">ביטול</button></div>
     </form>
     <div class="daypick">
       <button class="nav" type="button" id="abPrev" aria-label="יום קודם">›</button>
@@ -1374,7 +1402,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
         <label class="f">שעת יציאה<input type="time" id="qFromT"></label>
         <label class="f">שעת חזרה<input type="time" id="qToT"></label>
       </div>
-      <label class="f">סיבת הבקשה<input type="text" id="qReason" maxlength="100" required></label>
+      <label class="f">סיבת הבקשה<input type="text" id="qReason" maxlength="100" required placeholder="לדוגמה: תור לרופא, חתונה של אח"></label>
       <label class="f">רמת חשיבות
         <select id="qImp"><option value="1">נמוכה</option><option value="2" selected>בינונית</option><option value="3">גבוהה</option><option value="4">דחופה</option></select>
       </label>
@@ -1401,13 +1429,13 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
         <label class="f">שעת יציאה<input type="time" id="mqFromT"></label>
         <label class="f">שעת חזרה<input type="time" id="mqToT"></label>
       </div>
-      <label class="f">סיבה / תלונה<input type="text" id="mqReason" maxlength="100" required></label>
+      <label class="f">סיבה / תלונה<input type="text" id="mqReason" maxlength="100" required placeholder="לדוגמה: בדיקת דם, רופא שיניים"></label>
       <label class="f">דחיפות
         <select id="mqImp"><option value="1">נמוכה</option><option value="2" selected>בינונית</option><option value="3">גבוהה</option><option value="4">דחופה</option></select>
       </label>
       <label class="f">הערות<textarea id="mqNotes" maxlength="500"></textarea></label>
       <p class="err" id="mqErr" hidden></p>
-      <div class="row2"><button class="primary" type="submit">שמירה</button><button class="ghost" type="button" id="cancelMD">ביטול</button></div>
+      <div class="row2"><button class="primary" type="submit">שמירת הבקשה</button><button class="ghost" type="button" id="cancelMD">ביטול</button></div>
     </form>
     <div class="rqtabs" id="mdTabs"><button type="button" data-t="pending">ממתינים <span id="mdN-pending"></span></button><button type="button" data-t="approved">מאושרים <span id="mdN-approved"></span></button><button type="button" data-t="past">היסטוריה</button></div>
     <label class="searchbox"><input type="search" id="mdQ" placeholder="חיפוש חייל או סיבה…" autocomplete="off"></label>
@@ -1433,7 +1461,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
           <p class="err" id="ftIErr" hidden></p>
           <div class="row2"><button class="primary" type="button" id="ftISave">שמירת התוצאות</button><button class="ghost" type="button" id="ftIClose">ביטול</button></div>
         </div>
-        <button class="ghost" type="button" id="ftIClose2">סגירה</button>
+        <button class="ghost" type="button" id="ftIClose2">סגירת הייבוא</button>
       </div>
       <form class="add" id="ftForm" hidden>
         <label class="f">פעילות<select id="ftAct"></select></label>
@@ -1446,7 +1474,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
         <div class="row2"><button class="primary" type="submit">התחלת הזנה</button><button class="ghost" type="button" id="ftCancel">ביטול</button></div>
       </form>
       <div id="ftSess" hidden>
-        <div class="ftshead"><div><b id="ftSTitle"></b><span class="mini" id="ftSSub"></span></div><button class="ghost sm" type="button" id="ftSClose">סיום</button></div>
+        <div class="ftshead"><div><b id="ftSTitle"></b><span class="mini" id="ftSSub"></span></div><button class="ghost sm" type="button" id="ftSClose">סיום ההזנה</button></div>
         <div class="wfilter"><select id="ftSquad" aria-label="כיתה"></select></div>
         <p class="mini" id="ftSHint"></p>
         <ul class="list ftrows" id="ftRows"></ul>
@@ -1474,7 +1502,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
         <div class="row2"><button class="primary" type="submit">לסימון מי עשה</button><button class="ghost" type="button" id="trCancel">ביטול</button></div>
       </form>
       <div id="trSess" hidden>
-        <div class="ftshead"><div><b id="trSTitle"></b><span class="mini" id="trSSub"></span></div><button class="primary sm" type="button" id="trSDone">סיום</button></div>
+        <div class="ftshead"><div><b id="trSTitle"></b><span class="mini" id="trSSub"></span></div><button class="primary sm" type="button" id="trSDone">סיום ושמירת האימון</button></div>
         <div class="trbar"><div class="wfilter"><select id="trSquad" aria-label="כיתה"></select></div><button class="ghost sm" type="button" id="trAll">כולם עשו</button></div>
         <p class="mini">גוררים או לוחצים: ירוק = עשה, אדום = לא עשה. מי שלא בבסיס מסומן "פטור" ולא נספר כחוסר.</p>
         <div class="trprog"><div class="tf" id="trBar"></div></div><span class="mini" id="trCnt"></span>
@@ -1522,7 +1550,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       <div class="f">של מי<div class="picker" id="wrPick"></div></div>
       <label class="f">למה (לא חובה)<textarea id="wrWhy" maxlength="300" placeholder="למשל: קרוע בברך, סוליה נפרדה, מידה לא מתאימה"></textarea></label>
       <p class="err" id="wrErr" hidden></p>
-      <div class="row2"><button class="primary" type="submit" id="wrSave">שמירה</button><button class="ghost" type="button" id="cancelWR">ביטול</button></div>
+      <div class="row2"><button class="primary" type="submit" id="wrSave">שמירת הבלאי</button><button class="ghost" type="button" id="cancelWR">ביטול</button></div>
     </form>
     <div class="empty" id="wrEmpty" hidden>אין בלאי פתוח. 👌</div>
     <ul class="list wrlist" id="wrList"></ul>
@@ -1547,13 +1575,13 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       <label class="f">מתי קרה<input type="date" id="puDate"></label>
       <div class="f">העונש — לפי החלטת המפקד<div class="chips" id="puTypes" role="radiogroup" aria-label="סוג העונש"></div></div>
       <div class="f" id="puAmtWrap" hidden><span id="puAmtL">כמה</span>
-        <div class="daysel"><button class="nav" type="button" id="puMinus" aria-label="פחות">−</button><input type="number" id="puAmt" min="1" max="99" inputmode="numeric" aria-label="כמות"><button class="nav" type="button" id="puPlus" aria-label="יותר">+</button></div>
+        <div class="daysel"><button class="nav" type="button" id="puMinus" aria-label="פחות">−</button><input type="number" id="puAmt" min="1" max="99" inputmode="numeric" aria-label="כמות" placeholder="לדוגמה: 2"><button class="nav" type="button" id="puPlus" aria-label="יותר">+</button></div><span class="fhint">כמה שעות, ימים או שבתות — לפי סוג העונש שבחרתם.</span>
       </div>
       <label class="f" id="puOtherWrap" hidden>מה העונש<input type="text" id="puOther" maxlength="80" placeholder="למשל: שמירה נוספת, תורנות מטבח"></label>
       <div class="f">מתי ירוצה (לא חובה)<div class="chips" id="puWhen"></div><input type="date" id="puOn"></div>
       <label class="f">הערה (לא חובה)<textarea id="puNote" maxlength="300"></textarea></label>
       <p class="err" id="puErr" hidden></p>
-      <div class="row2"><button class="primary" type="submit" id="puSave">שמירה</button><button class="ghost" type="button" id="cancelPU">ביטול</button></div>
+      <div class="row2"><button class="primary" type="submit" id="puSave">שמירת המענה</button><button class="ghost" type="button" id="cancelPU">ביטול</button></div>
     </form>
     <div class="pufilter">
       <input type="text" id="puQ" placeholder="🔍 חיפוש חייל…" autocomplete="off" enterkeyhint="search">
@@ -1591,7 +1619,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       <label class="f"><span id="nmNumL">מספר כלי</span><input type="text" id="nmNum" class="ltr" maxlength="20" required placeholder="למשל: 817345"></label>
       <div class="f">אחראי<div class="picker" id="nmPick"></div></div>
       <p class="err" id="nmErr" hidden></p>
-      <div class="row2"><button class="primary" type="submit" id="nmSave">שמירה</button><button class="ghost" type="button" id="cancelNM">ביטול</button></div>
+      <div class="row2"><button class="primary" type="submit" id="nmSave">שמירת הכלי</button><button class="ghost" type="button" id="cancelNM">ביטול</button></div>
     </form>
     <ul class="list nmlist" id="nmList"></ul>
     <div class="empty" id="nmEmpty" hidden>עוד אין נמ"רים. לחצו "הוספת נמ"ר" כדי להתחיל.</div>
@@ -1612,10 +1640,10 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       <label class="f">שם הפריט<input type="text" id="niName" list="niNames" maxlength="60" required placeholder="למשל: מעיל רוח, פטיש 5"></label>
       <datalist id="niNames"><option value="מעיל רוח"><option value="פטיש 5"><option value="מטף"><option value="ערכת עזרה ראשונה"><option value="אלונקה"><option value="ג'ריקן מים"><option value="ג'ריקן דלק"><option value="כבל גרירה"><option value="מפתח גלגלים"><option value="ג'ק"><option value="פנס"><option value="רשת הסוואה"><option value="מכשיר קשר"></datalist>
       <label class="allday"><input type="checkbox" id="niHasNum"> לפריט יש מספר</label>
-      <label class="f" id="niNumWrap" hidden>מספר הפריט<input type="text" id="niNum" class="ltr" maxlength="30"></label>
-      <label class="f">כמות<input type="number" id="niQty" min="1" max="99" value="1" inputmode="numeric"></label>
+      <label class="f" id="niNumWrap" hidden>מספר הפריט<input type="text" id="niNum" class="ltr" maxlength="30" placeholder="לדוגמה: 38885"></label>
+      <label class="f">כמות<input type="number" id="niQty" min="1" max="99" value="1" inputmode="numeric" placeholder="1"></label><span class="fhint">כמה יחידות מהפריט אמורות להיות בכלי.</span>
       <p class="err" id="niErr" hidden></p>
-      <div class="row2"><button class="primary" type="submit" id="niSave">+ הוספה</button><button class="ghost" type="button" id="niDone">סיום</button></div>
+      <div class="row2"><button class="primary" type="submit" id="niSave">+ הוספת הפריט</button><button class="ghost" type="button" id="niDone">סיום ההוספה</button></div>
     </form>
     <ul class="list roll" id="ndList"></ul>
     <div class="empty" id="ndEmpty" hidden>עוד אין פריטים בנמ"ר. הוסיפו את הציוד שאמור להיות בכלי.</div>
@@ -1641,10 +1669,10 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
     </form>
     <div class="lstold" id="lstOldBox" hidden></div>
     <div class="lstpanel" id="lstPanel" hidden>
-      <div class="lsthead"><input type="text" id="lstName" maxlength="60" aria-label="כותרת הרשימה"><span class="count" id="lstN"></span></div>
+      <div class="lsthead"><input type="text" id="lstName" maxlength="60" aria-label="כותרת הרשימה" placeholder="לדוגמה: טיפולי שיניים"><span class="count" id="lstN"></span></div>
       <p class="mini">לוחצים על חייל כדי להוסיף אותו לרשימה (לחיצה נוספת מוציאה). אפשר לכתוב הערה לכל אחד.</p>
       <ul class="lstitems" id="lstItems"></ul>
-      <div class="row2"><button class="primary sm" type="button" id="lstWa">שליחה בוואטסאפ</button><button class="ghost sm" type="button" id="lstDone">סיום</button></div>
+      <div class="row2"><button class="primary sm" type="button" id="lstWa">שליחה בוואטסאפ</button><button class="ghost sm" type="button" id="lstDone">סיום ושמירת הרשימה</button></div>
       <button class="linkbtn muted" type="button" id="lstDel">מחיקת הרשימה</button>
     </div>
     <ul class="list roll" id="atList"></ul>
@@ -1683,12 +1711,12 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
     <p class="mini">אמל"ח שחתום עליך, כמפקד. המפקדים שמעליך במסגרת רואים אותו.</p>
     <button class="primary" type="button" id="openMW">+ הוספת נשק שאני חתום עליו</button>
     <form class="add" id="formMW" hidden>
-      <label class="f">סוג נשק<input type="text" id="mwType" list="wTypes" maxlength="40" required></label>
-      <label class="f">מספר נשק<input type="text" id="mwNum" class="ltr" maxlength="20" required></label>
+      <label class="f">סוג נשק<input type="text" id="mwType" list="wTypes" maxlength="40" required placeholder="לדוגמה: M4, אולר, כוונת"></label>
+      <label class="f">מספר נשק<input type="text" id="mwNum" class="ltr" maxlength="20" required placeholder="לדוגמה: 1234567"></label>
       <label class="f" id="mwUnitWrap">מסגרת<select id="mwUnit"></select></label>
       <p class="err" id="mwFormErr" hidden></p>
       <div class="found" id="mwFound" hidden></div>
-      <div class="row2"><button class="primary" type="submit" id="mwSave">הוספה</button><button class="ghost" type="button" id="cancelMW">ביטול</button></div>
+      <div class="row2"><button class="primary" type="submit" id="mwSave">הוספת הפריט שלי</button><button class="ghost" type="button" id="cancelMW">ביטול</button></div>
     </form>
 
     <p class="err" id="mwErr" hidden></p>
@@ -1728,7 +1756,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       <div id="impTypes" hidden></div>
       <div id="impList"></div>
       <p class="err" id="impErr" hidden></p>
-      <div class="row2"><button class="primary" type="button" id="impSave" hidden>הוספה</button><button class="ghost" type="button" id="impClose">סגירה</button></div>
+      <div class="row2"><button class="primary" type="button" id="impSave" hidden>הוספה</button><button class="ghost" type="button" id="impClose">סגירת הייבוא</button></div>
       <button class="linkbtn danger" type="button" id="impUndo">ביטול הייבוא האחרון</button>
       <div class="found" id="undoBox" hidden></div>
     </div>
@@ -1738,14 +1766,14 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
         <label class="ghost" for="sPhoto">בחירת תמונה</label>
         <input type="file" id="sPhoto" accept="image/*" hidden>
       </div>
-      <label class="f">שם מלא<input type="text" id="sName" maxlength="50" required></label>
+      <label class="f">שם מלא<input type="text" id="sName" maxlength="50" required placeholder="לדוגמה: ישראל ישראלי"></label>
       <label class="f">תפקיד<select id="sRole"><option value='חייל'>חייל</option><option value='מ"כ'>מ"כ</option><option value='סמל'>סמל</option><option value='מ"מ'>מ"מ</option><option value='סמ"פ'>סמ"פ</option><option value='מ"פ'>מ"פ</option><option value='סמג"ד'>סמג"ד</option><option value='מג"ד'>מג"ד</option></select></label>
-      <label class="f">מספר אישי<input type="tel" id="sNum" class="ltr" inputmode="numeric" maxlength="12" required></label>
+      <label class="f">מספר אישי<input type="tel" id="sNum" class="ltr" inputmode="numeric" maxlength="12" required placeholder="לדוגמה: 1234567"></label><span class="fhint">מספר אישי של החייל — 7 ספרות.</span>
       <label class="f">כיתה<select id="sSquad"><option value="">ללא כיתה</option><option value="א">כיתה א</option><option value="ב">כיתה ב</option><option value="ג">כיתה ג</option></select></label>
       <label class="f">מספר טלפון (לא חובה)<input type="tel" id="sPhone" class="ltr" inputmode="tel" maxlength="20" placeholder="050-0000000" autocomplete="off"></label>
       <label class="f">מסגרת<select id="sUnitSel" required></select></label>
       <p class="err" id="sErr" hidden></p>
-      <div class="row2"><button class="primary" type="submit">שמירה</button><button class="ghost" type="button" id="cancelS">ביטול</button></div>
+      <div class="row2"><button class="primary" type="submit">שמירת החייל</button><button class="ghost" type="button" id="cancelS">ביטול</button></div>
     </form>
     <div style="height:14px"></div>
     <div class="wfilter">
@@ -1762,19 +1790,19 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
     <form class="add" id="dEditForm" hidden>
       <strong>עריכת פרטי החייל</strong>
       <label class="f">תפקיד<select id="deRole"><option value='חייל'>חייל</option><option value='מ"כ'>מ"כ</option><option value='סמל'>סמל</option><option value='מ"מ'>מ"מ</option><option value='סמ"פ'>סמ"פ</option><option value='מ"פ'>מ"פ</option><option value='סמג"ד'>סמג"ד</option><option value='מג"ד'>מג"ד</option></select></label>
-      <label class="f">שם מלא<input type="text" id="deName" maxlength="50" required></label>
-      <label class="f">מספר אישי<input type="tel" id="deNum" class="ltr" inputmode="numeric" maxlength="12"></label>
+      <label class="f">שם מלא<input type="text" id="deName" maxlength="50" required placeholder="לדוגמה: ישראל ישראלי"></label>
+      <label class="f">מספר אישי<input type="tel" id="deNum" class="ltr" inputmode="numeric" maxlength="12" placeholder="לדוגמה: 1234567"></label>
       <label class="f">כיתה<select id="deSquad"><option value="">ללא כיתה</option><option value="א">כיתה א</option><option value="ב">כיתה ב</option><option value="ג">כיתה ג</option></select></label>
-      <label class="f">מספר טלפון<input type="tel" id="dePhone" class="ltr" inputmode="tel" maxlength="20"></label>
+      <label class="f">מספר טלפון<input type="tel" id="dePhone" class="ltr" inputmode="tel" maxlength="20" placeholder="לדוגמה: 050-1234567"></label>
       <div class="photo-pick"><div class="av" id="dePrev"></div><label class="ghost" for="dePhoto">החלפת תמונה</label><input type="file" id="dePhoto" accept="image/*" hidden></div>
       <div class="found" id="deDup" hidden></div>
       <p class="err" id="deErr" hidden></p>
-      <div class="row2"><button class="primary" type="submit" id="deSave">שמירה</button><button class="ghost" type="button" id="deCancel">ביטול</button></div>
+      <div class="row2"><button class="primary" type="submit" id="deSave">שמירת פרטי החייל</button><button class="ghost" type="button" id="deCancel">ביטול</button></div>
     </form>
     <div class="sh">
       <div class="shtop">
         <div class="av lg" id="dAv"></div>
-        <div class="info"><div class="n1" id="dName"></div><div class="n2" id="dNum"></div><div class="shunit" id="dUnit"></div></div>
+        <div class="info"><h1 class="n1" id="dName"></h1><div class="n2" id="dNum"></div><div class="shunit" id="dUnit"></div></div>
       </div>
       <div class="shacts">
         <div id="dPhone" class="phone"></div>
@@ -1789,7 +1817,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       <ul class="notelist" id="dNotes"></ul>
       <div class="nbadd" id="dNoteAdd" hidden>
         <input type="text" id="dNote" maxlength="300" placeholder="הערה חדשה…" enterkeyhint="done">
-        <button class="primary sm" type="button" id="dNoteSave">הוספה</button>
+        <button class="primary sm" type="button" id="dNoteSave">הוספת ההערה</button>
       </div>
     </div>
     <button class="fpentry" type="button" id="dFitBtn"><span>🏃 כרטיס כושר</span><span class="mini" id="dFitN"></span><span class="chev">‹</span></button>
@@ -1822,8 +1850,8 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       </div>
       <button class="primary" type="button" id="openTW" style="margin-top:10px">+ הוספת נשק חדש לחייל</button>
       <form class="add" id="formTW" hidden>
-        <label class="f">סוג נשק<input type="text" id="twType" list="wTypes" maxlength="40" required></label>
-        <label class="f">מספר נשק<input type="text" id="twNum" class="ltr" maxlength="20" required></label>
+        <label class="f">סוג נשק<input type="text" id="twType" list="wTypes" maxlength="40" required placeholder="לדוגמה: M4, אולר, כוונת"></label>
+        <label class="f">מספר נשק<input type="text" id="twNum" class="ltr" maxlength="20" required placeholder="לדוגמה: 1234567"></label>
         <div class="row2"><button class="primary" type="submit">הוספה והחתמה</button><button class="ghost" type="button" id="cancelTW">ביטול</button></div>
       </form>
       <p class="err" id="tErr" hidden></p>
@@ -1885,7 +1913,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
         <div class="f">איזה פריט<div class="picker" id="afPick"><label class="searchbox pksearch" id="afWrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input type="search" id="afSearch" placeholder="חיפוש לפי מספר, סוג או שם החייל" autocomplete="off"></label><ul class="pklist" id="afList" hidden></ul><div class="pkchip" id="afChip" hidden></div></div></div>
         <label class="f">מה התקלה<input type="text" id="afDesc" maxlength="120" required placeholder="למשל: כוונת רופפת, חסר רצועה"></label>
         <p class="err" id="afErr" hidden></p>
-        <div class="row2"><button class="primary" type="submit" id="afSave">שמירה</button><button class="ghost" type="button" id="afCancel">ביטול</button></div>
+        <div class="row2"><button class="primary" type="submit" id="afSave">שמירת התקלה</button><button class="ghost" type="button" id="afCancel">ביטול</button></div>
       </form>
     </div>
     <div class="row2 wadd">
@@ -1893,13 +1921,13 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       <button class="ghost" id="openImpW" type="button">ייבוא מקובץ</button>
     </div>
     <form class="add" id="formW" hidden>
-      <label class="f">סוג נשק<input type="text" id="wType" list="wTypes" maxlength="40" required></label>
+      <label class="f">סוג נשק<input type="text" id="wType" list="wTypes" maxlength="40" required placeholder="לדוגמה: M4, מאג, אולר"></label>
       <datalist id="wTypes"><option value="M4"><option value="M16"><option value="תבור"><option value="מיקרו תבור"><option value="נגב"><option value="מאג"><option value="אקדח"><option value="רימון"><option value="משקפת לילה"></datalist>
-      <label class="f">מספר נשק<input type="text" id="wNum" class="ltr" maxlength="20" required></label>
+      <label class="f">מספר נשק<input type="text" id="wNum" class="ltr" maxlength="20" required placeholder="לדוגמה: 1234567"></label>
       <label class="f">שייך ל<select id="wOwner"></select></label>
       <label class="f" id="wUnitWrap">מסגרת<select id="wUnit"></select></label>
       <p class="err" id="wErr" hidden></p>
-      <div class="row2"><button class="primary" type="submit" id="wSave">שמירה</button><button class="ghost" type="button" id="cancelW">ביטול</button></div>
+      <div class="row2"><button class="primary" type="submit" id="wSave">שמירת הנשק</button><button class="ghost" type="button" id="cancelW">ביטול</button></div>
       <div id="wDelWrap" class="ubtns end" hidden></div>
     </form>
     <div class="wmenu" id="wMenu" hidden role="menu">
@@ -2078,10 +2106,14 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     label=label||"מחיקה";const b=el("button","del",label);b.type="button";
     let t;b.onclick=ev=>{ev.stopPropagation();
       if(b.classList.contains("armed")){clearTimeout(t);onDel();return;}
-      b.classList.add("armed");b.textContent="לאשר?";t=setTimeout(()=>{b.classList.remove("armed");b.textContent=label;},3000);};
+      b.classList.add("armed");b.textContent="לחצו שוב כדי למחוק";t=setTimeout(()=>{b.classList.remove("armed");b.textContent=label;},3000);};
     return b;
   }
-  function toast(msg){let t=document.getElementById("toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";document.body.append(t);}
+  let lastToast=0,lastAct=0,lastErrT=0;
+  // feedback only follows something the user just did — background syncs (merges, backups, notes) stay quiet
+  ["pointerdown","keydown","change"].forEach(t=>addEventListener(t,()=>{lastAct=Date.now();},true));
+  const byUser=t0=>t0-lastAct<5000;
+  function toast(msg){lastToast=Date.now();let t=document.getElementById("toast");if(!t){t=document.createElement("div");t.id="toast";t.className="toast";document.body.append(t);}
     t.textContent=msg;t.classList.add("on");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("on"),2200);}
   function showErr(id,msg){$(id).textContent=msg||"";$(id).hidden=!msg;}
   const rnd=n=>{const a=new Uint8Array(n);crypto.getRandomValues(a);return Array.from(a,b=>b.toString(16).padStart(2,"0")).join("");};
@@ -2109,7 +2141,17 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   const visRO=arr=>{const r=vis(arr),c=visCache.get(arr);return c&&c.n===arr.length?c.out:r;};
   let sByIdC={a:null,k:null,m:null};
   const soldierById=id=>{const a=visRO(soldiers);if(sByIdC.a!==a){sByIdC={a,m:new Map(a.map(s=>[s.id,s]))};}return sByIdC.m.get(id);};
-  const errMsg=e=>e&&e.code==="permission-denied"?"אין לך הרשאה לפעולה הזו במסגרת הזו.":"השמירה נכשלה. בדקו חיבור לאינטרנט ונסו שוב.";
+  // what went wrong, in plain words, and what to do about it
+  const errMsg=e=>{const c=e&&e.code;
+    if(c==="permission-denied")return "אין לך הרשאה לפעולה הזו במסגרת הזו. אם צריך — בקשו מהמפקד או מהמנהל.";
+    if(c==="unavailable"||c==="deadline-exceeded")return "אין חיבור לשרת. בדקו שיש אינטרנט ונסו שוב.";
+    if(c==="not-found")return "הפריט כבר לא קיים — אולי מישהו אחר מחק אותו. חזרו למסך ונסו שוב.";
+    if(c==="invalid-argument")return "חלק מהפרטים לא תקינים. בדקו את השדות ונסו שוב.";
+    if(c==="resource-exhausted")return "יותר מדי פעולות בבת אחת. חכו רגע ונסו שוב.";
+    return "השמירה לא הצליחה. בדקו שיש אינטרנט ונסו שוב.";};
+  // a short "done" after every save or delete, unless the screen already said something
+  const errToast=(t0,e)=>{if(!byUser(t0)||Date.now()-lastErrT<8000)return;lastErrT=Date.now();toast(errMsg(e));};
+  const doneToast=(t0,msg)=>setTimeout(()=>{if(byUser(t0)&&lastToast<t0)toast(navigator.onLine?msg:"נשמר בטלפון. יישלח כשיחזור האינטרנט.");},150);
   /* offline: a write is kept on the phone and sent later, so don't wait for the server */
   let pending=0;
   function qc(p){
@@ -2126,9 +2168,9 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     b.textContent=off?("אופליין · מוצגים נתונים שמורים"+(pending?" · "+pending+" שינויים יישלחו כשתחזור הקליטה":"")):("שולח "+pending+" שינויים…");
   }
   addEventListener("online",netUI);addEventListener("offline",netUI);
-  async function write(path,data,errId){try{await qc(fs.doc(path).set(data));if(errId)showErr(errId,"");return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));return false;}}
-  async function patch(path,data,errId){try{await qc(fs.doc(path).update(data));if(errId)showErr(errId,"");return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));return false;}}
-  async function remove(path){try{await qc(fs.doc(path).delete());}catch(e){console.warn(path,e);}}
+  async function write(path,data,errId){const t0=Date.now();try{await qc(fs.doc(path).set(data));if(errId)showErr(errId,"");doneToast(t0,"נשמר ✓");return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));else errToast(t0,e);return false;}}
+  async function patch(path,data,errId){const t0=Date.now();try{await qc(fs.doc(path).update(data));if(errId){showErr(errId,"");doneToast(t0,"השינויים נשמרו ✓");}return true;}catch(e){console.warn(path,e);if(errId)showErr(errId,errMsg(e));else errToast(t0,e);return false;}}
+  async function remove(path){const t0=Date.now();try{await qc(fs.doc(path).delete());doneToast(t0,"נמחק ✓");return true;}catch(e){console.warn(path,e);errToast(t0,e);return false;}}
   function unitOptions(sel,val){
     const prev=val!=null?val:sel.value;sel.textContent="";
     const list=units.filter(u=>u.open&&inScope(u.path)&&inView(u.path)).sort((a,b)=>pathKey(a.path).localeCompare(pathKey(b.path),"he"));
@@ -2292,7 +2334,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     }else{
       $("setupTitle").textContent=me?"עריכת פרטים":"פרטים אישיים";
       ju.hidden=!(me&&me.unitId);ju.textContent=me&&me.unitId?unitLabel(myUnit()):"";
-      $("setupBtn").textContent="שמירה";$("setupCancel").hidden=!me;
+      $("setupBtn").textContent="שמירת הפרטים";$("setupCancel").hidden=!me;
     }
     if(!$("uName").value)$("uName").value=(me&&me.name)||(authUser&&authUser.displayName)||"";
     if(!$("uPid").value)$("uPid").value=(me&&me.pid)||"";
@@ -2884,7 +2926,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   function resetS(){$("formS").reset();photoData="";const p=$("sPrev");p.style.backgroundImage="";p.innerHTML=personSvg;showErr("sErr","");$("formS").hidden=true;$("openS").hidden=false;}
   resetS();
   $("openS").onclick=()=>{
-    if(!unitOptions($("sUnitSel")))return showErr("sErr",mgr()?"אין מסגרת פתוחה. פתחו מסגרת במסך ניהול מסגרות.":"אין מסגרת פתוחה.");
+    if(!unitOptions($("sUnitSel"))){toast(mgr()?"קודם צריך לפתוח מסגרת (פלוגה/מחלקה). מעבירים אותך למסך המסגרות.":"אין מסגרת פתוחה. פנו למפקד.");if(mgr())setTimeout(()=>{location.hash="units";},900);return;}
     $("formS").hidden=false;$("openS").hidden=true;$("sName").focus();
   };
   $("cancelS").onclick=resetS;
@@ -3201,7 +3243,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     });
   }
   $("openImp").onclick=()=>{
-    if(!unitOptions($("impUnit")))return showErr("sErr","אין מסגרת פתוחה.");
+    if(!unitOptions($("impUnit"))){toast("קודם צריך לפתוח מסגרת (פלוגה/מחלקה) במסך ניהול מסגרות.");return;}
     $("impPanel").hidden=false;$("openImp").hidden=true;showErr("impErr","");
   };
   /* undo last import: everything I added in the latest import (or the latest burst of additions) */
@@ -3795,7 +3837,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       const n2=f("שם האמא",P[1].name,"למשל: רונית"),t2=f("טלפון האמא",P[1].phone,"050-0000000","tel","ltr");
       const en=f("איש קשר לחירום",(s.emerg||{}).name,"שם וקרבה — למשל: דנה, אחות"),et=f("טלפון לחירום",(s.emerg||{}).phone,"050-0000000","tel","ltr");
       const tl=el("label","f",'ת"ש');const ts=el("textarea");ts.rows=4;ts.maxLength=2000;ts.value=s.tash||"";ts.placeholder="כל מה שחשוב לדעת — מצב משפחתי, כלכלי, אישורים, מה סוכם…";tl.append(ts);box.append(tl);
-      const r=el("div","row2");const sv=el("button","primary","שמירה");sv.type="button";const cn=el("button","ghost","ביטול");cn.type="button";
+      const r=el("div","row2");const sv=el("button","primary","שמירת הפרטים");sv.type="button";const cn=el("button","ghost","ביטול");cn.type="button";
       sv.onclick=async()=>{sv.disabled=true;
         // always two places: [0] is the father, [1] the mother
         const parents=[{who:"אבא",name:n1.value.trim(),phone:t1.value.trim()},{who:"אמא",name:n2.value.trim(),phone:t2.value.trim()}];
@@ -3971,7 +4013,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     const il=el("label","f",base==="events"?"דחיפות":"חשיבות");const is=el("select");Object.entries(IMP).forEach(([v,t])=>{const o=el("option",null,t);o.value=v;is.append(o);});is.value=String(D.imp||2);is.onchange=()=>{D.imp=Number(is.value);};il.append(is);c.append(il);
     c.append(f("הערות","notes","textarea",{maxLength:500}));
     const er=el("p","err");er.hidden=true;c.append(er);
-    const row=el("div","row2");const sv=el("button","primary","שמירה");sv.type="button";const cn=el("button","ghost","ביטול");cn.type="button";
+    const row=el("div","row2");const sv=el("button","primary","שמירת השינויים");sv.type="button";const cn=el("button","ghost","ביטול");cn.type="button";
     sv.onclick=async()=>{
       const from=D.from,to=D.to||D.from;
       if(!from){er.hidden=false;er.textContent="בחרו תאריך התחלה.";return;}
@@ -4249,7 +4291,7 @@ const top=el("div","top");
     editingW=w?w.id:null;$("formW").hidden=false;$("openW").hidden=true;
     $("wType").value=w?w.type:"";$("wNum").value=w?w.num:"";fillOwnerSelect(w?w.owner:"",w);
     unitOptions($("wUnit"),w?unitIdForPath(w.unit):undefined);
-    $("wSave").textContent=w?"עדכון":"שמירה";showErr("wErr","");
+    $("wSave").textContent=w?"עדכון הנשק":"שמירת הנשק";showErr("wErr","");
     const dw=$("wDelWrap");dw.textContent="";dw.hidden=!w;
     if(w)dw.append(delBtn(async()=>{await remove("weapons/"+w.id);resetW();},"מחיקת הנשק"));
     $("formW").scrollIntoView({block:"nearest"});$("wType").focus();
@@ -4361,7 +4403,7 @@ const top=el("div","top");
     const slow=setTimeout(()=>showErr("mwFormErr","השמירה לוקחת זמן. בדקו שיש חיבור לאינטרנט."),8000);
     const ms=mySoldier();
     const ok=await write("weapons/"+newId(),ms?{type,num,owner:ms.id,ownerMember:"",ownerName:"",unit:ms.unit,addedBy:uid,at:Date.now()}:{type,num,owner:"",ownerMember:uid,ownerName:(me&&me.name)||"",unit,addedBy:uid,at:Date.now()},"mwFormErr");
-    clearTimeout(slow);btn.disabled=false;btn.textContent="הוספה";
+    clearTimeout(slow);btn.disabled=false;btn.textContent="הוספת הפריט שלי";
     if(ok){resetMW();toast("הנשק נוסף לצל\"מ שלך");}
   };
   if($("mwAssignBtn"))$("mwAssignBtn").onclick=async()=>{
@@ -5760,7 +5802,7 @@ const top=el("div","top");
         const gl=el("div","f","יעדים לכל פעילות");const gg=el("div","fpgoals");const G={};
         acts.forEach(a=>{const t=A.get(a)||"count";if(t==="pass")return;const r=el("label","fpgoal");r.append(el("span",null,a));const i=el("input");i.type="text";i.inputMode=t==="time"?"text":"decimal";i.placeholder=t==="time"?"דק:שנ":"מספר";const gv=(F.goals||{})[a];i.value=gv!=null?fmtFit(gv,t):"";r.append(i);gg.append(r);G[a]=[i,t];});
         if(acts.length){gl.append(gg);f.append(gl);}
-        const row=el("div","row2");const ok=el("button","primary","שמירה");ok.type="button";const cn=el("button","ghost","ביטול");cn.type="button";
+        const row=el("div","row2");const ok=el("button","primary","שמירת הנתונים");ok.type="button";const cn=el("button","ghost","ביטול");cn.type="button";
         ok.onclick=async()=>{const n={};FIELDS.forEach(([k,,,t])=>{const v=I[k].value.trim();n[k]=t==="number"?(v===""||isNaN(+v.replace(",","."))?null:+v.replace(",",".")):v;});
           const goals={};Object.entries(G).forEach(([a,[i,t]])=>{const v=parseFit(i.value,t);if(v!=null&&!isNaN(v))goals[a]=v;});n.goals=goals;
           // weight over time, for its own chart
@@ -6674,7 +6716,7 @@ const top=el("div","top");
     if(curSoldier)R("v-soldier",renderDetail);
     if(!$("v-units").hidden)R("v-units",renderUnits);
     R("v-mine",renderMine);R("v-attend",renderAttend);R("v-verify",renderVerify);R("v-sched",renderSched);R("v-absent",renderAbsent);R("v-wear",renderWear);R("v-nmr",renderNmr);R("v-nmrd",renderNmrD);R("v-gaps",renderGaps);R("v-orbat",renderOrbat);R("v-zr",renderZR);R("v-reqs",renderReqList);R("v-med",renderMedList);R("v-fit",renderFit);R("v-pun",renderPun);R("v-tash",renderTash);R("v-fitp",renderFitCard);
-    renderHomeCounts();
+    renderHomeCounts();try{renderOnboard();}catch(e){console.warn(e);}
   }
   function renderHomeCounts(){
     {const t=key(new Date()),ue=unitEv().filter(x=>onDay(x,t)).length,ab=absEv().filter(x=>onDay(x,t)).length+vis(requests).filter(r=>r.status==="approved"&&r.from&&r.from<=t&&(r.to||r.from)>=t).length;
@@ -7256,10 +7298,50 @@ const top=el("div","top");
     const gear=el("button","pencil rgear");gear.type="button";gear.setAttribute("aria-label","הגדרות");gear.innerHTML=GEAR_SVG;gear.onclick=()=>openGear(secRub(sec.id));
     tools.append(bell,gear);bar.append(tools);
   });
+  // a word under every icon button, so nobody has to guess what it does
+  function iconWords(){
+    const W=b=>b.classList.contains("bell")?"התראות":b.classList.contains("wa")?"וואטסאפ":b.classList.contains("rgear")||b.classList.contains("homegear")?"הגדרות":
+      b.id==="obImg"?"תמונה":b.id==="dEdit"?"עריכה":b.id==="editS"||b.id==="editW"?"בחירה":"";
+    document.querySelectorAll(".bartools .pencil,.hometools .pencil,.sh .pencil,#dEdit").forEach(b=>{if(b.querySelector(".plab"))return;const w=W(b);if(!w)return;b.append(el("span","plab",w));b.classList.add("haslab");});
+  }
   {// home: the bell next to the gear, the gear opens the same sheet
     const hb=el("button","pencil bell homebell");hb.type="button";hb.id="homeBell";hb.setAttribute("aria-label","כל ההתראות");hb.innerHTML=BELL_SVG;
     const n=el("span","belln");n.id="homeBellN";n.hidden=true;hb.append(n);hb.onclick=()=>openBell("home");
     const w=el("div","hometools");$("setBtn").before(w);w.append(hb,$("setBtn"));$("setBtn").onclick=()=>openGear("home");
+  }
+  iconWords();
+
+  /* ---------- first-time guidance: a first-action button under every empty list, and a start card on home ---------- */
+  function goAndClick(hash,btn){
+    const b=btn&&$(btn);
+    if(location.hash.replace("#","")===hash||!hash){if(b)b.click();return;}
+    location.hash=hash;if(b)setTimeout(()=>b.click(),60);
+  }
+  {
+    const E={atEmpty:["+ הוספת חייל","soldiers","openS"],emptyS:["+ הוספת חייל","","openS"],vfEmpty:["+ הוספת נשק","weapons","openW"],
+      zrEmpty:["+ הוספת נשק","weapons","openW"],emptyW:["+ הוספת נשק","","openW"],emptyMine:["+ הוספת נשק שאני חתום עליו","","openMW"],
+      abEmpty:["+ הוספת היעדרות","","openAB"],rqEmpty:['+ בקש"צ חדש',"","openRQ"],mdEmpty:["+ פנייה רפואית חדשה","","openMD"],
+      emptyR:['+ בקש"צ חדש',"","openR"],wrEmpty:["+ הוספת בלאי","","openWR"],nmEmpty:['+ הוספת נמ"ר',"","openNM"],ndEmpty:["+ הוספת פריט","","niOpen"],
+      emptyT:["+ הוספת נשק לחייל","","openTW"],emptyU:["+ פתיחת מסגרת","","openU"],puEmpty:["+ מענה חדש","","openPU"],tsEmpty:["+ הזנת פרטים לחייל","","tsAdd"],
+      trTrEmpty:["+ הוספת אימון","","trNew"],ftEmpty:["+ מדידה חדשה","","ftNew"]};
+    Object.keys(E).forEach(id=>{const d=$(id),[t,h,btn]=E[id];if(!d||!$(btn))return;
+      const c=el("button","ghost emptycta",t);c.type="button";c.onclick=()=>goAndClick(h,btn);d.after(c);
+      // the button follows its empty message, and hides when the target button is hidden (no permission)
+      const sync=()=>{const tb=$(btn);c.hidden=d.hidden||!tb||(!h&&tb.hidden);};
+      sync();new MutationObserver(sync).observe(d,{attributes:true,attributeFilter:["hidden"]});
+      new MutationObserver(sync).observe($(btn),{attributes:true,attributeFilter:["hidden"]});});
+  }
+  document.querySelectorAll("[data-ob]").forEach(b=>b.onclick=()=>{const [h,btn]=b.dataset.ob.split("|");goAndClick(h,btn);});
+  function renderOnboard(){
+    const o=$("onboard");if(!o)return;
+    let off=false;try{off=localStorage.getItem("mp-ob-off")==="1";}catch(_){}
+    const S=vis(soldiers).length,W=vis(weapons).length;
+    o.hidden=off||!soldiersLoaded||(S>0&&W>0)||!(mgr()||(me&&me.unitId));
+    {const noU=mgr()&&!units.some(u=>u.open),b1=$("obS1").querySelector("button"),x1=$("obS1").querySelector(".obx");
+     x1.firstChild.textContent=noU?"פותחים מסגרת ומוסיפים חיילים":"מוסיפים חיילים";
+     b1.textContent=noU?"פתיחת מסגרת":"הוספת חיילים";b1.dataset.ob=noU?"units|openU":"soldiers|openS";}
+    $("obS1").classList.toggle("done",S>0);$("obS2").classList.toggle("done",W>0);
+    $("obS3").hidden=!mgr();
   }
 
   /* ---------- data subscriptions (queries match the security rules) ---------- */
