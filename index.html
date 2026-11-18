@@ -937,6 +937,65 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
 .trscore.ok b{color:var(--ok)}.trscore.bad b{color:var(--danger)}
 .trmiss{margin-top:8px;display:grid;gap:3px;border-top:1px dashed var(--line);padding-top:8px}
 .trm{font-size:14px}
+/* ---- fitness card ---- */
+.fpentry{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 10px;padding:14px 16px;border-radius:18px;border:1px solid var(--line);background:linear-gradient(180deg,var(--surface),var(--tile));color:var(--fg);font:inherit;font-weight:700;cursor:pointer;text-align:start}
+.fpentry span:first-child{flex:1}.fpentry .chev{color:var(--muted)}
+.fpopen{justify-self:start;background:none;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:4px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;margin:2px 0 4px}
+#fpBody{display:grid;gap:12px}
+.fphero{display:flex;gap:16px;align-items:center;padding:16px;border-radius:24px;border:1px solid var(--line);background:radial-gradient(120% 100% at 100% 0%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 60%),linear-gradient(180deg,var(--surface),var(--tile))}
+.fpring{--p:0;width:104px;height:104px;flex:none;border-radius:50%;display:grid;place-items:center;align-content:center;background:radial-gradient(closest-side,var(--surface) 80%,transparent 82% 100%),conic-gradient(var(--accent) calc(var(--p)*1%),var(--line) 0)}
+.fpring b{font-size:34px;line-height:1;font-variant-numeric:tabular-nums}.fpring span{font-size:11.5px;color:var(--muted)}
+.fphtx{display:grid;gap:4px;min-width:0}.fphn{font-family:var(--display);font-size:22px}
+.fpbadges{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.fpbadge{font-size:12.5px;font-weight:700;border-radius:999px;padding:3px 10px;border:1px solid var(--line);background:var(--bg)}
+.fpbadge.gold{border-color:#c9a23a;color:#e2c15a}.fpbadge.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 50%,var(--line))}.fpbadge.no{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 50%,var(--line))}
+.fpstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.fpstat{display:grid;justify-items:center;gap:2px;padding:10px 4px;border-radius:16px;border:1px solid var(--line);background:var(--surface)}
+.fpstat b{font-size:20px;font-variant-numeric:tabular-nums}.fpstat span{font-size:11.5px;color:var(--muted);text-align:center}
+.fpsec{display:grid;gap:8px;padding:14px;border-radius:20px;border:1px solid var(--line);background:var(--surface)}
+.fpsh{display:flex;align-items:center;justify-content:space-between;gap:8px}.fpsh b{font-size:17px}
+.fpdata{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fpd{display:grid;gap:1px;background:var(--bg);border-radius:12px;padding:8px 10px}.fpd.wide{grid-column:span 2}
+.fpd span{font-size:12px;color:var(--muted)}.fpd b{font-size:16px;white-space:pre-wrap;overflow-wrap:anywhere}
+.fpedit{display:grid;gap:8px}
+.fpgoals{display:grid;gap:6px}
+.fpgoal{display:grid;grid-template-columns:1fr 110px;gap:8px;align-items:center;font-size:14px}
+.fprank{font-size:13px;font-weight:800;border-radius:999px;padding:3px 10px;background:var(--bg);border:1px solid var(--line)}
+.fprank.top{border-color:#c9a23a;color:#e2c15a}
+.fpbig{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.fpbig b{font-size:34px;font-variant-numeric:tabular-nums;line-height:1.1;direction:ltr}
+.fpdelta{font-size:13.5px;font-weight:700}.fpdelta.up{color:var(--ok)}.fpdelta.dn{color:var(--danger)}.fpdelta.eq{color:var(--muted)}
+.fppct{position:relative;height:10px;border-radius:999px;background:var(--line);display:flex}
+.fppf{height:100%;border-radius:999px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 55%,transparent),var(--accent))}
+.fppm{position:absolute;top:-4px;width:3px;height:18px;border-radius:2px;background:var(--fg)}
+.fppl{font-size:12.5px;color:var(--muted)}
+.fpchart{width:100%;height:auto;direction:ltr}
+.fpchart .g{stroke:var(--line);stroke-width:1}
+.fpchart .ax{fill:var(--muted);font-size:10px;font-family:var(--body)}
+.fpchart .lab{fill:var(--muted);font-size:10px;font-weight:700;font-family:var(--body)}
+.fpchart .lab.goal{fill:#e2c15a}
+.fpchart .avg{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:5 4}
+.fpchart .goal{stroke:#e2c15a;stroke-width:1.4;stroke-dasharray:2 3}
+.fpchart .area{fill:color-mix(in srgb,var(--accent) 16%,transparent)}
+.fpchart .ln{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.fpchart .pt{fill:var(--surface);stroke:var(--accent);stroke-width:2}.fpchart .pt.last{fill:var(--accent)}
+.fpkv{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.fpkv div{display:flex;justify-content:space-between;gap:8px;background:var(--bg);border-radius:10px;padding:7px 10px;font-size:13.5px}
+.fpkv span{color:var(--muted)}.fpkv b{font-variant-numeric:tabular-nums;direction:ltr}
+.fpradar{width:100%;max-width:340px;justify-self:center;height:auto;direction:ltr}
+.fpradar .ring{fill:none;stroke:var(--line);stroke-width:1}
+.fpradar .mid{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:4 3}
+.fpradar .spoke{stroke:var(--line);stroke-width:1}
+.fpradar .me{fill:color-mix(in srgb,var(--accent) 30%,transparent);stroke:var(--accent);stroke-width:2.4;stroke-linejoin:round}
+.fpradar .md{fill:var(--accent)}
+.fpradar .rl{fill:var(--fg);font-size:11px;font-weight:700;font-family:var(--body)}
+.fpcap{text-align:center}
+.fptr{display:grid;grid-template-columns:90px 1fr 44px;gap:8px;align-items:center;font-size:14px}
+.fptl{font-weight:700}.fptn{color:var(--muted);font-variant-numeric:tabular-nums;text-align:end}
+.fptb{height:10px;border-radius:999px;background:var(--line);overflow:hidden;display:flex}
+.fptf{height:100%;background:var(--ok);border-radius:999px}.fptf.mid{background:var(--warn)}.fptf.bad{background:var(--danger)}
+.fptm{margin:-4px 0 4px}
+.wchart{margin-top:2px}
 </style>
 <style>html{color-scheme:light}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1518,6 +1577,12 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
     <ul class="list tslist" id="tsList"></ul>
   </section>
 
+  <!-- a soldier's fitness card -->
+  <section id="v-fitp" hidden>
+    <div class="bar"><button class="back" type="button" id="fpBack">→ כושר</button><h1 id="fpName">כרטיס כושר</h1></div>
+    <div id="fpBody"></div>
+  </section>
+
   <!-- NMR (vehicle kit) -->
   <section id="v-nmr" hidden>
     <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1 id="nmH1">נמ"ר</h1><span class="count" id="nmCount"></span></div>
@@ -1727,6 +1792,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
         <button class="primary sm" type="button" id="dNoteSave">הוספה</button>
       </div>
     </div>
+    <button class="fpentry" type="button" id="dFitBtn"><span>🏃 כרטיס כושר</span><span class="mini" id="dFitN"></span><span class="chev">‹</span></button>
     <div class="dlbox" id="dListBox">
       <button class="dlhead" type="button" id="dListT" aria-expanded="false"><span>📝 רשימות</span><span class="mini" id="dListN"></span><span class="chev">‹</span></button>
       <ul class="list roll" id="dLists" hidden></ul>
@@ -2074,7 +2140,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   function pathOf(unitId){const u=unitById(unitId);return u?Object.assign({},u.path):null;}
 
   /* ---------- screens ---------- */
-  const ALL=["v-tash","v-pun","v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat","v-zr","v-reqs","v-med","v-fit"];
+  const ALL=["v-fitp","v-tash","v-pun","v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat","v-zr","v-reqs","v-med","v-fit"];
   // big lists of a screen you left are emptied (they're rebuilt when you come back), so the page stays light
   const HEAVY={"v-weapons":["listW"],"v-zr":["zrBox"],"v-verify":["vfList"],"v-soldiers":["listS"],"v-gaps":["gpS","gpW"],"v-reqs":["rqList"],"v-med":["mdList"]};
   function show(ids){
@@ -2108,6 +2174,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(h==="reqs"){show(["v-reqs"]);renderReqList();return;}
     if(h==="med"){show(["v-med"]);renderMedList();return;}
     if(h==="fit"){show(["v-fit"]);renderFit();return;}
+    {const fm=h.match(/^fitp-(.+)$/);if(fm){fpSid=decodeURIComponent(fm[1]);show(["v-fitp"]);renderFitCard();scrollTo({top:0});return;}}
     if(h==="pun"){show(["v-pun"]);renderPun();return;}
     if(h==="tash"){show(["v-tash"]);renderTash();return;}
     if(h==="zreport"){show(["v-zr"]);renderZR();return;}
@@ -3608,6 +3675,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
       {const sl=ul.querySelector(".dlsend");if(sl&&sl._upd)sl._upd();}
     },inner=>{const info=el("div","info");info.append(el("div","n1",x.title||"רשימה"),el("div","n3",listItems(x).length+" · "+waDate(x.at||0)+(x.byName?" · "+x.byName:"")));inner.append(info);});ul.append(row);});
   }
+  $("dFitBtn").onclick=()=>{if(curSoldier)openFitCard(curSoldier);};
+  $("fpBack").onclick=()=>{history.length>1?history.back():(location.hash="fit");};
   $("dListT").onclick=()=>{const ul=$("dLists");ul.hidden=!ul.hidden;$("dListT").setAttribute("aria-expanded",String(!ul.hidden));$("dListBox").classList.toggle("open",!ul.hidden);
     const s=curSoldier&&soldiers.find(x=>x.id===curSoldier);if(s)renderSoldierLists(s);};
   $("dNoteOpen").onclick=()=>{const a=$("dNoteAdd");a.hidden=!a.hidden;if(!a.hidden)$("dNote").focus();};
@@ -3834,6 +3903,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     add.onclick=()=>{location.hash="absent";setTimeout(()=>{$("openAB").click();const sel=$("abSoldier");if([...sel.options].some(o=>o.value===s.id))sel.value=s.id;},60);};
     box.append(add);
     punDetail(s);
+    {const ov=fitOverall(s.id),n=fitUsed().filter(a=>(fitSeries(a).get(s.id)||[]).length).length;$("dFitN").textContent=ov==null?"":"ציון יחסי "+ov+" · "+n+" פעילויות";}
   }
   $("assignBtn").onclick=async()=>{
     const id=$("assignSel").value;if(!id)return showErr("tErr","בחרו נשק מהרשימה.");
@@ -5602,6 +5672,7 @@ const top=el("div","top");
       if(trOpenS===r.s.id){const box=el("div","trmiss");const M=Object.values(r.by).flatMap(v=>v.miss).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
         if(!M.length)box.append(el("div","mini","✓ לא פספס אף אימון בתקופה הזו."));
         else{box.append(el("div","mini","פספס:"));M.forEach(x=>box.append(el("div","trm","❌ "+x.type+" · "+fmtG(x.date))));}
+        {const cb=el("button","fpopen","כרטיס כושר ›");cb.type="button";cb.onclick=e=>{e.stopPropagation();openFitCard(r.s.id);};box.append(cb);}
         li.append(box);}
       ul.append(li);});
     // the trainings themselves
@@ -5609,6 +5680,124 @@ const top=el("div","top");
     E.slice(0,60).forEach(x=>{const ex=trEx(x),tot=S.filter(s=>!ex[s.id]).length,d=S.filter(s=>!ex[s.id]&&trDid(x)[s.id]).length;
       const li=el("li","tap");const i=el("div","info");i.append(el("div","n1",x.type+" · "+fmtG(x.date)),el("div","n3",d+" מתוך "+tot+" עשו"+(x.note?" · "+x.note:"")+(x.addedByName?" · "+x.addedByName:"")));
       li.append(i);li.onclick=()=>{trOpen=x.id;renderFit();scrollTo({top:0});};uh.append(li);});
+  }
+
+  /* ---------- כרטיס כושר: everything about one soldier's fitness, with charts and where he stands in the unit ---------- */
+  let fpSid=null,fpEdit=false;
+  const NSV="http://www.w3.org/2000/svg";
+  const sv=(tag,a)=>{const e=document.createElementNS(NSV,tag);for(const k in a||{})e.setAttribute(k,a[k]);return e;};
+  // where a value stands among the unit's latest results of the same activity
+  function fitStanding(act,sid){
+    const t=fitActs().get(act)||"count",better=fitBetter(t),ser=fitSeries(act),ids=new Set(fitSoldiers("*").map(s=>s.id));
+    const last=[...ser.entries()].filter(([k])=>ids.has(k)).map(([k,L])=>({k,v:L[L.length-1].v}));
+    const me_=last.find(x=>x.k===sid);if(!me_)return null;
+    const isB=(a,b)=>better==="low"?a<b:a>b;
+    const rank=1+last.filter(x=>isB(x.v,me_.v)).length,worse=last.filter(x=>isB(me_.v,x.v)).length,ties=last.length-rank-worse;
+    const pct=last.length>1?Math.round((worse+ties*0.5)/(last.length-1)*100):100;
+    const vals=last.map(x=>x.v).sort((a,b)=>a-b),avg=vals.reduce((a,b)=>a+b,0)/vals.length,top=better==="low"?vals[0]:vals[vals.length-1];
+    return {rank,n:last.length,pct,avg,top,t,better};
+  }
+  const fitUsed=()=>[...new Set(fitEv().map(x=>x.act))].filter(a=>a&&a!==FIT_PASS&&a!==FIT_SCORE).sort((a,b)=>fitRank(a)-fitRank(b));
+  function fitOverall(sid){const P=fitUsed().map(a=>fitStanding(a,sid)).filter(Boolean);return P.length?Math.round(P.reduce((s,p)=>s+p.pct,0)/P.length):null;}
+  // a line chart: his results over time, the unit's average (dashed) and his goal (dotted); "up" always means better
+  function fitChart(L,st,goal){
+    const W=320,H=150,pl=46,pr=10,pt=12,pb=24,svg=sv("svg",{viewBox:"0 0 "+W+" "+H,class:"fpchart",role:"img"});
+    const V=L.map(p=>p.v).concat([st.avg]).concat(goal!=null?[goal]:[]),mn=Math.min(...V),mx=Math.max(...V),pad=(mx-mn)*0.12||1,lo=mn-pad,hi=mx+pad;
+    const Y=v=>{const k=(v-lo)/(hi-lo);return pt+(H-pt-pb)*(st.better==="low"?k:1-k);};
+    const X=i=>L.length===1?(pl+W-pr)/2:pl+(W-pl-pr)*i/(L.length-1);
+    [0,0.5,1].forEach(f=>{const v=lo+(hi-lo)*f,y=Y(v);svg.append(sv("line",{x1:pl,x2:W-pr,y1:y,y2:y,class:"g"}));const tx=sv("text",{x:pl-4,y:y+4,class:"ax","text-anchor":"end"});tx.textContent=fmtFit(fpRound(v,st.t),st.t);svg.append(tx);});
+    {const y=Y(st.avg);svg.append(sv("line",{x1:pl,x2:W-pr,y1:y,y2:y,class:"avg"}));const tx=sv("text",{x:W-pr,y:y-4,class:"lab","text-anchor":"end"});tx.textContent="ממוצע";svg.append(tx);}
+    if(goal!=null){const y=Y(goal);svg.append(sv("line",{x1:pl,x2:W-pr,y1:y,y2:y,class:"goal"}));const tx=sv("text",{x:pl+2,y:y-4,class:"lab goal"});tx.textContent="יעד";svg.append(tx);}
+    if(L.length>1){const d=L.map((p,i)=>(i?"L":"M")+X(i).toFixed(1)+" "+Y(p.v).toFixed(1)).join(" ");
+      svg.append(sv("path",{d:d+" L"+X(L.length-1).toFixed(1)+" "+(H-pb)+" L"+X(0).toFixed(1)+" "+(H-pb)+" Z",class:"area"}),sv("path",{d,class:"ln"}));}
+    L.forEach((p,i)=>{svg.append(sv("circle",{cx:X(i),cy:Y(p.v),r:i===L.length-1?4.5:3,class:i===L.length-1?"pt last":"pt"}));});
+    [0,L.length-1].filter((v,i,a)=>a.indexOf(v)===i).forEach(i=>{const tx=sv("text",{x:X(i),y:H-6,class:"ax","text-anchor":i?"end":"start"});tx.textContent=fmtG(L[i].date).slice(0,-5);svg.append(tx);});
+    return svg;
+  }
+  // a spider chart of where he stands in each activity (the ring at 50% is the middle of the unit)
+  function fitRadar(items){
+    const n=items.length,W=340,H=280,cx=W/2,cy=H/2+4,R=92,svg=sv("svg",{viewBox:"0 0 "+W+" "+H,class:"fpradar",role:"img"});
+    const pt=(i,f)=>{const a=-Math.PI/2+i*2*Math.PI/n;return [cx+Math.cos(a)*R*f,cy+Math.sin(a)*R*f];};
+    [0.25,0.5,0.75,1].forEach(f=>svg.append(sv("polygon",{points:items.map((_,i)=>pt(i,f).join(",")).join(" "),class:f===0.5?"mid":"ring"})));
+    items.forEach((it,i)=>{const [x,y]=pt(i,1);svg.append(sv("line",{x1:cx,y1:cy,x2:x,y2:y,class:"spoke"}));
+      const [lx,ly]=pt(i,1.2),tx=sv("text",{x:lx,y:ly+4,class:"rl","text-anchor":Math.abs(lx-cx)<8?"middle":lx<cx?"end":"start"});tx.textContent=it.a.length>12?it.a.slice(0,11)+"…":it.a;svg.append(tx);});
+    svg.append(sv("polygon",{points:items.map((it,i)=>pt(i,Math.max(0.04,it.p/100)).join(",")).join(" "),class:"me"}));
+    items.forEach((it,i)=>{const [x,y]=pt(i,Math.max(0.04,it.p/100));svg.append(sv("circle",{cx:x,cy:y,r:3.5,class:"md"}));});
+    return svg;
+  }
+  const fpRound=(v,t)=>t==="time"?Math.round(v):Math.round(v*10)/10;
+  function openFitCard(sid){fpSid=sid;fpEdit=false;location.hash="fitp-"+encodeURIComponent(sid);}
+  function renderFitCard(){
+    const s=soldierById(fpSid),box=$("fpBody");if(!s||!box){if(box)box.textContent="";return;}
+    if(fpEdit&&box.querySelector(".fpedit input"))return;
+    box.textContent="";$("fpName").textContent=s.name;
+    const F=s.fit||{},acts=fitUsed(),A=fitActs();
+    const mine=acts.map(a=>({a,L:fitSeries(a).get(s.id)||[],st:fitStanding(a,s.id)})).filter(x=>x.L.length);
+    // headline: his overall standing
+    {const ov=fitOverall(s.id),all=fitSoldiers("*").map(x=>({x,o:fitOverall(x.id)})).filter(x=>x.o!=null).sort((a,b)=>b.o-a.o),pos=all.findIndex(x=>x.x.id===s.id)+1;
+      const hero=el("div","fphero");
+      const ring=el("div","fpring");ring.style.setProperty("--p",ov==null?0:ov);ring.append(el("b",null,ov==null?"—":String(ov)),el("span",null,"ציון יחסי"));
+      const tx=el("div","fphtx");tx.append(el("div","fphn",pos?"מקום "+pos+" מתוך "+all.length:"עוד אין מדידות"),el("div","mini",pos?(ov>=75?"ברבע העליון של המחלקה":ov>=50?"מעל אמצע המחלקה":ov>=25?"מתחת לאמצע המחלקה":"ברבע התחתון של המחלקה"):"אחרי מדידה ראשונה יופיע כאן מקומו ביחס למחלקה"));
+      const prs=mine.filter(x=>{if(x.L.length<2)return false;const b=x.st.better,last=x.L[x.L.length-1].v;return x.L.slice(0,-1).every(p=>b==="low"?last<p.v:last>p.v);}).length;
+      const imp=mine.filter(x=>x.L.length>1&&(x.st.better==="low"?x.L[x.L.length-1].v<x.L[0].v:x.L[x.L.length-1].v>x.L[0].v)).length;
+      const bd=el("div","fpbadges");if(prs)bd.append(el("span","fpbadge gold","🏆 "+prs+" שיאים אישיים"));if(imp)bd.append(el("span","fpbadge","📈 השתפר ב-"+imp+" מתוך "+mine.length));
+      const pass=fitEv().filter(x=>x.act===FIT_PASS&&(x.results||{})[s.id]!=null).sort((a,b)=>(b.date||"").localeCompare(a.date||""))[0];
+      if(pass)bd.append(el("span","fpbadge "+(pass.results[s.id]===1?"ok":"no"),pass.results[s.id]===1?"✓ עבר מבחן":"✗ לא עבר מבחן"));
+      tx.append(bd);hero.append(ring,tx);box.append(hero);}
+    // numbers at a glance
+    {const T=trEv().filter(x=>!(x.ex||{})[s.id]),did=T.filter(x=>(x.did||{})[s.id]).length;
+      let streak=0;T.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).some(x=>{if((x.did||{})[s.id]){streak++;return false;}return true;});
+      const bmi=F.h&&F.w?(F.w/Math.pow(F.h/100,2)):null;
+      const g=el("div","fpstats");
+      [[String(mine.reduce((n,x)=>n+x.L.length,0)),"מדידות"],[T.length?Math.round(did/T.length*100)+"%":"—","נוכחות באימונים"],[String(streak),"אימונים ברצף"],[bmi?bmi.toFixed(1):"—","BMI"]].forEach(([v,l])=>{const c=el("div","fpstat");c.append(el("b",null,v),el("span",null,l));g.append(c);});
+      box.append(g);}
+    // personal data: what the commander fills in
+    {const sec=el("div","fpsec");const hd=el("div","fpsh");hd.append(el("b",null,"נתונים אישיים"));
+      const eb=el("button","linkbtn",fpEdit?"":"✏️ עריכה");eb.type="button";eb.onclick=()=>{fpEdit=true;renderFitCard();};if(!fpEdit)hd.append(eb);sec.append(hd);
+      const FIELDS=[["h","גובה","ס\"מ","number"],["w","משקל","ק\"ג","number"],["fat","אחוז שומן","%","number"],["hr","דופק במנוחה","פעימות","number"],["waist","היקף מותניים","ס\"מ","number"],["profile","פרופיל","","text"],["goal","מטרה","","text"],["coach","הערות מאמן","","textarea"]];
+      if(fpEdit){const f=el("div","fpedit");const I={};
+        FIELDS.forEach(([k,l,u,t])=>{const lb=el("label","f",l+(u?" ("+u+")":""));const i=el(t==="textarea"?"textarea":"input");if(t!=="textarea"){i.type="text";if(t==="number")i.inputMode="decimal";}i.value=F[k]!=null?F[k]:"";lb.append(i);f.append(lb);I[k]=i;});
+        const gl=el("div","f","יעדים לכל פעילות");const gg=el("div","fpgoals");const G={};
+        acts.forEach(a=>{const t=A.get(a)||"count";if(t==="pass")return;const r=el("label","fpgoal");r.append(el("span",null,a));const i=el("input");i.type="text";i.inputMode=t==="time"?"text":"decimal";i.placeholder=t==="time"?"דק:שנ":"מספר";const gv=(F.goals||{})[a];i.value=gv!=null?fmtFit(gv,t):"";r.append(i);gg.append(r);G[a]=[i,t];});
+        if(acts.length){gl.append(gg);f.append(gl);}
+        const row=el("div","row2");const ok=el("button","primary","שמירה");ok.type="button";const cn=el("button","ghost","ביטול");cn.type="button";
+        ok.onclick=async()=>{const n={};FIELDS.forEach(([k,,,t])=>{const v=I[k].value.trim();n[k]=t==="number"?(v===""||isNaN(+v.replace(",","."))?null:+v.replace(",",".")):v;});
+          const goals={};Object.entries(G).forEach(([a,[i,t]])=>{const v=parseFit(i.value,t);if(v!=null&&!isNaN(v))goals[a]=v;});n.goals=goals;
+          // weight over time, for its own chart
+          const log=(F.wlog||[]).slice();if(n.w!=null&&n.w!==F.w)log.push({d:todayKey(),w:n.w});n.wlog=log.slice(-60);
+          ok.disabled=true;const r=await patch("soldiers/"+s.id,{fit:n});fpEdit=false;if(r)toast("נשמר");renderFitCard();};
+        cn.onclick=()=>{fpEdit=false;renderFitCard();};row.append(ok,cn);f.append(row);sec.append(f);}
+      else{const g=el("div","fpdata");let any=false;
+        FIELDS.forEach(([k,l,u])=>{if(F[k]==null||F[k]==="")return;any=true;const d=el("div","fpd"+(k==="coach"||k==="goal"?" wide":""));d.append(el("span",null,l),el("b",null,F[k]+(u&&typeof F[k]==="number"?" "+u:"")));g.append(d);});
+        if(!any)g.append(el("div","mini","עוד לא הוזנו. לחצו \"עריכה\" כדי להוסיף גובה, משקל, דופק, יעדים ועוד."));
+        sec.append(g);
+        if((F.wlog||[]).length>1){const L=F.wlog.map(x=>({date:x.d,v:x.w}));const ch=fitChart(L,{avg:L.reduce((a,b)=>a+b.v,0)/L.length,t:"num",better:"high"},null);ch.classList.add("wchart");sec.append(el("div","mini","משקל לאורך זמן"),ch);}}
+      box.append(sec);}
+    // the spider chart
+    if(mine.length>=3){const sec=el("div","fpsec");sec.append(el("div","fpsh"));sec.firstChild.append(el("b",null,"איפה הוא חזק"));
+      sec.append(fitRadar(mine.map(x=>({a:x.a,p:x.st.pct}))),el("div","mini fpcap","הקו האמצעי = אמצע המחלקה. ככל שהצורה רחבה יותר — הוא טוב יותר ביחס לאחרים."));box.append(sec);}
+    // one card per activity
+    mine.forEach(({a,L,st})=>{
+      const t=st.t,last=L[L.length-1],first=L[0],isB=(x,y)=>st.better==="low"?x<y:x>y,best=L.reduce((m,p)=>isB(p.v,m.v)?p:m,L[0]),goal=(F.goals||{})[a];
+      const c=el("div","fpsec fpact");const hd=el("div","fpsh");hd.append(el("b",null,a),el("span","fprank"+(st.rank<=3?" top":""),(st.rank===1?"🥇 ":st.rank===2?"🥈 ":st.rank===3?"🥉 ":"")+"מקום "+st.rank+"/"+st.n));c.append(hd);
+      const top=el("div","fpbig");top.append(el("b",null,fmtFit(last.v,t)));
+      if(L.length>1){const d=last.v-first.v,good=isB(last.v,first.v),pc=first.v?Math.abs(d/first.v*100):0;top.append(el("span","fpdelta "+(d===0?"eq":good?"up":"dn"),(d===0?"= ":good?"▲ ":"▼ ")+fmtFit(Math.abs(d),t)+(pc?" ("+pc.toFixed(0)+"%)":"")+" מההתחלה"));}
+      c.append(top);
+      const bar=el("div","fppct");const fill=el("div","fppf");fill.style.width=st.pct+"%";bar.append(fill);const mk=el("span","fppm");mk.style.insetInlineStart="calc("+st.pct+"% - 1px)";bar.append(mk);
+      c.append(bar,el("div","fppl","טוב מ-"+st.pct+"% מהמחלקה"));
+      c.append(fitChart(L,st,goal!=null?goal:null));
+      const kv=el("div","fpkv");
+      [["שיא",fmtFit(best.v,t)],["ראשונה",fmtFit(first.v,t)],["ממוצע מחלקה",fmtFit(fpRound(st.avg,t),t)],["הכי טוב במחלקה",fmtFit(st.top,t)]].concat(goal!=null?[["יעד",fmtFit(goal,t)+(isB(last.v,goal)||last.v===goal?" ✓":" · נשאר "+fmtFit(Math.abs(last.v-goal),t))]]:[])
+        .forEach(([k,v])=>{const d=el("div");d.append(el("span",null,k),el("b",null,v));kv.append(d);});
+      c.append(kv);box.append(c);});
+    // trainings by kind
+    {const T=trEv().filter(x=>!(x.ex||{})[s.id]);if(T.length){const sec=el("div","fpsec");sec.append(el("div","fpsh"));sec.firstChild.append(el("b",null,"אימונים"));
+      const by={};T.forEach(x=>{by[x.type]=by[x.type]||{n:0,d:0,miss:[]};by[x.type].n++;if((x.did||{})[s.id])by[x.type].d++;else by[x.type].miss.push(x.date);});
+      Object.entries(by).sort((a,b)=>b[1].n-a[1].n).forEach(([k,v])=>{const r=el("div","fptr");const p=Math.round(v.d/v.n*100);
+        r.append(el("span","fptl",k));const b=el("div","fptb");const f=el("div","fptf"+(p<60?" bad":p<85?" mid":""));f.style.width=p+"%";b.append(f);r.append(b,el("span","fptn",v.d+"/"+v.n));sec.append(r);
+        if(v.miss.length)sec.append(el("div","mini fptm","פספס: "+v.miss.sort().reverse().slice(0,4).map(d=>fmtG(d).slice(0,-5)).join(", ")+(v.miss.length>4?"…":"")));});
+      box.append(sec);}}
+    if(!mine.length&&!trEv().length)box.append(el("div","empty","עוד אין מדידות ואימונים לחייל הזה."));
   }
   function fitSoldiers(sq){return visRO(soldiers).filter(s=>!isCmdSoldier(s)&&(sq==="*"||(s.squad||"")===sq)).sort((a,b)=>(a.squad||"ת").localeCompare(b.squad||"ת","he")||(a.name||"").localeCompare(b.name||"","he"));}
   let ftDay=null,ftDayAct=null;
@@ -5732,6 +5921,7 @@ const top=el("div","top");
           sp.remove();patch("events/"+p.id,{["results."+s.id]:FV().delete()});};
         sp.append(x);h.append(sp);});
       li.append(h);
+      const cardB=el("button","fpopen","כרטיס כושר ›");cardB.type="button";cardB.onclick=e=>{e.stopPropagation();openFitCard(s.id);};h.prepend(cardB);
       li.onclick=()=>{h.hidden=!h.hidden;};ul.append(li);});
   }
   function fmtDelta(d,t,better){if(!d)return "ללא שינוי";const good=better==="low"?d<0:d>0;return (good?"השתפר ב־":"ירד ב־")+fmtFit(Math.abs(d),t);}
@@ -6461,7 +6651,7 @@ const top=el("div","top");
   }
   // which data each screen shows; a screen is redrawn only when one of these changed
   let verS=0,verW=0,verE=0,verR=0,verM=0,verU=0,verT=0,verMe=0,verSeen=0,dataVer=0,membersKey="",meKey="";
-  const SCREEN_DEPS={"v-tash":"s","v-pun":"se","v-weapons":"wsmu","v-zr":"wsmu","v-orbat":"se","v-soldiers":"swremu","v-gaps":"sw","v-wear":"es","v-fit":"se","v-nmr":"e","v-nmrd":"e","v-mine":"wm","v-units":"umtx","v-attend":"sermua","v-verify":"wsermua"};
+  const SCREEN_DEPS={"v-fitp":"se","v-tash":"s","v-pun":"se","v-weapons":"wsmu","v-zr":"wsmu","v-orbat":"se","v-soldiers":"swremu","v-gaps":"sw","v-wear":"es","v-fit":"se","v-nmr":"e","v-nmrd":"e","v-mine":"wm","v-units":"umtx","v-attend":"sermua","v-verify":"wsermua"};
   const lastSig={};const lastSigReset=()=>{for(const k in lastSig)delete lastSig[k];};
   function screenSig(id){
     const dep=SCREEN_DEPS[id],d=new Date();
@@ -6483,7 +6673,7 @@ const top=el("div","top");
     renderMe();R("v-soldiers",renderS);R("v-weapons",renderW);
     if(curSoldier)R("v-soldier",renderDetail);
     if(!$("v-units").hidden)R("v-units",renderUnits);
-    R("v-mine",renderMine);R("v-attend",renderAttend);R("v-verify",renderVerify);R("v-sched",renderSched);R("v-absent",renderAbsent);R("v-wear",renderWear);R("v-nmr",renderNmr);R("v-nmrd",renderNmrD);R("v-gaps",renderGaps);R("v-orbat",renderOrbat);R("v-zr",renderZR);R("v-reqs",renderReqList);R("v-med",renderMedList);R("v-fit",renderFit);R("v-pun",renderPun);R("v-tash",renderTash);
+    R("v-mine",renderMine);R("v-attend",renderAttend);R("v-verify",renderVerify);R("v-sched",renderSched);R("v-absent",renderAbsent);R("v-wear",renderWear);R("v-nmr",renderNmr);R("v-nmrd",renderNmrD);R("v-gaps",renderGaps);R("v-orbat",renderOrbat);R("v-zr",renderZR);R("v-reqs",renderReqList);R("v-med",renderMedList);R("v-fit",renderFit);R("v-pun",renderPun);R("v-tash",renderTash);R("v-fitp",renderFitCard);
     renderHomeCounts();
   }
   function renderHomeCounts(){
@@ -6833,7 +7023,7 @@ const top=el("div","top");
     wear:{n:"בלאי",go:"wear",scr:["v-wear"]},
     sched:{n:'לו"ז',go:"sched",scr:["v-sched"]},
     absent:{n:"היעדרויות",go:"absent",scr:["v-absent"]},
-    fit:{n:"כושר",go:"fit",scr:["v-fit"],hide:"fit"},
+    fit:{n:"כושר",go:"fit",scr:["v-fit","v-fitp"],hide:"fit"},
     pun:{n:"מענים",go:"pun",scr:["v-pun"],hide:"pun"},
     tash:{n:'ת"ש',go:"tash",scr:["v-tash"],hide:"tash"},
     nmr:{n:'נמ"ר',go:"nmr",scr:[],hide:"nmr"},
