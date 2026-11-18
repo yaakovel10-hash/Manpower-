@@ -181,7 +181,7 @@ ul.sent li{border:1px solid var(--line);border-radius:12px;padding:8px 12px;font
     e.preventDefault();wErr("");
     const w=who(wErr);if(!w)return;
     const item=$("wItem").value.trim();if(!item)return wErr("כתבו מה הבלאי.");
-    const x={kind:"wear",soldierId:"",ownerName:w.sname,ownerMember:"",pid:w.pid,unit:link.unit,item,why:$("wWhy").value.trim(),status:"open",date:"",
+    const x={kind:"wear",soldierId:"",ownerName:w.sname,ownerMember:"",pid:w.pid,sname:w.sname,unit:link.unit,item,why:$("wWhy").value.trim(),status:"open",date:"",
       at:Date.now(),addedBy:"link",addedByName:w.sname,via:"link",link:token};
     send("events",x,$("wSend"),"שליחת דיווח הבלאי",wErr,{k:"wear",item},"✓ דיווח הבלאי נשלח",item,"המפקדים רואים אותו עכשיו ברשימת הבלאי באפליקציה.");
   };
