@@ -4634,13 +4634,10 @@ const top=el("div","top");
     const W=vis(weapons).filter(w=>!$("vfUnstored").checked||!w.stored);
     const tsel=$("vfType"),tv=tsel.value;tsel.textContent="";
     const tc={};W.forEach(w=>{const t=wType(w.type);tc[t]=(tc[t]||0)+1;});const types=Object.keys(tc).sort((a,b)=>(tc[b]-tc[a])||a.localeCompare(b,"he"));
-    const o0=el("option",null,"בחרו סוג…");o0.value="";tsel.append(o0);
     const oa=el("option",null,'כל הצל"מ ('+W.length+")");oa.value="*";tsel.append(oa);
     types.forEach(t=>{const o=el("option",null,t+" ("+W.filter(w=>wType(w.type)===t).length+")");o.value=t;tsel.append(o);});
-    let pick=tv==="*"||types.includes(tv)?tv:"";
-    // first time on the screen: the type chosen last time, else everything
-    if(!pick&&!vfTouched){let last="";try{last=localStorage.getItem("vfType")||"";}catch(_){}pick=last==="*"||types.includes(last)?last:"*";}
-    if(W.length&&pick)try{localStorage.setItem("vfType",pick);}catch(_){}
+    // always opens on all items; a type picked here stays only while on the screen
+    const pick=vfTouched&&(tv==="*"||types.includes(tv))?tv:"*";
     tsel.value=pick;
     const ty=tsel.value,sq=squadSelect($("vfSquad"));
     const ul=$("vfList"),ua=$("vfAway");ul.textContent="";ua.textContent="";
@@ -4661,7 +4658,7 @@ const top=el("div","top");
         const k=String(w.num||"").trim()?wType(w.type)+"|"+String(w.num).trim()+"|"+whoKey(w):null;
         if(k&&seen.has(k)){const f=seen.get(k);dupN.set(f.id,(dupN.get(f.id)||1)+1);return;}
         if(k)seen.set(k,w);out.push(w);});return out;})()
-      .sort((a,b)=>((ownerOf(a)||{}).name||"ת").localeCompare((ownerOf(b)||{}).name||"ת","he")||String(a.num).localeCompare(String(b.num)));
+      .sort((a,b)=>(ty==="*"?(tc[wType(b.type)]-tc[wType(a.type)])||wType(a.type).localeCompare(wType(b.type),"he"):0)||((ownerOf(a)||{}).name||"ת").localeCompare((ownerOf(b)||{}).name||"ת","he")||String(a.num).localeCompare(String(b.num)));
     const here=[],away=[];list.forEach(w=>{const r=w.owner&&!w.ownerMember?awayInfo(w.owner):null;r?away.push({w,r}):here.push(w);});
     const row=(w,inner)=>{const ic=el("div","wicon");svgSet(ic,weaponIcon(w.type));const o=ownerOf(w);
       const info=el("div","info"),who=o?o.name:"לא חתום";
@@ -4679,6 +4676,7 @@ const top=el("div","top");
     $("vfEmpty").hidden=list.length>0;$("vfAwayH").hidden=!away.length;
   }
   let vfTouched=false;
+  addEventListener("hashchange",()=>{if(location.hash!=="#verify")vfTouched=false;});
   $("vfType").onchange=()=>{vfTouched=true;renderVerify();};$("vfSquad").onchange=renderVerify;$("vfWho").onchange=renderVerify;$("vfUnstored").onchange=renderVerify;
   $("vfReset").onclick=()=>{const ty=$("vfType").value;if(!ty)return;setMarks(rollKey("vf",ty),new Set());renderVerify();toast("הבדיקה אופסה");};
 
