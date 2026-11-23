@@ -4969,7 +4969,7 @@ const top=el("div","top");
   }
   /* IDF prayer times by General Staff order 34.0301 (section 12):
      שחרית between sunrise and 09:00 · מנחה from 12:30 (winter) / 13:30 (summer) until sunset · ערבית from half an hour after sunset until 23:30.
-     Lengths depend on the day; ערבית belongs to the coming day (the Jewish day starts at night). */
+     Weekday lengths as updated (שחרית 45, שני וחמישי 55, מנחה 20); lengths depend on the day; ערבית belongs to the coming day (the Jewish day starts at night). */
   function isDST(dt){try{const p=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Jerusalem",timeZoneName:"shortOffset"}).formatToParts(new Date(dt.getFullYear(),dt.getMonth(),dt.getDate(),12));
     return /\+3/.test((p.find(x=>x.type==="timeZoneName")||{}).value||"");}catch(_){const m=dt.getMonth();return m>=3&&m<=9;}}
   function dayFlags(dt){const N=holidays(dt).map(x=>x.n),has=t=>N.some(n=>n.includes(t)),h=hmd(dt)||{},w=dt.getDay();
@@ -4980,9 +4980,9 @@ const top=el("div","top");
       elul:!rh&&!yk&&(h.m==="Elul"||(h.m==="Tishri"&&h.d<=9))};}
   function prayTimes(dt,z){
     const f=dayFlags(dt),nx=dayFlags(addD(dt,1)),hm2=x=>x?zhm(x):"—";
-    let sh=40;if(f.w===1||f.w===4)sh=50;if(f.rc||f.chan||f.yha||f.yy)sh=Math.max(sh,60);if(f.purim)sh=Math.max(sh,90);
+    let sh=45;if(f.w===1||f.w===4)sh=55;if(f.rc||f.chan||f.yha||f.yy)sh=Math.max(sh,60);if(f.purim)sh=Math.max(sh,90);
     if(f.shab||f.yt||f.hm||f.av)sh=Math.max(sh,120);if(f.rh||f.yk)sh=240;if(f.elul)sh+=30;
-    let mn=15;if(f.shab||(f.yt)||f.fast||f.rh)mn=30;if(f.yk)mn=120;
+    let mn=20;if(f.shab||(f.yt)||f.fast||f.rh)mn=30;if(f.yk)mn=120;
     let ar=15;if(nx.shab||nx.yt||nx.hm||nx.yha||nx.yy)ar=30;if(nx.av)ar=45;if(nx.purim)ar=60;if(nx.rh)ar=75;if(nx.yk)ar=120;
     const ev=z.set?new Date(+z.set+30*6e4):null;
     return [["שחרית",hm2(z.rise),"09:00",sh],["מנחה",isDST(dt)?"13:30":"12:30",hm2(z.set),mn],["ערבית",hm2(ev),"23:30",ar]];
