@@ -120,6 +120,9 @@ h1.n1{margin:0}
 .fbtx{white-space:pre-wrap}
 .fbacts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .fbacts>*{width:auto}
+.lomulti{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;margin-top:8px}
+.lomulti button{width:auto}
+.lodel{color:var(--danger);border-color:var(--danger)}
 .empty{text-align:center;color:var(--muted);padding:24px 8px;border:1px dashed var(--line);border-radius:14px}
 .search{margin-bottom:12px}
 .sh{display:grid;gap:14px;padding:16px;margin-bottom:14px;border-radius:24px;border:1px solid var(--line);background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%),linear-gradient(180deg,var(--surface),var(--tile));box-shadow:inset 0 1px 0 var(--hi),0 10px 24px -18px var(--shadow)}
@@ -4673,6 +4676,8 @@ const top=el("div","top");
       // tick several lists to send them together
       const cb=el("input","lochk");cb.type="checkbox";cb.dataset.id=L.id;cb.setAttribute("aria-label","לבחור את "+(L.title||"הרשימה")+" לשליחה משותפת");
       const upd=()=>{const n=box.querySelectorAll(".lochk:checked").length;const f=$("lstMulti");if(f){f.hidden=n<2;f.textContent="שליחת "+n+" רשימות בהודעה אחת";}
+        const d=$("lstMultiDel");if(d){d.hidden=!n;d.disabled=false;d.textContent=n===1?"🗑 מחיקת הרשימה שנבחרה":"🗑 מחיקת "+n+" רשימות";delete d.dataset.arm;}
+        const a=$("lstAll");if(a){a.hidden=!n&&!box.classList.contains("picking");a.textContent=n===all.length?"ביטול הבחירה":"בחירת כל הרשימות";}
         if(!n)box.classList.remove("picking");};
       cb.onchange=upd;
       // long-press a list to start picking; while picking, a tap on a list ticks it
@@ -4684,9 +4689,24 @@ const top=el("div","top");
       r.addEventListener("contextmenu",e=>e.preventDefault());
       r.addEventListener("click",e=>{if(r.dataset.lp||e.target.closest("button,input"))return;if(box.classList.contains("picking")){cb.checked=!cb.checked;upd();}});
       r.prepend(cb);r.append(w,o);box.append(r);});
-    if(all.length>1){box.append(el("div","mini lohint","לחיצה ארוכה על רשימה – כדי לבחור כמה רשימות ולשלוח אותן יחד."));
+    if(all.length>1){box.append(el("div","mini lohint","לחיצה ארוכה על רשימה – כדי לבחור כמה רשימות, ולשלוח או למחוק אותן יחד."));
       const f=el("button","primary sm","");f.id="lstMulti";f.type="button";f.hidden=true;
-      f.onclick=()=>{const ids=[...box.querySelectorAll(".lochk:checked")].map(x=>x.dataset.id);sendLists(all.filter(L=>ids.includes(L.id)));};box.append(f);}};
+      f.onclick=()=>{const ids=[...box.querySelectorAll(".lochk:checked")].map(x=>x.dataset.id);sendLists(all.filter(L=>ids.includes(L.id)));};box.append(f);}
+    if(all.length){
+      const ab=el("button","ghost sm","בחירת כל הרשימות");ab.id="lstAll";ab.type="button";ab.hidden=true;
+      ab.onclick=()=>{const cbs=[...box.querySelectorAll(".lochk")],on=!cbs.every(c=>c.checked);cbs.forEach(c=>c.checked=on);box.classList.toggle("picking",on);cbs[0]&&cbs[0].onchange();};
+      // delete several lists at once: tick them, then two taps (like every delete in the app)
+      const d=el("button","ghost sm lodel","");d.id="lstMultiDel";d.type="button";d.hidden=true;
+      d.onclick=async()=>{const ids=[...box.querySelectorAll(".lochk:checked")].map(x=>x.dataset.id);if(!ids.length)return;
+        if(!d.dataset.arm){d.dataset.arm="1";d.textContent="לחצו שוב כדי למחוק "+(ids.length===1?"את הרשימה":ids.length+" רשימות");setTimeout(()=>{if(d.dataset.arm){delete d.dataset.arm;d.textContent=ids.length===1?"🗑 מחיקת הרשימה שנבחרה":"🗑 מחיקת "+ids.length+" רשימות";}},4000);return;}
+        delete d.dataset.arm;d.disabled=true;d.textContent="מוחק…";
+        if(ids.includes(listId)){setListId(null);listLocal=null;}
+        try{if(!fs)await fsReady;for(let i=0;i<ids.length;i+=400){const bt=fs.batch();ids.slice(i,i+400).forEach(id=>bt.delete(fs.doc("events/"+id)));await qc(bt.commit());}
+          events=events.filter(e=>!ids.includes(e.id));verE++;dataVer++;
+          toast(ids.length===1?"הרשימה נמחקה ✓":ids.length+" רשימות נמחקו ✓");}
+        catch(e){console.warn(e);toast(errMsg(e));}
+        box.hidden=true;$("lstOld").onclick();renderAttend();};
+      const bar=el("div","lomulti");bar.append(ab,d);box.append(bar);}};
   // several lists in one message; at the end, who isn't on any of them
   function sendLists(Ls){
     const RLM="\u200f",out=["*"+(viewName()||"רשימות")+"*",waDate(Date.now())],inAny=new Set();
