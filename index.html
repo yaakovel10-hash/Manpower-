@@ -127,6 +127,8 @@ h1.n1{margin:0}
 body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:45;pointer-events:none}
 .evacts{display:flex;flex-direction:column;align-items:center;gap:2px;flex:none}
 .evacts .linkbtn{font-size:14px;padding:6px}
+.evloc{color:var(--fg);font-weight:600}
+.evmap{font-size:13px;font-weight:600;color:var(--accent);text-decoration:underline;text-underline-offset:2px;margin-inline-start:4px}
 .empty{text-align:center;color:var(--muted);padding:24px 8px;border:1px dashed var(--line);border-radius:14px}
 .search{margin-bottom:12px}
 .sh{display:grid;gap:14px;padding:16px;margin-bottom:14px;border-radius:24px;border:1px solid var(--line);background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%),linear-gradient(180deg,var(--surface),var(--tile));box-shadow:inset 0 1px 0 var(--hi),0 10px 24px -18px var(--shadow)}
@@ -1293,6 +1295,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
         <label class="f">עד שעה<input type="time" id="seUntil"></label>
       </div>
       <div class="f">צבע<div class="swatches" id="seColors" role="radiogroup" aria-label="צבע האירוע"></div></div>
+      <label class="f">מיקום (לא חובה)<input type="text" id="seLoc" maxlength="80" placeholder="לדוגמה: מטווח 5, חדר אוכל, חצר אחורית"></label>
       <label class="f">הערות (לא חובה)<input type="text" id="seNote" maxlength="200" placeholder="לדוגמה: להביא מים ונשק"></label>
       <p class="err" id="seErr" hidden></p>
       <div class="row2"><button class="primary" type="submit" id="seSave">שמירת האירוע</button><button class="ghost" type="button" id="cancelSE">ביטול</button></div>
@@ -4813,7 +4816,7 @@ const top=el("div","top");
   function editSE(x){
     seEdit=x;$("formSE").reset();$("formSE").hidden=false;$("openSE").hidden=true;$("openSP").hidden=true;showErr("seErr","");
     $("seTitle").value=x.title||"";$("seDate").value=x.date||scSel;$("seTo").value=x.to&&x.to!==x.date?x.to:"";
-    $("seFrom").value=x.start||"";$("seUntil").value=x.end||"";$("seNote").value=x.note||"";seColor=x.color||EV_COLORS[0];renderColors();
+    $("seFrom").value=x.start||"";$("seUntil").value=x.end||"";$("seNote").value=x.note||"";$("seLoc").value=x.loc||"";seColor=x.color||EV_COLORS[0];renderColors();
     $("seSave").textContent="עדכון האירוע";$("formSE").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("seTitle").focus(),300);
   }
   const resetSE=()=>{seEdit=null;$("seSave").textContent="שמירת האירוע";$("formSE").reset();$("formSE").hidden=true;$("openSE").hidden=false;$("openSP").hidden=false;};
@@ -4823,9 +4826,9 @@ const top=el("div","top");
     const unit=writeUnit();if(!unit)return showErr("seErr","אין מסגרת פתוחה.");
     const date=$("seDate").value,to=$("seTo").value||date;if(to<date)return showErr("seErr","תאריך הסיום מוקדם מההתחלה.");
     const btn=$("seSave");btn.disabled=true;
-    if(seEdit){const ok=await patch("events/"+seEdit.id,{title:$("seTitle").value.trim(),date,to,start:$("seFrom").value||"",end:$("seUntil").value||"",time:$("seFrom").value||"",color:seColor,note:$("seNote").value.trim(),editedBy:uid,editedByName:(me&&me.name)||"",editedAt:Date.now()},"seErr");
+    if(seEdit){const ok=await patch("events/"+seEdit.id,{title:$("seTitle").value.trim(),date,to,start:$("seFrom").value||"",end:$("seUntil").value||"",time:$("seFrom").value||"",color:seColor,note:$("seNote").value.trim(),loc:$("seLoc").value.trim(),editedBy:uid,editedByName:(me&&me.name)||"",editedAt:Date.now()},"seErr");
       btn.disabled=false;if(ok){scSel=date;const d=parseKey(date);scY=d.getFullYear();scM=d.getMonth();resetSE();renderSched();toast("האירוע עודכן ✓");}return;}
-    const ok=await write("events/"+newId(),{kind:"unit",soldierId:"",unit,title:$("seTitle").value.trim(),date,to,start:$("seFrom").value||"",end:$("seUntil").value||"",time:$("seFrom").value||"",color:seColor,note:$("seNote").value.trim(),addedBy:uid,addedByName:(me&&me.name)||"",at:Date.now()},"seErr");
+    const ok=await write("events/"+newId(),{kind:"unit",soldierId:"",unit,title:$("seTitle").value.trim(),date,to,start:$("seFrom").value||"",end:$("seUntil").value||"",time:$("seFrom").value||"",color:seColor,note:$("seNote").value.trim(),loc:$("seLoc").value.trim(),addedBy:uid,addedByName:(me&&me.name)||"",at:Date.now()},"seErr");
     btn.disabled=false;if(ok){scSel=date;const d=parseKey(date);scY=d.getFullYear();scM=d.getMonth();resetSE();renderSched();toast("האירוע נוסף");}
   };
 
@@ -4864,7 +4867,7 @@ const top=el("div","top");
   }
   function spPreview(){
     const txt=$("spText").value,items=spParse(txt),ul=$("spPre");ul.textContent="";
-    items.forEach(x=>{const li=el("li");li.append(el("b",null,x.start+(x.end?"–"+x.end:"")),el("span",null,x.title));if(x.note)li.append(el("span","mini",x.note));ul.append(li);});
+    items.forEach(x=>{const li=el("li");li.append(el("b",null,x.start+(x.end?"–"+x.end:"")),el("span",null,x.title+(x.loc?" · 📍 "+x.loc:"")));if(x.note)li.append(el("span","mini",x.note));ul.append(li);});
     const d=$("spDate").value,have=d?unitEv().filter(x=>x.date===d&&(x.to||x.date)===d).length:0;
     $("spRepWrap").hidden=!have;if(!have)$("spRep").checked=false;
     $("spHint").textContent=items.length?"זוהו "+items.length+" אירועים"+(d?" ליום "+DOWL[parseKey(d).getDay()]+" "+fmtG(d):"")+(have?" · כבר רשומים ביום הזה "+have+" אירועים":""):(txt.trim()?"לא זוהו שעות. כל שורה צריכה להתחיל בשעה, למשל 12:00 - ארוחת צהריים":"");
@@ -5065,14 +5068,18 @@ const top=el("div","top");
   function evRow(x,paste){
     if(paste){const li=el("li","evrow sprow");li.style.setProperty("--ec",x.color||EV_COLORS[0]);
       const info=el("div","info"),n1=el("div","n1");n1.append(el("span","sptm",x.start+(x.end?"–"+x.end:"")),el("span",null,x.title));info.append(n1);
-      if(x.note)info.append(el("div","n3",x.note));whoToggle(info,x);
+      if(x.loc)info.append(locLine(x.loc));if(x.note)info.append(el("div","n3",x.note));whoToggle(info,x);
       li.append(el("span","evbar"),info,evActs(x));return li;}
     const li=el("li","evrow sprow");li.style.setProperty("--ec",x.color||EV_COLORS[0]);
     const info=el("div","info"),n1=el("div","n1");n1.append(el("span","sptm"+(x.start?"":" allday"),x.start?x.start+(x.end?"–"+x.end:""):"כל היום"),el("span",null,x.title));info.append(n1);
     if(x.to&&x.to!==x.date)info.append(el("div","n3","עד "+ltr(fmtG(x.to))));
-    if(x.note)info.append(el("div","n3",x.note));whoToggle(info,x);
+    if(x.loc)info.append(locLine(x.loc));if(x.note)info.append(el("div","n3",x.note));whoToggle(info,x);
     li.append(el("span","evbar"),info,evActs(x));return li;
   }
+  // "📍 place" — inside the base it's just text; a tap offers Waze / Google Maps for real addresses
+  function locLine(t){const d=el("div","n3 evloc");d.append("📍 "+t);
+    const m=el("a","evmap","ניווט");m.href="https://waze.com/ul?q="+encodeURIComponent(t);m.target="_blank";m.rel="noopener";m.onclick=e=>e.stopPropagation();
+    d.append(" ",m);return d;}
   function evActs(x){const w=el("div","evacts");const e=el("button","linkbtn","עריכה");e.type="button";e.onclick=ev=>{ev.stopPropagation();editSE(x);};
     w.append(e,delBtn(()=>remove("events/"+x.id)));return w;}
 
