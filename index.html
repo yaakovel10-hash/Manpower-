@@ -2203,6 +2203,8 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(!ready)return;
     if(!authUser){
       $("loginSub").textContent=pendingJoin?"הוזמנת להצטרף. התחברו כדי להמשיך.":"התחברו כדי להמשיך";
+      // opened from an invite link: Google sign-in only
+      $("mailForm").hidden=!!pendingJoin;$("iosNote").hidden=!!pendingJoin||!isIOSApp;if(pendingJoin)$("loginSub").textContent="הוזמנת להצטרף. התחברו עם חשבון Google כדי להמשיך.";
       return show(["v-login"]);
     }
     if(pendingJoin&&!(me&&me.unitId===pendingJoin.id))return openSetup("join");
