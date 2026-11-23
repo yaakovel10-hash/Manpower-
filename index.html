@@ -125,6 +125,8 @@ h1.n1{margin:0}
 .lodel{color:var(--danger);border-color:var(--danger)}
 /* iPhone: keep the clock/battery strip solid so the page does not scroll under it */
 body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:45;pointer-events:none}
+.evacts{display:flex;flex-direction:column;align-items:center;gap:2px;flex:none}
+.evacts .linkbtn{font-size:14px;padding:6px}
 .empty{text-align:center;color:var(--muted);padding:24px 8px;border:1px dashed var(--line);border-radius:14px}
 .search{margin-bottom:12px}
 .sh{display:grid;gap:14px;padding:16px;margin-bottom:14px;border-radius:24px;border:1px solid var(--line);background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%),linear-gradient(180deg,var(--surface),var(--tile));box-shadow:inset 0 1px 0 var(--hi),0 10px 24px -18px var(--shadow)}
@@ -4805,14 +4807,24 @@ const top=el("div","top");
       b.setAttribute("role","radio");b.setAttribute("aria-checked",String(c===seColor));b.setAttribute("aria-label","צבע "+(i+1));
       b.onclick=()=>{seColor=c;renderColors();};box.append(b);});
   }
-  $("openSE").onclick=()=>{$("formSE").hidden=false;$("openSE").hidden=true;$("openSP").hidden=true;$("seDate").value=scSel;$("seTo").value="";renderColors();showErr("seErr","");$("seTitle").focus();};
-  const resetSE=()=>{$("formSE").reset();$("formSE").hidden=true;$("openSE").hidden=false;$("openSP").hidden=false;};
+  let seEdit=null;
+  $("openSE").onclick=()=>{seEdit=null;$("seSave").textContent="שמירת האירוע";$("formSE").hidden=false;$("openSE").hidden=true;$("openSP").hidden=true;$("seDate").value=scSel;$("seTo").value="";renderColors();showErr("seErr","");$("seTitle").focus();};
+  // edit an event that's already in: the same form, filled in
+  function editSE(x){
+    seEdit=x;$("formSE").reset();$("formSE").hidden=false;$("openSE").hidden=true;$("openSP").hidden=true;showErr("seErr","");
+    $("seTitle").value=x.title||"";$("seDate").value=x.date||scSel;$("seTo").value=x.to&&x.to!==x.date?x.to:"";
+    $("seFrom").value=x.start||"";$("seUntil").value=x.end||"";$("seNote").value=x.note||"";seColor=x.color||EV_COLORS[0];renderColors();
+    $("seSave").textContent="עדכון האירוע";$("formSE").scrollIntoView({behavior:"smooth",block:"start"});setTimeout(()=>$("seTitle").focus(),300);
+  }
+  const resetSE=()=>{seEdit=null;$("seSave").textContent="שמירת האירוע";$("formSE").reset();$("formSE").hidden=true;$("openSE").hidden=false;$("openSP").hidden=false;};
   $("cancelSE").onclick=resetSE;
   $("formSE").onsubmit=async e=>{
     e.preventDefault();
     const unit=writeUnit();if(!unit)return showErr("seErr","אין מסגרת פתוחה.");
     const date=$("seDate").value,to=$("seTo").value||date;if(to<date)return showErr("seErr","תאריך הסיום מוקדם מההתחלה.");
     const btn=$("seSave");btn.disabled=true;
+    if(seEdit){const ok=await patch("events/"+seEdit.id,{title:$("seTitle").value.trim(),date,to,start:$("seFrom").value||"",end:$("seUntil").value||"",time:$("seFrom").value||"",color:seColor,note:$("seNote").value.trim(),editedBy:uid,editedByName:(me&&me.name)||"",editedAt:Date.now()},"seErr");
+      btn.disabled=false;if(ok){scSel=date;const d=parseKey(date);scY=d.getFullYear();scM=d.getMonth();resetSE();renderSched();toast("האירוע עודכן ✓");}return;}
     const ok=await write("events/"+newId(),{kind:"unit",soldierId:"",unit,title:$("seTitle").value.trim(),date,to,start:$("seFrom").value||"",end:$("seUntil").value||"",time:$("seFrom").value||"",color:seColor,note:$("seNote").value.trim(),addedBy:uid,addedByName:(me&&me.name)||"",at:Date.now()},"seErr");
     btn.disabled=false;if(ok){scSel=date;const d=parseKey(date);scY=d.getFullYear();scM=d.getMonth();resetSE();renderSched();toast("האירוע נוסף");}
   };
@@ -5048,19 +5060,21 @@ const top=el("div","top");
     $("scCount").textContent=U.filter(x=>x.date&&x.date.slice(0,7)===key(first).slice(0,7)).length||"";
   }
   // tapping shows who added it
-  function whoToggle(node,x){const w=el("div","n3 whoadd","נוסף ע\"י "+(x.addedByName||"לא ידוע")+(x.at?" · "+fmtG(key(new Date(x.at))):""));w.hidden=true;node.append(w);
+  function whoToggle(node,x){const w=el("div","n3 whoadd","נוסף ע\"י "+(x.addedByName||"לא ידוע")+(x.at?" · "+fmtG(key(new Date(x.at))):"")+(x.editedAt?" · נערך ע\"י "+(x.editedByName||"?")+" · "+fmtG(key(new Date(x.editedAt))):""));w.hidden=true;node.append(w);
     node.classList.add("tap");node.addEventListener("click",e=>{if(e.target.closest("button"))return;w.hidden=!w.hidden;});}
   function evRow(x,paste){
     if(paste){const li=el("li","evrow sprow");li.style.setProperty("--ec",x.color||EV_COLORS[0]);
       const info=el("div","info"),n1=el("div","n1");n1.append(el("span","sptm",x.start+(x.end?"–"+x.end:"")),el("span",null,x.title));info.append(n1);
       if(x.note)info.append(el("div","n3",x.note));whoToggle(info,x);
-      li.append(el("span","evbar"),info,delBtn(()=>remove("events/"+x.id)));return li;}
+      li.append(el("span","evbar"),info,evActs(x));return li;}
     const li=el("li","evrow sprow");li.style.setProperty("--ec",x.color||EV_COLORS[0]);
     const info=el("div","info"),n1=el("div","n1");n1.append(el("span","sptm"+(x.start?"":" allday"),x.start?x.start+(x.end?"–"+x.end:""):"כל היום"),el("span",null,x.title));info.append(n1);
     if(x.to&&x.to!==x.date)info.append(el("div","n3","עד "+ltr(fmtG(x.to))));
     if(x.note)info.append(el("div","n3",x.note));whoToggle(info,x);
-    li.append(el("span","evbar"),info,delBtn(()=>remove("events/"+x.id)));return li;
+    li.append(el("span","evbar"),info,evActs(x));return li;
   }
+  function evActs(x){const w=el("div","evacts");const e=el("button","linkbtn","עריכה");e.type="button";e.onclick=ev=>{ev.stopPropagation();editSE(x);};
+    w.append(e,delBtn(()=>remove("events/"+x.id)));return w;}
 
   /* --- absences --- */
   let abDay=key(today),abType=null,abCfgDoc=null;
