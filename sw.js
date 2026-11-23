@@ -53,6 +53,18 @@ function checkForUpdate() {
 
 self.addEventListener("message", e => { if (e.data && e.data.type === "check") e.waitUntil(checkForUpdate()); });
 
+// tapping a notification opens the app on the right screen
+self.addEventListener("notificationclick", e => {
+  e.notification.close();
+  const hash = (e.notification.data && e.notification.data.hash) || "";
+  e.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    const c = all.find(x => x.url.startsWith(self.registration.scope));
+    if (c) { await c.focus(); c.postMessage({ type: "nav", hash }); return; }
+    await self.clients.openWindow(self.registration.scope + (hash ? "#" + hash : ""));
+  })());
+});
+
 self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
