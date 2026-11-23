@@ -109,6 +109,17 @@ h1.n1{margin:0}
 .rsbody .slrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .linkreq{display:inline-block;font-size:12px;font-weight:700;color:var(--info);border:1px solid currentColor;border-radius:999px;padding:0 8px;margin-inline-start:6px}
 .guidelink{display:inline-block;margin-top:6px;color:var(--accent);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.fbnew{display:block;width:100%;margin:4px 0 10px;background:var(--surface);border:1px solid var(--accent);color:var(--fg);border-radius:14px;padding:11px 14px;font-weight:700;text-align:start}
+.fbkinds{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.fbk{background:transparent;border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:7px 12px;font-weight:600;width:auto}
+.fbk.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.fbchk{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--muted);margin:8px 0 12px}
+.fbitem{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:8px 0;display:grid;gap:6px}
+.fbitem.new{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.fbh{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.fbtx{white-space:pre-wrap}
+.fbacts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.fbacts>*{width:auto}
 .empty{text-align:center;color:var(--muted);padding:24px 8px;border:1px dashed var(--line);border-radius:14px}
 .search{margin-bottom:12px}
 .sh{display:grid;gap:14px;padding:16px;margin-bottom:14px;border-radius:24px;border:1px solid var(--line);background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%),linear-gradient(180deg,var(--surface),var(--tile));box-shadow:inset 0 1px 0 var(--hi),0 10px 24px -18px var(--shadow)}
@@ -1128,6 +1139,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <div class="wgrid" id="widgets" hidden></div>
+    <button class="fbnew" id="fbNew" type="button" hidden></button>
     <div class="onboard" id="onboard" hidden>
       <b class="obt">איך מתחילים? 3 צעדים</b>
       <div class="obs" id="obS1"><span class="obn">1</span><span class="obx"><b>מוסיפים חיילים</b><span class="mini">אחד אחד, או ייבוא מקובץ אקסל / תמונה</span></span><button class="primary" type="button" data-ob="soldiers|openS">הוספת חיילים</button></div>
@@ -7270,6 +7282,9 @@ const top=el("div","top");
       shTog(b,"רטט בסימון סוויץ'","",$("setHaptic").checked,v=>{$("setHaptic").checked=v;$("setHaptic").onchange();});
       shAct(b,"↺ שחזור נתונים שנמחקו",bkOpenUI);
       shAct(b,"📖 מדריך למשתמש: מה כל דבר עושה",()=>window.open("guide.html","_blank"));
+      shSec(b,"משוב");
+      shAct(b,"💬 שליחת משוב או הערה על האפליקציה",openFeedback);
+      if(isAdmin){const n=fbList.filter(x=>!x.read).length;shAct(b,"📥 משובים שהתקבלו ("+fbList.length+(n?", "+n+" חדשים":"")+")",openFbInbox);}
       return;}
     if(r==="absent"){loadCfg();renderCfg();showErr("abCfgErr","");shSec(b,"סוגי היעדרות ותורנות");moveIn(b,$("abCfg"));}
     if(r==="sched"){shSec(b,"לוח שנה");moveIn(b,$("scSet"));syncCalSet();}
@@ -7474,6 +7489,56 @@ const top=el("div","top");
       const mk=JSON.stringify(allMembers.map(m=>Object.assign({},m,{lastSeen:0,lastMode:0})));
       if(mk!==membersKey){membersKey=mk;verM++;dataVer++;}verSeen++;renderAll();},e=>console.warn("members",e)));
   }
+  let fbList=[],fbUnsub=null;
+  function startFb(){
+    if(fbUnsub){try{fbUnsub();}catch(_){}fbUnsub=null;}fbList=[];fbBanner();
+    if(!isAdmin||!fs)return;
+    fbUnsub=fs.collection("feedback").orderBy("at","desc").limit(200).onSnapshot(s=>{fbList=s.docs.map(d=>({id:d.id,...d.data()}));fbBanner();},e=>console.warn("feedback",e));
+  }
+  function fbBanner(){const b=$("fbNew");if(!b)return;const n=fbList.filter(x=>!x.read).length;b.hidden=!n;b.textContent="📥 "+(n===1?"משוב חדש אחד":n+" משובים חדשים")+" על האפליקציה ›";}
+  $("fbNew").onclick=()=>openFbInbox();
+  const FB_K=[["idea","💡 הצעה לשיפור"],["bug","🐞 משהו לא עובד"],["other","💬 אחר"]];
+  function openFeedback(){
+    const b=sheet("משוב על האפליקציה");
+    b.append(el("div","mini","מה אפשר לשפר? משהו לא עובד? רעיון לרובריקה חדשה? ההודעה מגיעה ישר למי שבונה את האפליקציה."));
+    let kind="idea";const row=el("div","fbkinds");
+    FB_K.forEach(([k,t])=>{const o=el("button","fbk"+(k===kind?" on":""),t);o.type="button";o.onclick=()=>{kind=k;row.querySelectorAll(".fbk").forEach(x=>x.classList.toggle("on",x===o));};row.append(o);});
+    const ta=el("textarea");ta.maxLength=2000;ta.rows=6;ta.placeholder="לדוגמה: היה נוח אם בבדיקת הנוכחות אפשר היה לסמן את כל הכיתה בלחיצה אחת";
+    const lab=el("label","f","מה תרצו לכתוב?");lab.append(ta);
+    const sc=el("label","fbchk");const cb=el("input");cb.type="checkbox";cb.checked=true;sc.append(cb,el("span",null,"לצרף את המסך שבו הייתי ואת סוג הטלפון (עוזר לתקן תקלות)"));
+    const er=el("p","err");er.hidden=true;
+    const send=el("button","primary","שליחת המשוב");send.type="button";
+    const from=String(location.hash||"").replace("#","")||"home";
+    send.onclick=async()=>{
+      const text=ta.value.trim();er.hidden=true;
+      if(text.length<3){er.hidden=false;er.textContent="כתבו כמה מילים לפני השליחה.";ta.focus();return;}
+      const u=myUnit();
+      const d={uid,name:(me&&me.name)||"",email:(authUser&&authUser.email)||"",unit:u?unitLabel(u):"",kind,text,at:Date.now(),read:false,
+        screen:cb.checked?from:"",device:cb.checked?navigator.userAgent.slice(0,200):""};
+      send.disabled=true;send.textContent="שולח…";
+      const id=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+      try{if(!fs)await fsReady;await qc(fs.doc("feedback/"+id).set(d));toast("תודה! המשוב נשלח ✓");closeSheet();}
+      catch(e){console.warn(e);send.disabled=false;send.textContent="שליחת המשוב";er.hidden=false;
+        if(e&&e.code==="permission-denied"){er.textContent="המשוב עדיין לא מופעל בשרת. אפשר לשלוח אותו במייל במקום:";
+          const m=el("a","linkbtn","שליחה במייל");m.href="mailto:"+encodeURIComponent(ADMIN_EMAILS[0]||"")+"?subject="+encodeURIComponent("משוב על אפליקציית כוח אדם")+"&body="+encodeURIComponent(text);er.after(m);}
+        else er.textContent=errMsg(e);}
+    };
+    b.append(row,lab,sc,er,send);setTimeout(()=>ta.focus(),250);
+  }
+  function openFbInbox(){
+    const b=sheet("משובים שהתקבלו");
+    if(!fbList.length){b.append(el("div","rsempty","עוד לא התקבלו משובים."));return;}
+    const kn=k=>(FB_K.find(x=>x[0]===k)||FB_K[2])[1];
+    fbList.forEach(x=>{const c=el("div","fbitem"+(x.read?"":" new"));
+      const h=el("div","fbh");h.append(el("b",null,kn(x.kind)),el("span","mini",(x.name||"?")+(x.unit?" · "+x.unit:"")+" · "+fmtG(key(new Date(x.at||0)))));
+      c.append(h,el("div","fbtx",x.text||""));
+      if(x.screen||x.email)c.append(el("div","mini",[x.screen?"מסך: "+x.screen:"",x.email||""].filter(Boolean).join(" · ")));
+      const acts=el("div","fbacts");
+      const rd=el("button","ghost sm",x.read?"סימון כחדש":"✓ נקרא");rd.type="button";rd.onclick=()=>{patch("feedback/"+x.id,{read:!x.read});x.read=!x.read;c.classList.toggle("new",!x.read);rd.textContent=x.read?"סימון כחדש":"✓ נקרא";};
+      if(x.email){const re=el("a","ghost sm","↩ תשובה במייל");re.href="mailto:"+encodeURIComponent(x.email)+"?subject="+encodeURIComponent("לגבי המשוב שלך על אפליקציית כוח אדם");acts.append(re);}
+      acts.append(rd,delBtn(()=>remove("feedback/"+x.id).then(ok=>{if(ok)c.remove();})));
+      c.append(acts);b.append(c);});
+  }
   function stopAll(){[...unsubs,...mgmtUnsubs].forEach(u=>{try{u();}catch(_){}});unsubs=[];mgmtUnsubs=[];scopeKey=null;soldiers=[];weapons=[];events=[];requests=[];tokens={};allMembers=[];}
 
   /* ---------- fast start: the last data this phone saw, kept in one record, drawn before Firebase even loads ----------
@@ -7538,6 +7603,7 @@ const top=el("div","top");
     else{stopAll();me=null;units=[];}
     editingMe=false;isMaster=false;linkDone=false;
     isAdmin=!!u&&u.emailVerified&&ADMIN_EMAILS.map(x=>x.toLowerCase()).includes((u.email||"").toLowerCase());
+    try{startFb();}catch(e){console.warn(e);}
     if(!u){try{localStorage.removeItem("signedIn");localStorage.removeItem("homeSnap");}catch(_){}fastClear();painted=false;ready=true;route();return;}
     try{localStorage.setItem("signedIn","1");}catch(_){}
     if(!keep)ready=false;
