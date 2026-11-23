@@ -58,7 +58,7 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   const sameOrigin = url.origin === self.location.origin;
-  if (sameOrigin && /\/(recover|req)\.html$/i.test(url.pathname)) return; // דף השחזור תמיד מהרשת, בלי האפליקציה השמורה
+  if (sameOrigin && /\/(recover|req|guide)\.html$/i.test(url.pathname)) return; // דף השחזור תמיד מהרשת, בלי האפליקציה השמורה
 
   // דף האפליקציה: נפתח מיד מהעותק השמור, ובמקביל בודק אם יש גרסה חדשה
   if (req.mode === "navigate" || (sameOrigin && /\/(index\.html)?$/.test(url.pathname))) {
