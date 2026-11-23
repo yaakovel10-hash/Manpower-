@@ -4978,9 +4978,12 @@ const top=el("div","top");
       purim:N.includes("פורים"),av:has("תשעה באב"),yha:has("יום העצמאות"),yy:has("יום ירושלים"),rh,yk,
       fast:has("צום")||has("תענית")||has("תשעה באב"),
       elul:!rh&&!yk&&(h.m==="Elul"||(h.m==="Tishri"&&h.d<=9))};}
+  // 65 → "שעה ו־5 דקות", 120 → "שעתיים", 20 → "20 דקות"
+  function durHe(m){const h=Math.floor(m/60),r=m%60;if(!h)return m+" דקות";
+    const H=h===1?"שעה":h===2?"שעתיים":h+" שעות";return r===0?H:r===30?H+" וחצי":r===15?H+" ורבע":H+" ו־"+r+" דקות";}
   function prayTimes(dt,z){
     const f=dayFlags(dt),nx=dayFlags(addD(dt,1)),hm2=x=>x?zhm(x):"—";
-    let sh=45;if(f.w===1||f.w===4)sh=55;if(f.rc||f.chan||f.yha||f.yy)sh=Math.max(sh,60);if(f.purim)sh=Math.max(sh,90);
+    let sh=45;if(f.w===1||f.w===4)sh=55;if(f.rc||f.chan||f.yha||f.yy)sh=Math.max(sh,65);if(f.purim)sh=Math.max(sh,90);
     if(f.shab||f.yt||f.hm||f.av)sh=Math.max(sh,120);if(f.rh||f.yk)sh=240;if(f.elul)sh+=30;
     let mn=20;if(f.shab||(f.yt)||f.fast||f.rh)mn=30;if(f.yk)mn=120;
     let ar=15;if(nx.shab||nx.yt||nx.hm||nx.yha||nx.yy)ar=30;if(nx.av)ar=45;if(nx.purim)ar=60;if(nx.rh)ar=75;if(nx.yk)ar=120;
@@ -5019,8 +5022,8 @@ const top=el("div","top");
       if(!rest&&next){const r=el("div","shb");r.append(el("span",null,"🕯️ כניסת "+lbl(nextS,nextH)),el("b",null,zhm(z.candles)));li.append(r);}
       if(rest&&!next){const r=el("div","shb");r.append(el("span",null,"✨ יציאת "+lbl(curS,curH)),el("b",null,zhm(z.tzeit)));li.append(r);}
       const g=el("div","zt");[["עלות השחר",z.dawn],["הנץ החמה (זריחה)",z.rise],["שקיעה",z.set],["צאת הכוכבים",z.tzeit]].forEach(([a,b])=>{const c=el("div");c.append(el("span",null,a),el("b",null,zhm(b)));g.append(c);});
-      {const P=prayTimes(dt,z),r=el("div","shb prt");r.append(el("span",null,"🙏 זמן תפילה מטכ\"לי:"),el("b",null,P[0][3]+" דקות"));li.append(r);
-       li.append(el("div","zsub","מנחה "+P[1][3]+" דק' · ערבית "+P[2][3]+" דק'"));}
+      {const P=prayTimes(dt,z),r=el("div","shb prt");r.append(el("span",null,"🙏 זמן תפילה מטכ\"לי:"),el("b",null,durHe(P[0][3])));li.append(r);
+       li.append(el("div","zsub","מנחה "+durHe(P[1][3])+" · ערבית "+durHe(P[2][3])));}
       li.append(g,el("div","zloc","📍 "+z.nm+" · זמנים מחושבים, ייתכן הפרש של דקה"));
     }
     return (H.length||calCfg.z)?li:null;
