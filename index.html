@@ -6372,8 +6372,12 @@ const top=el("div","top");
       used.forEach(ci=>{const inp=el("input");inp.type="text";inp.inputMode="decimal";inp.value=row[ci]||"";inp.onchange=()=>{row[ci]=inp.value.trim();};const d=el("td");d.append(inp);tr.append(d);});
       t.append(tr);});
     const g=$("ftIRows");g.textContent="";g.append(t);
-    const nn=ftI.sids.filter(v=>v==="new").length;
-    $("ftIRowsHint").textContent=ok+" מתוך "+ftI.rows.length+" שורות שויכו לחיילים"+(nn?" ("+nn+" מהם חיילים חדשים שייווצרו – אפשר לשנות לחייל קיים או ל\"לא לייבא\")":"")+". שורה במסגרת אדומה: בחרו חייל או השאירו \"לא לייבא\". אפשר לתקן כל מספר שנקרא לא נכון.";
+    const nn=ftI.sids.filter(v=>v==="new").length,isName=ri=>{const v=nc>=0?(ftI.names[ri]!=null?ftI.names[ri]:ftI.rows[ri][nc]||""):"";return /[\u0590-\u05ff]{2,}/.test(v)&&!/ללא שם/.test(v);};
+    const miss=ftI.rows.map((r,ri)=>ri).filter(ri=>!ftI.sids[ri]&&!ftI.skipped[ri]&&isName(ri));
+    const h=$("ftIRowsHint");h.textContent=ok+" מתוך "+ftI.rows.length+" שורות שויכו לחיילים"+(nn?" ("+nn+" מהם חיילים חדשים שייווצרו)":"")+"."+
+      (miss.length?" "+miss.length+" שמות לא נמצאו ברשימת החיילים, והם לא ייובאו. אפשר לבחור לכל אחד חייל קיים, או להוסיף אותם כחיילים חדשים.":"")+" אפשר לתקן כל מספר שנקרא לא נכון.";
+    if(miss.length){const b=el("button","linkbtn","➕ הוספת "+(miss.length===1?"השם שלא נמצא":"כל "+miss.length+" השמות שלא נמצאו")+" כחיילים חדשים");b.type="button";
+      b.onclick=()=>{miss.forEach(ri=>{ftI.sids[ri]="new";});ftIRender();};h.append(" ",b);}
   }
   $("ftFile").onchange=async e=>{
     const f=e.target.files[0];e.target.value="";if(!f)return;
@@ -6396,7 +6400,7 @@ const top=el("div","top");
       const pc=T.cols.findIndex(c=>c.kind==="pid");
       const nc=T.cols.findIndex(c=>c.kind==="name");ftI.names=[];
       T.rows.forEach((r,ri)=>{let s=pc>=0?matchPid(r[pc]):null;if(!s&&nc>=0)s=matchName(r[nc]);
-        ftI.sids[ri]=s?s.id:(nc>=0&&/[\u0590-\u05ff]{2,}/.test(r[nc]||"")&&!/ללא שם/.test(r[nc])?"new":"");});
+        ftI.sids[ri]=s?s.id:"";});// names that aren't in the unit are not added unless asked
       const dc=T.cols.findIndex(c=>c.kind==="date");let date=todayKey();
       if(dc>=0){const C={};T.rows.forEach(r=>{const m=String(r[dc]||"").match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})$/);if(m){const k=m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");C[k]=(C[k]||0)+1;}});
         const b=Object.entries(C).sort((a,b)=>b[1]-a[1])[0];if(b)date=b[0];}
