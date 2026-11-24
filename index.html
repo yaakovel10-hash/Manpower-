@@ -166,6 +166,14 @@ ul.tklist{list-style:none;margin:0;padding:0}
 .tklist li.going{opacity:.4;transition:opacity .35s}
 ul.wtk{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:3px;font-size:14px}
 ul.wtk li{display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ndflt{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:10px 0;display:grid;gap:8px;background:var(--surface)}
+.ndflt.has{border-color:var(--warn,#c27a1a)}
+.ndfh{display:flex;justify-content:space-between;align-items:baseline}
+ul.ndfl{list-style:none;margin:0;padding:0}
+.ndfl li{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}
+.ndfl li .info{flex:1;min-width:0}.ndfl li button{width:auto}
+.ndfl.old .n1{text-decoration:line-through;color:var(--muted)}
+.nmflt{color:var(--danger);font-weight:700}
 .empty{text-align:center;color:var(--muted);padding:24px 8px;border:1px dashed var(--line);border-radius:14px}
 .search{margin-bottom:12px}
 .sh{display:grid;gap:14px;padding:16px;margin-bottom:14px;border-radius:24px;border:1px solid var(--line);background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%),linear-gradient(180deg,var(--surface),var(--tile));box-shadow:inset 0 1px 0 var(--hi),0 10px 24px -18px var(--shadow)}
@@ -1740,6 +1748,13 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       <p class="err" id="niErr" hidden></p>
       <div class="row2"><button class="primary" type="submit" id="niSave">+ הוספת הפריט</button><button class="ghost" type="button" id="niDone">סיום ההוספה</button></div>
     </form>
+    <div class="ndflt" id="ndFlt">
+      <div class="ndfh"><b>⚠ תקלות</b><span class="mini" id="ndFltN"></span></div>
+      <form class="tkrow" id="ndFltForm" autocomplete="off"><input type="text" id="ndFltIn" maxlength="120" placeholder="לדוגמה: נורת שמן דולקת, פנס שמאלי שבור"><button class="primary" type="submit">+ תקלה</button></form>
+      <ul class="list ndfl" id="ndFltList"></ul>
+      <button class="linkbtn muted" type="button" id="ndFltOld" hidden></button>
+      <ul class="list ndfl old" id="ndFltOldList" hidden></ul>
+    </div>
     <ul class="list roll" id="ndList"></ul>
     <div class="empty" id="ndEmpty" hidden>עוד אין פריטים בנמ"ר. הוסיפו את הציוד שאמור להיות בכלי.</div>
     <div class="row2 ndfoot"><button class="ghost sm" type="button" id="ndReset">איפוס הבדיקה</button><span id="ndDel"></span></div>
@@ -5528,7 +5543,8 @@ const top=el("div","top");
     b.disabled=false;if(ok){resetNM();location.hash=vk+"-"+id;}
   };
   function renderNmr(){
-    {const a=kindEv("nmr").length,v=kindEv("veh").length;$("cntNm").textContent=a?a+" כלים":"אין כלים";$("cntVh").textContent=v?v+" רכבים":"אין רכבים";const tn=kindEv("tank").length;$("cntTn").textContent=tn===1?"טנק אחד":tn?tn+" טנקים":"אין טנקים";}
+    {const a=kindEv("nmr").length,v=kindEv("veh").length;$("cntNm").textContent=a?a+" כלים":"אין כלים";$("cntVh").textContent=v?v+" רכבים":"אין רכבים";const tn=kindEv("tank").length;$("cntTn").textContent=tn===1?"טנק אחד":tn?tn+" טנקים":"אין טנקים";
+      [["nmr","cntNm"],["veh","cntVh"],["tank","cntTn"]].forEach(([k,id])=>{const nf=kindEv(k).reduce((s,x)=>s+openFaults(x).length,0);if(nf)$(id).textContent+=" · ⚠ "+nf;});}
     const L=nmrEv();
     if($("v-nmr").hidden)return;
     $("nmCount").textContent=L.length||"";
@@ -5541,6 +5557,7 @@ const top=el("div","top");
       const n3=el("div","n3");const rn=respName(x);n3.append("אחראי: ");n3.append(x.respId&&soldiers.some(z=>z.id===x.respId)?sLink(rn,x.respId):(rn||"—"));n3.append(" · "+items.length+" פריטים");info.append(n3);
       const pg=el("div","minibar");const sp=el("span");sp.style.width=(items.length?Math.round(ok/items.length*100):0)+"%";pg.append(sp);
       const st=el("span","nmst"+(items.length&&ok===items.length?" full":""),items.length?ok+"/"+items.length:"—");
+      {const nf=openFaults(x).length;if(nf)n3.append(el("span","nmflt"," · ⚠ "+(nf===1?"תקלה":nf+" תקלות")));}
       li.append(ic,info,st,el("span","mini","‹"));li.append(pg);ul.append(li);
     });
     $("nmEmpty").hidden=L.length>0;
@@ -5583,6 +5600,25 @@ const top=el("div","top");
     progress($("ndBar"),$("ndCount"),items.filter(i=>marks.has(i.id)).length,items.length);
     $("ndEmpty").hidden=items.length>0;
     const dd=$("ndDel");dd.textContent="";dd.append(delBtn(async()=>{await remove("events/"+x.id);location.hash=vk;},"מחיקת ה"+VK[vk].name));
+    ndFaults(x);
+  }
+  /* faults on a vehicle (נמ"ר / טנק / רכב): open ones on top, a tap marks fixed; fixed ones are kept below */
+  let ndShowOld=false;
+  const vfSave=(x,arr)=>patch("events/"+x.id,{faults:arr});
+  function ndFaults(x){
+    const F=x.faults||[],O=F.filter(f=>!f.fixed).sort((a,b)=>(b.at||0)-(a.at||0)),D=F.filter(f=>f.fixed).sort((a,b)=>(b.fixedAt||0)-(a.fixedAt||0));
+    $("ndFltN").textContent=O.length?O.length+" פתוחות":"אין תקלות פתוחות";$("ndFlt").classList.toggle("has",O.length>0);
+    const row=(f,old)=>{const li=el("li");const info=el("div","info");info.append(el("div","n1",f.desc||""));
+      info.append(el("div","n3",(f.byName||"")+(f.at?" · "+shortD(key(new Date(f.at))):"")+(old&&f.fixedAt?" · תוקנה ע\"י "+(f.fixedByName||"?")+" · "+shortD(key(new Date(f.fixedAt))):"")));
+      const b=el("button",old?"linkbtn":"ghost sm",old?"פתיחה מחדש":"✓ תוקנה");b.type="button";
+      b.onclick=()=>{const arr=(x.faults||[]).map(z=>z.id===f.id?Object.assign({},z,old?{fixed:false,fixedAt:0,fixedBy:"",fixedByName:""}:{fixed:true,fixedAt:Date.now(),fixedBy:uid,fixedByName:(me&&me.name)||""}):z);vfSave(x,arr);if(!old)toast("✓ התקלה סומנה כמתוקנת");};
+      li.append(info,b);if(old)li.append(delBtn(()=>vfSave(x,(x.faults||[]).filter(z=>z.id!==f.id))));return li;};
+    const ul=$("ndFltList");ul.textContent="";O.forEach(f=>ul.append(row(f,false)));
+    const ob=$("ndFltOld");ob.hidden=!D.length;ob.textContent=(ndShowOld?"▾ ":"‹ ")+"תקלות שתוקנו ("+D.length+")";
+    const ol=$("ndFltOldList");ol.hidden=!ndShowOld||!D.length;ol.textContent="";if(ndShowOld)D.slice(0,30).forEach(f=>ol.append(row(f,true)));
+    ob.onclick=()=>{ndShowOld=!ndShowOld;ndFaults(x);};
+    $("ndFltForm").onsubmit=e=>{e.preventDefault();const d=$("ndFltIn").value.trim();if(!d){$("ndFltIn").focus();return;}
+      $("ndFltIn").value="";vfSave(x,(x.faults||[]).concat([{id:newId(),desc:d,fixed:false,note:"",at:Date.now(),by:uid,byName:(me&&me.name)||""}]));};
   }
 
   /* ---------- פערים: all notes on soldiers and weapons ---------- */
@@ -7341,6 +7377,7 @@ const top=el("div","top");
       if(miss.length)add("tash","info",(miss.length===1?"לחייל אחד":"ל-"+miss.length+" חיילים")+" חסר טלפון הורים או מספר חירום",miss.slice(0,6).map(s=>s.name).join(", ")+(miss.length>6?"…":""),()=>{tsFilter="";location.hash="tash";});
     }
     ["nmr","veh","tank"].forEach(k=>{// vehicle kit: what wasn't checked today
+      kindEv(k).forEach(x=>{const of=openFaults(x);if(of.length)add(k,"warn","⚠ ⁦"+x.num+"⁩: "+(of.length===1?"תקלה פתוחה":of.length+" תקלות פתוחות"),of.slice(0,3).map(f=>f.desc).join(" · "),goHash(k+"-"+x.id));});
       kindEv(k).forEach(x=>{const items=x.items||[];if(!items.length)return;const m=getMarks(rollKey(k,x.id)),left=items.filter(i=>!m.has(i.id)).length;
         if(left)add(k,"info","⁦"+x.num+"⁩: "+left+" מתוך "+items.length+" לא נבדקו היום","",goHash(k+"-"+x.id));});
     });
@@ -7576,7 +7613,7 @@ const top=el("div","top");
 
   /* ---------- phone notifications: chosen alerts pop up as regular phone notifications while the app is open or in the background ---------- */
   const PN_T=[["rq",'בקש"צ חדש ממתין לאישור',"reqs"],["mine",'הבקש"צ שהגשתי אושר או נדחה',"reqs"],["md","פנייה רפואית חדשה","med"],
-    ["wp",'תקלה חדשה באמל"ח',"weapons"],["tk","משימה דחופה חדשה","tasks"],["wr","דיווח בלאי חדש","wear"],["fb","משוב חדש על האפליקציה","",true]];
+    ["wp",'תקלה חדשה באמל"ח',"weapons"],["tk","משימה דחופה חדשה","tasks"],["vf",'תקלה חדשה בכלי (נמ"ר, טנק, רכב)',""],["wr","דיווח בלאי חדש","wear"],["fb","משוב חדש על האפליקציה","",true]];
   function pnCfg(){let c=null;try{c=JSON.parse(localStorage.getItem("mp-pn")||"null");}catch(_){}c=c||{on:false,t:{}};PN_T.forEach(([k])=>{if(c.t[k]===undefined)c.t[k]=true;});return c;}
   function pnSave(c){try{localStorage.setItem("mp-pn",JSON.stringify(c));}catch(_){}}
   const pnSupported=()=>"Notification" in window&&"serviceWorker" in navigator;
@@ -7589,7 +7626,13 @@ const top=el("div","top");
         pnQueue("mine",(d.status==="approved"?"✅ אושר":"❌ נדחה")+": "+[nmOf(d),fmtRange(d)].filter(Boolean).join(" · "),d.id);
     }else if(col==="events"&&type==="added"&&d.addedBy!==uid){
       if(d.kind==="med"&&d.status==="pending")pnQueue("md",[nmOf(d),d.reason||d.title].filter(Boolean).join(" · "),d.id);
-      else if(d.kind==="task"&&d.pri===1)pnQueue("tk",d.title+(d.who?" · באחריות "+d.who:""),d.id);
+    }
+    if(col==="events"&&type==="modified"&&prev&&VK[d.kind]){
+      const was=new Set(openFaults(prev).map(f=>f.id)),nw=openFaults(d).filter(f=>!was.has(f.id)&&f.by!==uid);
+      if(nw.length)pnQueue("vf",VK[d.kind].name+" "+d.num+": "+nw.map(f=>f.desc).join(" · "),d.id);
+    }
+    if(col==="events"&&type==="added"&&d.addedBy!==uid){
+      if(d.kind==="task"&&d.pri===1)pnQueue("tk",d.title+(d.who?" · באחריות "+d.who:""),d.id);
       else if(d.kind==="wear")pnQueue("wr",[nmOf(d),d.item].filter(Boolean).join(" · ")+(d.via==="link"?" (מהקישור)":""),d.id);
     }else if(col==="weapons"&&type==="modified"&&prev){
       const was=new Set(openFaults(prev).map(f=>f.id)),nw=openFaults(d).filter(f=>!was.has(f.id)&&f.by!==uid);
