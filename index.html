@@ -137,6 +137,35 @@ body::before{content:"";position:fixed;top:0;left:0;right:0;height:env(safe-area
 .zcard .prn{font-weight:700}
 .zcard .prd{color:var(--muted);font-size:13.5px}
 .zsub{font-size:13px;color:var(--muted);text-align:center;margin:-2px 0 8px}
+.tkadd{display:grid;gap:8px;margin:4px 0 10px}
+.tkrow{display:grid;grid-template-columns:1fr auto;gap:8px}
+.tkrow input{font-size:17px}
+.tkrow button{width:auto;padding-inline:16px}
+.tkpri{display:flex;gap:6px;flex-wrap:wrap}
+.tkpri button{width:auto;background:transparent;color:var(--fg);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:600;font-size:14.5px}
+.tkpri button.on{border-color:currentColor;background:var(--surface);box-shadow:inset 0 0 0 1px currentColor}
+.tkpri button.p1.on{color:var(--danger)}.tkpri button.p2.on{color:#c27a1a}.tkpri button.p3.on{color:var(--ok)}
+.tkmorebtn{justify-self:start;font-size:14px}
+.tkmore{display:grid;gap:8px}
+.tkfilter{margin-bottom:6px}
+.tkgrp{margin:12px 0 4px;font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px}
+.tkgrp .n{color:var(--muted);font-weight:600;font-size:13.5px}
+.tkdot{display:inline-block;width:10px;height:10px;border-radius:50%;flex:none}
+.tkdot.p1{background:var(--danger)}.tkdot.p2{background:#d08a24}.tkdot.p3{background:var(--ok)}
+ul.tklist{list-style:none;margin:0;padding:0}
+.tklist li{display:flex;align-items:flex-start;gap:12px;padding:11px 4px;border-bottom:1px solid var(--line)}
+.tkchk{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--line);background:transparent;display:grid;place-items:center;padding:0;cursor:pointer;margin-top:1px}
+.tklist li.p1 .tkchk{border-color:var(--danger)}.tklist li.p2 .tkchk{border-color:#d08a24}.tklist li.p3 .tkchk{border-color:var(--ok)}
+.tkchk svg{width:16px;height:16px;opacity:0}
+.tklist li.done .tkchk{background:var(--ok);border-color:var(--ok);color:#fff}.tklist li.done .tkchk svg{opacity:1}
+.tkbody{flex:1;min-width:0;cursor:pointer}
+.tkt{font-size:16.5px;font-weight:600;overflow-wrap:anywhere}
+.tklist li.done .tkt{text-decoration:line-through;color:var(--muted);font-weight:400}
+.tkmeta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:13.5px;color:var(--muted);margin-top:2px}
+.tkmeta .late{color:var(--danger);font-weight:700}.tkmeta .today{color:#c27a1a;font-weight:700}
+.tklist li.going{opacity:.4;transition:opacity .35s}
+ul.wtk{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:3px;font-size:14px}
+ul.wtk li{display:flex;align-items:center;gap:6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .empty{text-align:center;color:var(--muted);padding:24px 8px;border:1px dashed var(--line);border-radius:14px}
 .search{margin-bottom:12px}
 .sh{display:grid;gap:14px;padding:16px;margin-bottom:14px;border-radius:24px;border:1px solid var(--line);background:radial-gradient(120% 90% at 100% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%),linear-gradient(180deg,var(--surface),var(--tile));box-shadow:inset 0 1px 0 var(--hi),0 10px 24px -18px var(--shadow)}
@@ -1152,7 +1181,7 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
         <button class="pencil homegear" id="setBtn" type="button" aria-expanded="false" aria-label="הגדרות"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
       </div>
     </header>
-    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="setShowReqs" data-k="reqs"> בקש"צים</label><label class="allday"><input type="checkbox" id="setShowMed" data-k="med"> רפואה</label><label class="allday"><input type="checkbox" id="setShowFit" data-k="fit"> כושר</label><label class="allday"><input type="checkbox" id="setShowPun" data-k="pun"> מענים</label><label class="allday"><input type="checkbox" id="setShowTash" data-k="tash"> ת"ש</label><button type="button" class="ghost bkopen" id="bkOpen">↺ שחזור נתונים שנמחקו</button></div>
+    <div class="setpanel" id="setPanel" hidden><b>הגדרות</b><label class="allday"><input type="checkbox" id="setHaptic"> רטט בסימון סוויץ'</label><span class="mini">רובריקות במסך הראשי</span><label class="allday"><input type="checkbox" id="setShowNmr" data-k="nmr"> נמ"ר</label><label class="allday"><input type="checkbox" id="setShowVeh" data-k="veh"> רכב</label><label class="allday"><input type="checkbox" id="setShowGaps" data-k="gaps"> פערים</label><label class="allday"><input type="checkbox" id="setShowOrbat" data-k="orbat"> מבנה וארגון לקרב</label><label class="allday"><input type="checkbox" id="setShowReqs" data-k="reqs"> בקש"צים</label><label class="allday"><input type="checkbox" id="setShowMed" data-k="med"> רפואה</label><label class="allday"><input type="checkbox" id="setShowFit" data-k="fit"> כושר</label><label class="allday"><input type="checkbox" id="setShowPun" data-k="pun"> מענים</label><label class="allday"><input type="checkbox" id="setShowTash" data-k="tash"> ת"ש</label><label class="allday"><input type="checkbox" id="setShowTasks" data-k="tasks"> משימות</label><button type="button" class="ghost bkopen" id="bkOpen">↺ שחזור נתונים שנמחקו</button></div>
     <label class="f viewpick" id="viewWrap" hidden>מסגרת מוצגת<select id="viewUnit"></select></label>
     <a class="approvals" id="openUnits" href="#units" hidden>ניהול מסגרות וקישורים</a>
     <div class="wgrid" id="widgets" hidden></div>
@@ -1217,6 +1246,10 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
       <a class="tile t-cyan" href="#fit" id="tileFit">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><circle cx="38" cy="11" r="5" fill="var(--accent)" fill-opacity=".35"/><path d="M27 24l9-4 7 7 7 2"/><path d="M36 20l-5 15 9 7-2 14"/><path d="M31 35l-6 9H14"/><path d="M8 30h10M4 38h9M10 46h8" opacity=".6"/></svg>
         <span class="t">כושר</span><span class="c" id="cntFt">—</span>
+      </a>
+      <a class="tile t-olive" href="#tasks" id="tileTasks">
+        <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><rect x="12" y="8" width="40" height="50" rx="5" fill="var(--accent)" fill-opacity=".14"/><path d="M24 8v-2h16v2"/><path d="M19 22l3 3 6-6"/><path d="M33 22h12"/><path d="M19 35l3 3 6-6"/><path d="M33 35h12"/><rect x="19" y="45" width="8" height="7" rx="1.5"/><path d="M33 48h12"/></svg>
+        <span class="t">משימות</span><span class="c" id="cntTk">—</span>
       </a>
       <a class="tile t-sand" href="#pun" id="tilePun">
         <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><path d="M32 8v44"/><path d="M14 16h36"/><path d="M14 16L6 34h16z" fill="var(--accent)" fill-opacity=".25"/><path d="M50 16l-8 18h16z" fill="var(--accent)" fill-opacity=".25"/><path d="M6 34a8 5 0 0 0 16 0M42 34a8 5 0 0 0 16 0"/><path d="M22 56h20"/><circle cx="32" cy="10" r="3" fill="var(--accent)" fill-opacity=".35"/></svg>
@@ -1595,6 +1628,28 @@ ul.trtrack li.trrow{display:block;padding:12px 14px}
   </section>
 
   <!-- PUNISHMENTS (מענים) -->
+  <section id="v-tasks" hidden>
+    <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>משימות</h1><span class="count" id="tkCount"></span><button class="pencil wa" type="button" id="tkWa" aria-label="שליחת המשימות בוואטסאפ"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg></button></div>
+    <form class="tkadd" id="tkForm" autocomplete="off">
+      <div class="tkrow"><input type="text" id="tkTitle" maxlength="120" placeholder="מה צריך לעשות? לדוגמה: להחתים על כוונות" enterkeyhint="done" aria-label="משימה חדשה"><button class="primary" type="submit" id="tkAddBtn">+ הוספה</button></div>
+      <div class="tkpri" id="tkPri" role="radiogroup" aria-label="עדיפות"></div>
+      <button class="linkbtn tkmorebtn" type="button" id="tkMoreBtn" aria-expanded="false">+ תאריך יעד, אחראי והערה</button>
+      <div class="tkmore" id="tkMore" hidden>
+        <div class="row2"><label class="f">עד מתי (לא חובה)<input type="date" id="tkDue"></label>
+        <label class="f">באחריות (לא חובה)<input type="text" id="tkWho" list="tkWhoList" maxlength="40" placeholder="לדוגמה: סמל כהן"></label></div>
+        <datalist id="tkWhoList"></datalist>
+        <label class="f">הערה (לא חובה)<input type="text" id="tkNote" maxlength="200" placeholder="לדוגמה: לתאם עם הרס&quot;פ"></label>
+      </div>
+      <p class="err" id="tkErr" hidden></p>
+    </form>
+    <div class="chips tkfilter" id="tkF"></div>
+    <div class="empty" id="tkEmpty" hidden>אין משימות פתוחות. כותבים משימה למעלה ולוחצים "הוספה".</div>
+    <div id="tkLists"></div>
+    <button class="histbtn" type="button" id="tkDoneBtn" aria-expanded="false" hidden>בוצעו</button>
+    <ul class="list tklist tkdone" id="tkDone" hidden></ul>
+    <button class="linkbtn muted" type="button" id="tkClear" hidden>🗑 ניקוי כל המשימות שבוצעו</button>
+  </section>
+
   <section id="v-pun" hidden>
     <div class="bar"><button class="back" type="button" data-go="">→ חזרה</button><h1>מענים</h1><span class="count" id="puCount"></span><button class="pencil wa" type="button" id="puWa" aria-label="שליחת המענים בוואטסאפ"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg></button></div>
     <div class="pusum" id="puSum"></div>
@@ -2221,7 +2276,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   function pathOf(unitId){const u=unitById(unitId);return u?Object.assign({},u.path):null;}
 
   /* ---------- screens ---------- */
-  const ALL=["v-fitp","v-tash","v-pun","v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat","v-zr","v-reqs","v-med","v-fit"];
+  const ALL=["v-tasks","v-fitp","v-tash","v-pun","v-config","v-login","v-noaccess","v-setup","v-home","v-units","v-soldiers","v-weapons","v-soldier","v-mine","v-attend","v-verify","v-sched","v-absent","v-wear","v-nmr","v-nmrd","v-gaps","v-orbat","v-zr","v-reqs","v-med","v-fit"];
   // big lists of a screen you left are emptied (they're rebuilt when you come back), so the page stays light
   const HEAVY={"v-weapons":["listW"],"v-zr":["zrBox"],"v-verify":["vfList"],"v-soldiers":["listS"],"v-gaps":["gpS","gpW"],"v-reqs":["rqList"],"v-med":["mdList"]};
   function show(ids){
@@ -2259,6 +2314,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     if(h==="fit"){show(["v-fit"]);renderFit();return;}
     {const fm=h.match(/^fitp-(.+)$/);if(fm){fpSid=decodeURIComponent(fm[1]);show(["v-fitp"]);renderFitCard();scrollTo({top:0});return;}}
     if(h==="pun"){show(["v-pun"]);renderPun();return;}
+    if(h==="tasks"){show(["v-tasks"]);renderTasks();return;}
     if(h==="tash"){show(["v-tash"]);renderTash();return;}
     if(h==="zreport"){show(["v-zr"]);renderZR();return;}
     if(h==="orbat"){show(["v-orbat"]);renderOrbat();return;}
@@ -2456,7 +2512,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
   /* ---------- home tiles: long-press, then drag to reorder ---------- */
   const tileKey=t=>t.getAttribute("href");
   // the default order, two per row, right to left
-  const DEF_TILES=["#attend","#verify","#reqs","#absent","#wear","#gaps","#med","#pun","#sched","#nmr","#orbat","#fit","#tash","#veh"];
+  const DEF_TILES=["#attend","#verify","#tasks","#reqs","#absent","#wear","#gaps","#med","#pun","#sched","#nmr","#orbat","#fit","#tash","#veh"];
   function applyTileOrder(){
     const nav=$("homeTiles");if(nav.classList.contains("editing"))return;
     const ord=(me&&me.tileOrder&&me.tileOrder.length)?me.tileOrder:DEF_TILES;
@@ -2521,7 +2577,7 @@ const ADMIN_EMAILS = ["yaakovel10@gmail.com"];
     document.addEventListener("pointerdown",e=>{if(nav.classList.contains("editing")&&!e.target.closest("#homeTiles"))exit();});
     addEventListener("hashchange",exit);
   }
-  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"],["orbat","מבנה וארגון לקרב","tileOrbat","setShowOrbat"],["reqs",'בקש"צים',"tileReqs","setShowReqs"],["med","רפואה","tileMed","setShowMed"],["fit","כושר","tileFit","setShowFit"],["pun","מענים","tilePun","setShowPun"],["tash",'ת"ש',"tileTash","setShowTash"]];
+  const HIDEABLE=[["nmr",'נמ"ר',"tileNmr","setShowNmr"],["veh","רכב","tileVeh","setShowVeh"],["gaps","פערים","tileGaps","setShowGaps"],["orbat","מבנה וארגון לקרב","tileOrbat","setShowOrbat"],["reqs",'בקש"צים',"tileReqs","setShowReqs"],["med","רפואה","tileMed","setShowMed"],["fit","כושר","tileFit","setShowFit"],["pun","מענים","tilePun","setShowPun"],["tash",'ת"ש',"tileTash","setShowTash"],["tasks","משימות","tileTasks","setShowTasks"]];
   // default for a tile: the closest unit (own unit, then its parents) that set it; otherwise shown
   function unitTileDefault(k){
     let u=me&&me.unitId?unitById(me.unitId):null;
@@ -6804,7 +6860,7 @@ const top=el("div","top");
   }
   // which data each screen shows; a screen is redrawn only when one of these changed
   let verS=0,verW=0,verE=0,verR=0,verM=0,verU=0,verT=0,verMe=0,verSeen=0,dataVer=0,membersKey="",meKey="";
-  const SCREEN_DEPS={"v-fitp":"se","v-tash":"s","v-pun":"se","v-weapons":"wsmu","v-zr":"wsmu","v-orbat":"se","v-soldiers":"swremu","v-gaps":"sw","v-wear":"es","v-fit":"se","v-nmr":"e","v-nmrd":"e","v-mine":"wm","v-units":"umtx","v-attend":"sermua","v-verify":"wsermua"};
+  const SCREEN_DEPS={"v-tasks":"se","v-fitp":"se","v-tash":"s","v-pun":"se","v-weapons":"wsmu","v-zr":"wsmu","v-orbat":"se","v-soldiers":"swremu","v-gaps":"sw","v-wear":"es","v-fit":"se","v-nmr":"e","v-nmrd":"e","v-mine":"wm","v-units":"umtx","v-attend":"sermua","v-verify":"wsermua"};
   const lastSig={};const lastSigReset=()=>{for(const k in lastSig)delete lastSig[k];};
   function screenSig(id){
     const dep=SCREEN_DEPS[id],d=new Date();
@@ -6826,7 +6882,7 @@ const top=el("div","top");
     renderMe();R("v-soldiers",renderS);R("v-weapons",renderW);
     if(curSoldier)R("v-soldier",renderDetail);
     if(!$("v-units").hidden)R("v-units",renderUnits);
-    R("v-mine",renderMine);R("v-attend",renderAttend);R("v-verify",renderVerify);R("v-sched",renderSched);R("v-absent",renderAbsent);R("v-wear",renderWear);R("v-nmr",renderNmr);R("v-nmrd",renderNmrD);R("v-gaps",renderGaps);R("v-orbat",renderOrbat);R("v-zr",renderZR);R("v-reqs",renderReqList);R("v-med",renderMedList);R("v-fit",renderFit);R("v-pun",renderPun);R("v-tash",renderTash);R("v-fitp",renderFitCard);
+    R("v-mine",renderMine);R("v-attend",renderAttend);R("v-verify",renderVerify);R("v-sched",renderSched);R("v-absent",renderAbsent);R("v-wear",renderWear);R("v-nmr",renderNmr);R("v-nmrd",renderNmrD);R("v-gaps",renderGaps);R("v-orbat",renderOrbat);R("v-zr",renderZR);R("v-reqs",renderReqList);R("v-med",renderMedList);R("v-fit",renderFit);R("v-pun",renderPun);R("v-tasks",renderTasks);R("v-tash",renderTash);R("v-fitp",renderFitCard);
     renderHomeCounts();try{renderOnboard();}catch(e){console.warn(e);}
   }
   let choresT=null;
@@ -7094,7 +7150,8 @@ const top=el("div","top");
     shab:{n:"השבת הקרובה",w:1,go:"pun"},
     zman:{n:"זמני היום",w:1,go:"sched"},
     flt:{n:'תקלות אמל"ח',w:1,go:"alerts"},
-    gaps:{n:"פערים פתוחים",w:1,go:"gaps"}
+    gaps:{n:"פערים פתוחים",w:1,go:"gaps"},
+    tasks:{n:"משימות פתוחות",w:2,go:"tasks"}
   };
   const WG_DEF=[]; // none until the user picks some in the home settings
   const wgList=()=>{try{const v=JSON.parse(localStorage.getItem("widgets")||"null");if(Array.isArray(v))return v.filter(k=>WG[k]);}catch(_){}return WG_DEF.slice();};
@@ -7140,6 +7197,10 @@ const top=el("div","top");
       c.append(el("div","wsub",z.nm||""));return;}
     if(k==="flt"){
       const F=vis(weapons).filter(w=>openFaults(w).length);big(F.length||"✓",F.length?F.slice(0,2).map(w=>wType(w.type)+" "+(w.num||"")).join(", ")+(F.length>2?"…":""):"אין תקלות פתוחות");return;}
+    if(k==="tasks"){
+      const O=tkOpen();if(!O.length){c.append(el("div","wnow","אין משימות פתוחות ✓"));return;}
+      const u=O.filter(x=>x.pri===1).length;c.append(el("div","wsub",O.length+" פתוחות"+(u?" · "+u+" דחופות":"")));
+      const ul=el("ul","wtk");O.slice(0,3).forEach(x=>{const li=el("li");li.append(el("span","tkdot p"+x.pri),el("span",null,x.title));ul.append(li);});c.append(ul);return;}
     if(k==="gaps"){
       const G=vis(soldiers).filter(s=>sNotes(s).length);big(G.length||"✓",G.length?"חיילים עם פערים":"אין פערים פתוחים");return;}
   }
@@ -7181,12 +7242,13 @@ const top=el("div","top");
     absent:{n:"היעדרויות",go:"absent",scr:["v-absent"]},
     fit:{n:"כושר",go:"fit",scr:["v-fit","v-fitp"],hide:"fit"},
     pun:{n:"מענים",go:"pun",scr:["v-pun"],hide:"pun"},
+    tasks:{n:"משימות",go:"tasks",scr:["v-tasks"],hide:"tasks"},
     tash:{n:'ת"ש',go:"tash",scr:["v-tash"],hide:"tash"},
     nmr:{n:'נמ"ר',go:"nmr",scr:[],hide:"nmr"},
     veh:{n:"רכב",go:"veh",scr:[],hide:"veh"},
     orbat:{n:"מבנה וארגון לקרב",go:"orbat",scr:["v-orbat"],hide:"orbat"}
   };
-  const TILE_RUB={attend:"attend",verify:"verify",reqs:"reqs",med:"med",gaps:"gaps",wear:"wear",sched:"sched",absent:"absent",fit:"fit",pun:"pun",tash:"tash",nmr:"nmr",veh:"veh",orbat:"orbat"};
+  const TILE_RUB={attend:"attend",verify:"verify",reqs:"reqs",med:"med",gaps:"gaps",wear:"wear",sched:"sched",absent:"absent",fit:"fit",pun:"pun",tasks:"tasks",tash:"tash",nmr:"nmr",veh:"veh",orbat:"orbat"};
   const secRub=id=>(id==="v-nmr"||id==="v-nmrd")?vk:Object.keys(RUB).find(k=>RUB[k].scr.includes(id))||"home";
   const muted=r=>{try{return localStorage.getItem("amute:"+r)==="1";}catch(_){return false;}};
   const setMuted=(r,v)=>{try{localStorage.setItem("amute:"+r,v?"1":"0");}catch(_){}};
@@ -7255,6 +7317,12 @@ const top=el("div","top");
       if(stay.length)add("pun","info","השבת הקרובה נשארים: "+stay.map(x=>nm(x.soldierId)).join(", "),"שבת "+shortD(sat),goHash("pun"));
       if(loose.length)add("pun","warn",(loose.length===1?"שבת עונש אחת":loose.length+" שבתות עונש")+" בלי תאריך",loose.map(x=>nm(x.soldierId)).join(", "),goHash("pun"));
       const today=op.filter(x=>x.on===t&&x.ptype!=="shabbat");if(today.length)add("pun","info","מרצים היום: "+today.map(x=>nm(x.soldierId)+" ("+punTxt(x)+")").join(", "),"",goHash("pun"));
+    }
+    {// tasks: urgent ones still open, past their date, due today
+      const O=tkOpen(),late=O.filter(x=>x.due&&x.due<t),tod=O.filter(x=>x.due===t),urg=O.filter(x=>x.pri===1&&!(x.due&&x.due<t));
+      if(late.length)add("tasks","bad",(late.length===1?"משימה אחת":late.length+" משימות")+" באיחור",late.slice(0,3).map(x=>x.title).join(" · "),goHash("tasks"));
+      if(urg.length)add("tasks","warn",(urg.length===1?"משימה דחופה אחת פתוחה":urg.length+" משימות דחופות פתוחות"),urg.slice(0,3).map(x=>x.title).join(" · "),goHash("tasks"));
+      if(tod.length)add("tasks","info","להיום: "+tod.length+(tod.length===1?" משימה":" משימות"),tod.slice(0,3).map(x=>x.title).join(" · "),goHash("tasks"));
     }
     {// ת"ש: soldiers with no parents' phone or emergency number
       const miss=S.filter(s=>{const h=tsHas(s);return !h.par||!h.em;});
@@ -7496,7 +7564,7 @@ const top=el("div","top");
 
   /* ---------- phone notifications: chosen alerts pop up as regular phone notifications while the app is open or in the background ---------- */
   const PN_T=[["rq",'בקש"צ חדש ממתין לאישור',"reqs"],["mine",'הבקש"צ שהגשתי אושר או נדחה',"reqs"],["md","פנייה רפואית חדשה","med"],
-    ["wp",'תקלה חדשה באמל"ח',"weapons"],["wr","דיווח בלאי חדש","wear"],["fb","משוב חדש על האפליקציה","",true]];
+    ["wp",'תקלה חדשה באמל"ח',"weapons"],["tk","משימה דחופה חדשה","tasks"],["wr","דיווח בלאי חדש","wear"],["fb","משוב חדש על האפליקציה","",true]];
   function pnCfg(){let c=null;try{c=JSON.parse(localStorage.getItem("mp-pn")||"null");}catch(_){}c=c||{on:false,t:{}};PN_T.forEach(([k])=>{if(c.t[k]===undefined)c.t[k]=true;});return c;}
   function pnSave(c){try{localStorage.setItem("mp-pn",JSON.stringify(c));}catch(_){}}
   const pnSupported=()=>"Notification" in window&&"serviceWorker" in navigator;
@@ -7509,6 +7577,7 @@ const top=el("div","top");
         pnQueue("mine",(d.status==="approved"?"✅ אושר":"❌ נדחה")+": "+[nmOf(d),fmtRange(d)].filter(Boolean).join(" · "),d.id);
     }else if(col==="events"&&type==="added"&&d.addedBy!==uid){
       if(d.kind==="med"&&d.status==="pending")pnQueue("md",[nmOf(d),d.reason||d.title].filter(Boolean).join(" · "),d.id);
+      else if(d.kind==="task"&&d.pri===1)pnQueue("tk",d.title+(d.who?" · באחריות "+d.who:""),d.id);
       else if(d.kind==="wear")pnQueue("wr",[nmOf(d),d.item].filter(Boolean).join(" · ")+(d.via==="link"?" (מהקישור)":""),d.id);
     }else if(col==="weapons"&&type==="modified"&&prev){
       const was=new Set(openFaults(prev).map(f=>f.id)),nw=openFaults(d).filter(f=>!was.has(f.id)&&f.by!==uid);
@@ -7547,6 +7616,97 @@ const top=el("div","top");
     if(live)PN_T.forEach(([k,n,,adm])=>{if(adm&&!isAdmin)return;shTog(b,n,"",c.t[k],v=>{c.t[k]=v;pnSave(c);});});
     if(live)b.append(el("div","mini","אם האפליקציה סגורה לגמרי, ההתראות לא יגיעו. מה שהצטבר יופיע בפעמון בפתיחה הבאה."));
   }
+
+  /* ---------- משימות: a shared to-do list, like a shopping list — type, pick urgency, tick when done ---------- */
+  const TK_P=[[1,"🔴 דחוף","דחוף"],[2,"🟠 חשוב","חשוב"],[3,"🟢 בינוני","בינוני"]];
+  const tkEv=()=>visRO(events).filter(x=>x.kind==="task");
+  const tkSort=(a,b)=>(a.pri||3)-(b.pri||3)||((a.due||"9")<(b.due||"9")?-1:(a.due||"9")>(b.due||"9")?1:0)||(a.at||0)-(b.at||0);
+  const tkOpen=()=>tkEv().filter(x=>!x.done).sort(tkSort);
+  let tkPri=2,tkFilter=0,tkShowDone=false;
+  const CHK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  function tkDrawPri(){const w=$("tkPri");w.textContent="";TK_P.forEach(([p,t])=>{const b=el("button","p"+p+(tkPri===p?" on":""),t);b.type="button";b.setAttribute("role","radio");b.setAttribute("aria-checked",String(tkPri===p));
+    b.onclick=()=>{tkPri=p;tkDrawPri();$("tkTitle").focus();};w.append(b);});}
+  tkDrawPri();
+  $("tkMoreBtn").onclick=()=>{const m=$("tkMore");m.hidden=!m.hidden;$("tkMoreBtn").setAttribute("aria-expanded",String(!m.hidden));
+    if(!m.hidden){const dl=$("tkWhoList");dl.textContent="";[...new Set([(me&&me.name)||"",...vis(soldiers).filter(isCmdSoldier).map(s=>s.name)].filter(Boolean))].forEach(n=>{const o=el("option");o.value=n;dl.append(o);});}};
+  $("tkForm").onsubmit=async e=>{
+    e.preventDefault();const title=$("tkTitle").value.trim().replace(/\s+/g," ");
+    if(!title){showErr("tkErr","כתבו מה צריך לעשות, ואז \"הוספה\".");$("tkTitle").focus();return;}
+    const unit=writeUnit();if(!unit){showErr("tkErr","בחרו קודם מסגרת מוצגת במסך הראשי.");return;}
+    const d={kind:"task",title,pri:tkPri,due:$("tkDue").value||"",who:$("tkWho").value.trim(),note:$("tkNote").value.trim(),done:false,unit,
+      addedBy:uid,addedByName:(me&&me.name)||"",at:Date.now()};
+    $("tkTitle").value="";$("tkTitle").focus();
+    const ok=await write("events/"+newId(),d,"tkErr");
+    if(ok){$("tkDue").value="";$("tkWho").value="";$("tkNote").value="";$("tkMore").hidden=true;$("tkMoreBtn").setAttribute("aria-expanded","false");}
+    else $("tkTitle").value=title;
+  };
+  function tkToggle(x,li){
+    const done=!x.done;haptic(true);
+    if(li){li.classList.toggle("done",done);if(done)li.classList.add("going");}
+    setTimeout(()=>patch("events/"+x.id,done?{done:true,doneAt:Date.now(),doneBy:uid,doneByName:(me&&me.name)||""}:{done:false,doneAt:0,doneBy:"",doneByName:""}),done?350:0);
+    if(done)toast("✓ בוצע: "+x.title);
+  }
+  function tkDue(x,t){if(!x.due)return null;const s=el("span",null,"📅 "+shortD(x.due));
+    if(!x.done&&x.due<t){s.className="late";s.textContent="⏰ באיחור · "+shortD(x.due);}else if(!x.done&&x.due===t){s.className="today";s.textContent="📅 היום";}return s;}
+  function tkRow(x){
+    const t=todayKey(),li=el("li","p"+(x.pri||3)+(x.done?" done":""));
+    const c=el("button","tkchk");c.type="button";c.innerHTML=CHK_SVG;c.setAttribute("aria-label",x.done?"החזרה לפתוחות":"סימון שבוצע");c.onclick=()=>tkToggle(x,li);
+    const body=el("div","tkbody");body.append(el("div","tkt",x.title||""));
+    const m=el("div","tkmeta");const d=tkDue(x,t);if(d)m.append(d);if(x.who)m.append(el("span",null,"👤 "+x.who));if(x.note)m.append(el("span",null,"📝 "+x.note));
+    if(x.done)m.append(el("span",null,"✓ "+(x.doneByName||"")+(x.doneAt?" · "+shortD(key(new Date(x.doneAt))):"")));
+    if(m.childNodes.length)body.append(m);
+    body.onclick=()=>tkEdit(x);
+    li.append(c,body);return li;
+  }
+  function renderTasks(){
+    const all=tkEv(),O=all.filter(x=>!x.done).sort(tkSort),D=all.filter(x=>x.done).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
+    const u=O.filter(x=>x.pri===1).length,late=O.filter(x=>x.due&&x.due<todayKey()).length;
+    $("cntTk").textContent=O.length?(u?u+" דחופות · ":"")+O.length+" פתוחות":"אין משימות פתוחות";
+    if($("v-tasks").hidden)return;
+    $("tkCount").textContent=O.length?String(O.length):"";
+    const f=$("tkF");f.textContent="";
+    [[0,"הכול",O.length],...TK_P.map(([p,,n])=>[p,n,O.filter(x=>x.pri===p).length])].forEach(([p,n,c])=>{const b=el("button","chipbtn"+(tkFilter===p?" on":""),n+(c?" · "+c:""));b.type="button";b.onclick=()=>{tkFilter=p;renderTasks();};f.append(b);});
+    if(late)f.append(el("span","mini tklate","⏰ "+late+" באיחור"));
+    const box=$("tkLists");box.textContent="";
+    TK_P.filter(([p])=>!tkFilter||tkFilter===p).forEach(([p,t,n])=>{const L=O.filter(x=>(x.pri||3)===p);if(!L.length)return;
+      const h=el("div","tkgrp");h.append(el("span","tkdot p"+p),el("span",null,n),el("span","n",String(L.length)));box.append(h);
+      const ul=el("ul","list tklist");L.forEach(x=>ul.append(tkRow(x)));box.append(ul);});
+    $("tkEmpty").hidden=O.length>0;
+    const db=$("tkDoneBtn");db.hidden=!D.length;db.textContent=(tkShowDone?"▾ ":"‹ ")+"בוצעו ("+D.length+")";db.setAttribute("aria-expanded",String(tkShowDone));
+    const dl=$("tkDone");dl.hidden=!tkShowDone||!D.length;dl.textContent="";if(tkShowDone)D.slice(0,60).forEach(x=>dl.append(tkRow(x)));
+    $("tkClear").hidden=!tkShowDone||!D.length;
+  }
+  $("tkDoneBtn").onclick=()=>{tkShowDone=!tkShowDone;renderTasks();};
+  {const b=$("tkClear");let arm=false;b.onclick=async()=>{const D=tkEv().filter(x=>x.done);if(!D.length)return;
+    if(!arm){arm=true;b.textContent="לחצו שוב כדי למחוק "+D.length+" משימות שבוצעו";setTimeout(()=>{arm=false;b.textContent="🗑 ניקוי כל המשימות שבוצעו";},4000);return;}
+    arm=false;b.disabled=true;
+    try{if(!fs)await fsReady;for(let i=0;i<D.length;i+=400){const bt=fs.batch();D.slice(i,i+400).forEach(x=>bt.delete(fs.doc("events/"+x.id)));await qc(bt.commit());}
+      toast(D.length+" משימות נמחקו ✓");}catch(e){console.warn(e);toast(errMsg(e));}
+    b.disabled=false;b.textContent="🗑 ניקוי כל המשימות שבוצעו";tkShowDone=false;renderTasks();};}
+  function tkEdit(x){
+    const b=sheet(x.done?"משימה שבוצעה":"עריכת משימה");
+    const ti=el("input");ti.type="text";ti.maxLength=120;ti.value=x.title||"";const l1=el("label","f","מה צריך לעשות");l1.append(ti);
+    let pri=x.pri||3;const pr=el("div","tkpri");const dp=()=>{pr.textContent="";TK_P.forEach(([p,t])=>{const o=el("button","p"+p+(pri===p?" on":""),t);o.type="button";o.onclick=()=>{pri=p;dp();};pr.append(o);});};dp();
+    const du=el("input");du.type="date";du.value=x.due||"";const l2=el("label","f","עד מתי");l2.append(du);
+    const wh=el("input");wh.type="text";wh.maxLength=40;wh.value=x.who||"";wh.setAttribute("list","tkWhoList");wh.placeholder="לדוגמה: סמל כהן";const l3=el("label","f","באחריות");l3.append(wh);
+    const no=el("input");no.type="text";no.maxLength=200;no.value=x.note||"";const l4=el("label","f","הערה");l4.append(no);
+    const er=el("p","err");er.hidden=true;er.id="tkEErr";
+    const sv=el("button","primary","שמירת השינויים");sv.type="button";
+    sv.onclick=async()=>{const t=ti.value.trim();if(!t){er.hidden=false;er.textContent="המשימה צריכה שם.";return;}
+      const ok=await patch("events/"+x.id,{title:t,pri,due:du.value||"",who:wh.value.trim(),note:no.value.trim(),editedBy:uid,editedByName:(me&&me.name)||"",editedAt:Date.now()},"tkEErr");if(ok)closeSheet();};
+    const tg=el("button","ghost",x.done?"↩ החזרה למשימות הפתוחות":"✓ סימון שבוצעה");tg.type="button";tg.onclick=()=>{tkToggle(x,null);closeSheet();};
+    b.append(l1,el("div","f","עדיפות"),pr,el("div","row2"),l3,l4,er,sv,tg);
+    b.querySelector(".row2").append(l2,el("span"));
+    b.append(el("div","mini","נוספה ע\"י "+(x.addedByName||"?")+(x.at?" · "+fmtG(key(new Date(x.at))):"")+(x.editedAt?" · נערכה ע\"י "+(x.editedByName||"?"):"")),
+      delBtn(()=>remove("events/"+x.id).then(ok=>{if(ok)closeSheet();})));
+  }
+  $("tkWa").onclick=()=>{
+    const O=tkOpen(),t=todayKey();if(!O.length){toast("אין משימות פתוחות לשליחה");return;}
+    const L=['*משימות פתוחות* · '+shortD(t)];
+    TK_P.forEach(([p,,n])=>{const G=O.filter(x=>(x.pri||3)===p);if(!G.length)return;L.push("",(p===1?"🔴":p===2?"🟠":"🟢")+" *"+n+"*");
+      G.forEach(x=>L.push("⬜ "+x.title+(x.due?" · עד "+shortD(x.due)+(x.due<t?" ⏰":""):"")+(x.who?" · "+x.who:"")));});
+    window.open("https://wa.me/?text="+encodeURIComponent(L.join("\n")),"_blank");
+  };
   /* ---------- first-time guidance: a first-action button under every empty list, and a start card on home ---------- */
   function goAndClick(hash,btn){
     const b=btn&&$(btn);
@@ -7558,7 +7718,7 @@ const top=el("div","top");
       zrEmpty:["+ הוספת נשק","weapons","openW"],emptyW:["+ הוספת נשק","","openW"],emptyMine:["+ הוספת נשק שאני חתום עליו","","openMW"],
       abEmpty:["+ הוספת היעדרות","","openAB"],rqEmpty:['+ בקש"צ חדש',"","openRQ"],mdEmpty:["+ פנייה רפואית חדשה","","openMD"],
       emptyR:['+ בקש"צ חדש',"","openR"],wrEmpty:["+ הוספת בלאי","","openWR"],nmEmpty:['+ הוספת נמ"ר',"","openNM"],ndEmpty:["+ הוספת פריט","","niOpen"],
-      emptyT:["+ הוספת נשק לחייל","","openTW"],emptyU:["+ פתיחת מסגרת","","openU"],puEmpty:["+ מענה חדש","","openPU"],tsEmpty:["+ הזנת פרטים לחייל","","tsAdd"],
+      emptyT:["+ הוספת נשק לחייל","","openTW"],emptyU:["+ פתיחת מסגרת","","openU"],puEmpty:["+ מענה חדש","","openPU"],tkEmpty:["+ הוספת משימה","","tkAddBtn"],tsEmpty:["+ הזנת פרטים לחייל","","tsAdd"],
       trTrEmpty:["+ הוספת אימון","","trNew"],ftEmpty:["+ מדידה חדשה","","ftNew"]};
     Object.keys(E).forEach(id=>{const d=$(id),[t,h,btn]=E[id];if(!d||!$(btn))return;
       const c=el("button","ghost emptycta",t);c.type="button";c.onclick=()=>goAndClick(h,btn);d.after(c);
